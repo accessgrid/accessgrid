@@ -140,7 +140,9 @@ def main():
         # If profile is the default profile, do first-time user initialization
         #
         profile = app.preferences.GetProfile()
-        if profile.IsDefault():  # not your profile
+        isFirstRun = profile.IsDefault()
+        
+        if isFirstRun:  # not your profile
             progressDialog.UpdateGauge('Initializing User Profile',increment=20)
             log.debug("the profile is the default profile - open profile dialog")
 
@@ -198,11 +200,12 @@ def main():
         progressDialog.UpdateGauge('Analyzing Network',100)
         multicastStatus = vc.GetMulticastStatus()
         vcui.SetMcastStatus(multicastStatus)
-        if multicastStatus == 0:    
-            vcui.UseUnicastCB()
-        
-            app.preferences.SetPreference(Preferences.MULTICAST,0)
-        app.preferences.StorePreferences()
+        log.info("Multicast Status at startup: %d", multicastStatus)
+        if multicastStatus == 0:
+            vcui.UseUnicastCB()        
+            if isFirstRun:
+                app.preferences.SetPreference(Preferences.MULTICAST,multicastStatus)
+                app.preferences.StorePreferences()
         
         vcui.venueAddressBar.SetAddress(app.preferences.GetProfile().homeVenue)
         
