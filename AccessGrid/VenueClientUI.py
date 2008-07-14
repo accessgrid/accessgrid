@@ -4988,8 +4988,8 @@ class JabberClientPanel(wx.Panel):
         
         self.normalTextAttr = wx.TextAttr(wx.BLACK)
         self.boldTextAttr = wx.TextAttr(wx.Colour(60,60,60))
-        f = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
-        boldf = wx.SystemSettings_GetFont(wx.SYS_SYSTEM_FONT)
+        f = wx.NORMAL_FONT
+        boldf = wx.Font(f.GetPointSize(),f.GetFamily(),f.GetStyle(),wx.FONTWEIGHT_BOLD)
         boldf.SetWeight(wx.FONTWEIGHT_BOLD)
         self.normalTextAttr.SetFont(f)
         self.boldTextAttr.SetFont(boldf)
