@@ -539,10 +539,13 @@ class AGNodeService:
                 # use the service manager object from the description (probably a ws proxy)
                 serviceManagerObj = serviceManager.GetObject()
 
+                # Add service manager to list
+                log.debug("Using external service manager at %s", serviceManager.uri)
+                self.serviceManagers[serviceManager.uri] = serviceManager
+
             #
             # Remove services from service manager
             #
-         
             try:
                 serviceManagerObj.RemoveServices()
             except:
@@ -564,9 +567,9 @@ class AGNodeService:
                                                                      service.parameters,
                                                                      prefs.GetProfile())
                     
-                except:
+                except Exception,e:
                     log.exception("Exception adding service %s" % (service.packageName))
-                    exceptionText += "Couldn't add service %s" % (service.packageName)
+                    exceptionText += "Couldn't add service %s : %s\n" % (service.packageName, str(e))
 
         if len(exceptionText):
             raise Exception(exceptionText)
