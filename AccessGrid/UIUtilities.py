@@ -215,7 +215,7 @@ class ProgressDialog(wx.Frame):
         sizer.Add(self.versionTextCtrl,0,wx.BOTTOM,10)
         sizer.Add(self.lineCtrl,0)
         sizer.Add(self.progressText,0,wx.TOP,10)
-        sizer.Add(gaugeBox,0,wx.ALIGN_CENTRE)
+        sizer.Add(gaugeBox,0,wx.ALIGN_CENTRE|wx.BOTTOM,20)
         
         self.SetSizer(sizer)
         self.Fit()
