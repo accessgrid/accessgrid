@@ -62,7 +62,7 @@ from AccessGrid.BridgeCache import BridgeCache
 from AccessGrid.VenueCache import VenueCache
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
 from AccessGrid import UMTPClient
-from AccessGrid.Platform import IsWindows, IsLinux
+from AccessGrid.Platform import IsWindows, IsLinux, IsFreeBSD
 
 from AccessGrid.GUID import GUID
 from AccessGrid.Jabber.JabberClient import JabberClient, AuthorizationFailure
