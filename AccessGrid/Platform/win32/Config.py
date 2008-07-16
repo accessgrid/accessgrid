@@ -448,6 +448,10 @@ class SystemConfig(Config.SystemConfig):
 
         for l in p:
             parts = l.strip().split()
+            if len(parts) == 0:
+                continue
+            if parts[0] == "Persistent":
+                break
             if parts[0] == "0.0.0.0":
                 interf = parts[3]
                 metric= parts[4]
