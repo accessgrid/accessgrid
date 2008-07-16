@@ -1,6 +1,0 @@
-* 20070616 CKW
-    Various sources have been used for different vic releases fo AG.
-ag-media-302.tar.gz is the ANL 'ag-media' bundle of vic, rat, tcl, tk & common.
-ag-media-31.tar.gz has ANL vic, but UCL rat, tcl, tk & common.
-mmedia-31.tar.gz has all UCL commonents, checked out from SVN 20070606.
-

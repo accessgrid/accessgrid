@@ -1,7 +1,7 @@
-diff -up vic-20071009svn/vic/tcl/ui-stats.tcl.mtrace vic-20071009svn/vic/tcl/ui-stats.tcl
---- vic/tcl/ui-stats.tcl.mtrace	2007-08-08 12:50:46.000000000 +1000
-+++ vic/tcl/ui-stats.tcl	2007-12-03 08:28:25.000000000 +1000
-@@ -698,9 +698,9 @@ proc create_mtrace_window {src dir} {
+diff -urNad vic/tcl/ui-stats.tcl.orig vic/tcl/ui-stats.tcl
+--- vic/tcl/ui-stats.tcl.orig	2008-03-15 13:00:52.000000000 +1000
++++ vic/tcl/ui-stats.tcl	2008-03-22 15:59:35.673553948 +1000
+@@ -698,9 +698,9 @@
  
  	global V
  	if {$dir=="to"} {

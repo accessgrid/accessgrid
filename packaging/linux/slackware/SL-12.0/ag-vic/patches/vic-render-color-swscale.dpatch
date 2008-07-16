@@ -1,7 +1,7 @@
-diff -up vic-20080310svn/vic/render/color-swscale.cpp.x86_64MMX2 vic-20080310svn/vic/render/color-swscale.cpp
---- vic/render/color-swscale.cpp.x86_64MMX2	2008-03-08 22:01:15.000000000 +1000
-+++ vic/render/color-swscale.cpp	2008-03-09 11:04:01.000000000 +1000
-@@ -70,13 +70,13 @@ public:
+diff -urNad vic/render/color-swscale.cpp.orig vic/render/color-swscale.cpp
+--- vic/render/color-swscale.cpp.orig	2008-03-15 13:00:51.000000000 +1000
++++ vic/render/color-swscale.cpp	2008-03-22 16:04:12.841348837 +1000
+@@ -70,13 +70,13 @@
  
  #ifdef RUNTIME_CPUDETECT	    
  	      flags |= (available_cpu_flags & FF_CPU_MMX ? SWS_CPU_CAPS_MMX : 0);

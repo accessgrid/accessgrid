@@ -1,0 +1,15 @@
+diff -urNad vic/video/grabber-video4linux.cpp.orig vic/video/grabber-video4linux.cpp
+--- vic/video/grabber-video4linux.cpp.orig	2008-03-15 13:00:49.000000000 +1000
++++ vic/video/grabber-video4linux.cpp	2008-03-22 16:07:10.299461602 +1000
+@@ -39,10 +39,9 @@
+ extern "C"
+ {
+ #include <asm/types.h>
+-//#include <linux/videodev.h>
++#include <linux/videodev.h>
+ }
+ 
+-#include "videodev.h"
+ #include "grabber.h"
+ #include "vic_tcl.h"
+ #include "device-input.h"
