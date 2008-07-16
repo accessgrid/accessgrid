@@ -1,0 +1,31 @@
+#!/bin/sh
+
+echo "PATCHING in here `pwd`"
+
+builddir=${HERE}
+
+# Do patches
+#
+cd ${builddir}/AccessGrid || exit 1
+
+cat ${builddir}/debian/patches/patch-AccessGrid-hosting-ZSI-Server.py | patch -p0
+cat ${builddir}/debian/patches/patch-AccessGrid-Platform-unix-Config.py | patch -p0
+cat ${builddir}/debian/patches/patch-packaging-BuildSnapshot.py | patch -p0
+cat ${builddir}/debian/patches/patch-sharedapps-SharedBrowser-SharedBrowser.py | patch -p0
+cat ${builddir}/debian/patches/patch-AccessGrid-packaging-servicesToShip | patch -p0
+
+# Make "auto" default signal type
+#cat ${builddir}/debian/patches/patch-VideoProducerServiceH264.py | patch -p0
+cat ${builddir}/debian/patches/patch-VideoProducerService.py | patch -p0
+cat ${builddir}/debian/patches/patch-VideoService.py | patch -p0
+
+cat ${builddir}/debian/patches/patch-AudioService.build.py | patch -p0
+cat ${builddir}/debian/patches/patch-VideoConsumerService.build.py | patch -p0
+cat ${builddir}/debian/patches/patch-VideoProducerService.build.py | patch -p0
+cat ${builddir}/debian/patches/patch-VideoService.build.py | patch -p0
+
+
+cd ${builddir} || exit 1
+
+echo "Done PATCHING"
+

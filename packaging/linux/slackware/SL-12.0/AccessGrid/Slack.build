@@ -1,16 +1,18 @@
-name=AccessGrid
-version=3.1
-release=1
+name=accessgrid3.2
+version=3.2
+svnversion=6716
+release=0${svnversion}
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
-srcpkg=${name}-${version}-${release}.tar.gz
+srcpkg=AccessGrid-${version}-${release}.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 pkgname=${name}-${version}-${arch}-${release}.tgz
-XDG_MERGEDIR=etc/xdg/menus/gnome-applications-merged
+functions=/scratch/PKG/functions
+XDG_MERGEDIR=etc/xdg/menus/applications-merged
 
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
@@ -28,6 +30,10 @@ elif [ "${arch}" = "x86_64" ]; then
   SLKCFLAGS="-O2"
 fi
 
+# Add space separated list of build prerequsites (pkg names) here
+#
+prereqs="pkgtools python agzsi pyxml"
+
 here=`pwd`
 
 patch0=${here}/patches/patch-packaging-BuildSnapshot.py
@@ -38,11 +44,20 @@ patch10=${here}/patches/patch-services-node-AudioService-AudioService.build.py
 patch11=${here}/patches/patch-services-node-VideoService-VideoService.build.py
 patch12=${here}/patches/patch-services-node-VideoProducerService-VideoProducerService.build.py
 patch13=${here}/patches/patch-services-node-VideoConsumerService-VideoConsumerService.build.py
+patch14=${here}/patches/patch-services-node-VideoProducerServiceH264-VideoProducerServiceH264.py
+patch15=${here}/patches/patch-services-node-VideoServiceH264-VideoServiceH264.build.py
+
+
+patch19=${here}/patches/patch-packaging-servicesToShip
+
 
 patch20=${here}/patches/patch-xfce4-desktop-menu.xml
 
+
 PATH=/sbin:${PATH}
-. ../functions
+. ${functions}
+
+check_prereqs ${prereqs} || exit
 
 get_srcpkg ${srcpkg}
 
@@ -71,6 +86,11 @@ do_patch ${patch10}
 do_patch ${patch11}
 do_patch ${patch12}
 do_patch ${patch13}
+do_patch ${patch14}
+do_patch ${patch15}
+do_patch ${patch19}
+
+#do_patch ${patch20}
 
 echo -n "Post-patch sleep ..."
 sleep 5
@@ -134,7 +154,7 @@ cat <<EOF > ${pkgdir}/install/doinst.sh
 
 # Install SharedApplications
 #
-agpm3.py --post-install
+su -c "agpm3.py --post-install"
 
 # Menues for XFCE
 #
@@ -170,7 +190,10 @@ ${name}: This module provides the core components
 ${name}: to start participating in the Access Grid.
 ${name}:
 EOF
-chmod 0644 ${pkgdir}/install/slack-desc
+[ -f ${here}/slack-required ] && cp -p ${here}/slack-required ${pkgdir}/install/
+[ -f ${here}/slack-conflicts ] && cp -p ${here}/slack-conflicts ${pkgdir}/install/
+[ -f ${here}/slack-suggests ] && cp -p ${here}/slack-suggests ${pkgdir}/install/
+chmod 0644 ${pkgdir}/install/slack-*
 
 
 #
@@ -194,6 +217,41 @@ fi
 exit
 
 # Changelog
+#
+# CKW 20080716 pre release (svn version 6716) of 3.2
+#
+# CKW 20080627 pre release (svn version 6703) of 3.2
+#  - new upstream svn release (includes VideoServiceH264)
+#  - remove letter from version string i.e. 06703 not 0r6703
+#
+# CKW 20080624 pre release 0r6702 of 3.2
+#  - also remove agvcrlauncher dependency
+#    (will release later as a plugin)
+#  - use "su -c" to agpm3 command in doinst.sh
+#
+# CKW 20080512 release 6
+#  - added gsb-accessgrid metapackage to slack-required
+#    (gsb-complete minus wxGTK - we supply wxPythonGTK)
+#  - removed slack-conflicts
+#
+# CKW 20080511 (Mother's Day in Australia) release 5
+#  - change name to match Debian & Ubuntu format
+#  - add ImpressViewer patch to accommodate OO-2.4
+#  - add vpcscreen & agvcrlauncher as dependencies
+#  - added pyfeedparser (supplied with gsb-2.22) as alt to feedparser
+#    (feedparser no longer needed for SL-12.1)
+#  - add wxGTK to slack-conficts
+#
+# CKW 20080416 release 4
+#  - rebuild with slack-* files for slapt-get
+#  - change XDG_MERGEDIR to suit latest GSB
+#
+# CKW 20080318 release 3
+#  - Add H264 service packages
+#
+# CKW 20081001 release 2
+#  - patches for VenueServer
+#
 # CKW 20071221
 #  - 3.1 release
 #

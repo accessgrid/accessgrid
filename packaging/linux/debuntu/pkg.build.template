@@ -1,0 +1,96 @@
+#!/bin/sh
+
+here=`pwd`
+RET=0
+CLEANONLY=0
+DOCLEANUP=1
+USEEXISTING=0
+
+# Set as many of these as are needed
+#
+workdir=packagename-version
+site0=http://www.vislab.uq.edu.au/ag3/distfiles
+srcpkg0=packagename-version.tar.gz
+
+myid=`id |cut -d ' ' -f 1 |cut -d '=' -f2 |cut -d '(' -f 1`
+if [ ! "${myid}" = "0" ]; then
+  echo "Must be root to run this script"
+  RET=`expr $RET + 1`
+  exit $RET
+fi
+
+while [ $# -ne 0 ]; do
+  if [ "$1" = "noclean" ]; then
+    DOCLEANUP=0
+  elif [ "$1" = "existing" ]; then
+    USEEXISTING=1
+  elif [ "$1" = "clean" ]; then
+    CLEANONLY=1
+  else
+    echo "Unknown option: \"$1\""
+    echo "Exiting now"
+    RET=`expr $RET + 1`
+    exit $RET
+  fi
+  shift
+done
+
+[ -d debian ] || {
+    echo "Can't continue without a debian directory. Exiting now"
+    echo
+    RET=`expr $RET + 1`
+    exit $RET
+}
+
+# Clean up a bit
+cleanup () {
+  rm -rf ${workdir} *.gz *.bz2
+  rm -f packagename_*
+}
+
+# Create the build environment (unpack tarballs, insert debian directory)
+#
+generate() {
+  # Obtain source tarballs
+  wget ${site0}/${srcpkg0}
+  
+  
+  # Generate the source environment
+  # NORMALLY we expect the source tarball to create workdir, like this:
+  tar zxvf ${here}/${srcpkg0}
+
+  # However some need a workdir created first, like this
+  #mkdir ${workdir}
+  #( cd ${workdir} && tar zxvf ${here}/${srcpkg0} )
+  
+  cp -a debian ${workdir}/
+}
+
+if [ $CLEANONLY -ne 0 ]; then
+  cleanup
+  exit 0
+fi
+
+if [ $USEEXISTING -eq 0 ]; then
+  cleanup
+  generate
+fi
+
+# This is the actual building using fakeroot and pbuilder
+#
+( cd ${workdir} && dpkg-buildpackage -S -rfakeroot -us -uc )
+RET=`expr $RET + $?`
+( cd ${workdir} && pbuilder build ../*.dsc 2>&1 |tee ../op )
+RET=`expr $RET + $?`
+if [ $RET -gt 0 ]; then
+  echo "ERROR building. Exiting now!"
+  exit $RET
+fi
+
+
+if [ $DOCLEANUP -ne 0 ]; then
+  cleanup
+fi
+
+echo "OK"
+echo

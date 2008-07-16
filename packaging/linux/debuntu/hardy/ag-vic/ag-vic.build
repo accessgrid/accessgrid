@@ -1,0 +1,61 @@
+#!/bin/sh
+
+here=`pwd`
+CLEAN=1
+USEEXISTING=1
+
+myid=`id |cut -d ' ' -f 1 |cut -d '=' -f2 |cut -d '(' -f 1`
+if [ ! "${myid}" = "0" ]; then
+  echo "Must be root to run this script"
+  exit 1
+fi
+
+while [ $# -ne 0 ]; do
+  if [ "$1" = "noclean" ]; then
+    CLEAN=0
+  elif [ "$1" = "existing" ]; then
+    USEEXISTING=0
+  else
+    echo "Unknown option: \"$1\""
+    echo "Exiting now"
+    exit 2
+  fi
+  shift
+done
+
+[ -d debian ] || {
+    echo "Can't continue without a debian directory. Exiting now"
+    echo
+    exit 1
+}
+
+# Clean up a bit
+cleanup () {
+  rm -rf mmedia-r4215 *.gz *.bz2
+  rm -rf ag-vic2.8ucl_*
+}
+
+
+cleanup
+# Obtain source tarballs
+wget http://www.vislab.uq.edu.au/ag3/distfiles/x264-r650.tar.gz
+wget http://www.vislab.uq.edu.au/ag3/distfiles/mmedia-r4215.tar.gz
+wget http://www.vislab.uq.edu.au/ag3/distfiles/libswscale-r27137.tar.gz
+wget http://www.vislab.uq.edu.au/ag3/distfiles/ffmpeg-r13987.tar.gz
+
+
+# Generate the source environment
+tar zxvf mmedia-r4215.tar.gz
+( cd mmedia-r4215/vic && tar zxvf ${here}/ffmpeg-r13987.tar.gz )
+( cd mmedia-r4215/vic/ffmpeg && tar zxvf ${here}/libswscale-r27137.tar.gz )
+( cd mmedia-r4215/vic && tar zxvf ${here}/x264-r650.tar.gz )
+
+cp -a debian mmedia-r4215/
+
+( cd mmedia-r4215 && dpkg-buildpackage -S -rfakeroot -us -uc )
+( cd mmedia-r4215 && pbuilder build ../*.dsc 2>&1 |tee ../op )
+
+cleanup
+
+echo "OK"
+echo
