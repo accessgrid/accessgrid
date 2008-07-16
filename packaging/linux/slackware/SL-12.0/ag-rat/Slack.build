@@ -1,14 +1,16 @@
-name=ag-rat
-version=4.4.00-r4080
+name=agrat
+version=4.4.01
+svn_revision=r4215
 release=3
 arch=${ARCH:-`uname -m`}
-srcpkg=mmedia-r4080.tar.gz
+srcpkg=mmedia-${svn_revision}.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 pkgname=${name}-${version}-${arch}-${release}.tgz
+functions=/scratch/PKG/functions
 
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
@@ -30,21 +32,23 @@ elif [ "${arch}" = "s390" ]; then
   SLKCFLAGS="-O2"
   LIBDIR="/usr/lib"
   ARCH_CONFIGURE=""
-elif [ "${arch}" = "x86_64" ]; then
+elif [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
   SLKCFLAGS="-O2"
   LIBDIR="/usr/lib64"
   ARCH_CONFIGURE="--libdir=$LIBDIR"
 fi
 
+prereqs="autoconf gcc tcl tk"
+
 here=`pwd`
 patch0=${here}/patches/patch-rat-configure.in
-patch1=${here}/patches/patch-rat-64bit
-patch2=${here}/patches/patch-common-64bit
 
 PATH=/sbin:${PATH}
-. ../functions
+. ${functions}
 
-get_srcpkg ${srcpkg}
+check_prereqs ${prereqs} || exit
+
+get_srcpkg ${srcpkg} || exit
 
 
 #
@@ -57,21 +61,23 @@ mkdir -p ${pkgdir}
 #
 cd ${buildroot}
 tar zxvf ${here}/${srcpkg}
-mv mmedia-r4080 ${name}-${version}
+mv mmedia-${svn_revision} ${name}-${version}
 cd ${builddir}
 
 # Apply patches
 # like this: do_patch ${patch0}
 #
 do_patch ${patch0}
-do_patch ${patch1}
-do_patch ${patch2}
 
+echo "Post patch sleep ..."
+sleep 3
 # Build
-(cd common && ./configure && make) || exit 1
-(cd tcl-8.0/unix && ./configure && make) || exit 1
-(cd tk-8.0/unix && ./configure && make) || exit 1
-(cd rat && autoconf -f && ./configure && make) || exit 1
+(cd common && ./configure --enable-ipv6 && make) || exit 1
+(cd rat \
+&& autoconf -v -f \
+&& ./configure \
+	--enable-ipv6 \
+&& make) || exit 1
 
 # Install
 cd ${builddir}
@@ -79,11 +85,12 @@ install -d ${pkgdir}/usr/bin
 install -d ${pkgdir}/usr/share/man/man1
 install -m 755 \
     rat/rat \
-    rat/rat-4.4.00 \
-    rat/rat-4.4.00-ui \
-    rat/rat-4.4.00-media \
-    rat/rat-4.4.00-kill \
+    rat/rat-4.4.01 \
+    rat/rat-4.4.01-ui \
+    rat/rat-4.4.01-media \
+    rat/rat-4.4.01-kill \
     ${pkgdir}/usr/bin/
+(cd ${pkgdir}/usr/bin/ && cp -p rat-4.4.01-kill rat-kill)
 install -m 644 rat/man/man1/rat.1 ${pkgdir}/usr/share/man/man1/
 
 
@@ -98,6 +105,10 @@ cp COPYRIGHT INSTALL.TXT MODS README README.HPUX10 README.IXJ \
     README.voxlet VERSION \
 	${docdir}
 
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+
 
 # Package it 
 #
@@ -106,13 +117,14 @@ cat <<EOF >${pkgdir}/install/slack-desc
 ${name}: ${name}-${version}
 ${name}:
 ${name}: AccessGrid version of rat audio tool
-${name}: using ucl svn revision 4059 versions of
-${name}: rat and common, tcl-8.0, tk-8.0 libraries
+${name}: using ucl svn revision ${svn_revision} versions of
+${name}: rat and common, but system tcl & tk libraries
 ${name}:
 EOF
-chmod 0644 ${pkgdir}/install/slack-desc
-
-cp ${here}/Slack.build ${pkgdir}/install/
+[ -f ${here}/slack-required ] && cp -p ${here}/slack-required ${pkgdir}/install/
+[ -f ${here}/slack-conflicts ] && cp -p ${here}/slack-conflicts ${pkgdir}/install/
+[ -f ${here}/slack-suggests ] && cp -p ${here}/slack-suggests ${pkgdir}/install/
+chmod 0644 ${pkgdir}/install/slack-*
 
 #
 #
@@ -135,6 +147,18 @@ fi
 
 
 # Changelog
+#
+# 20080715 CKW release 3
+#  - use updated svn version r4215
+#
+# 20080625 CKW release 2 of 4.4.01
+#  - use UCL svn version r4189
+#
+# 20080416 CKW release 1 of 4.4.01
+#  - use svn version r4126
+#  - use system tcl, tk
+#  - change package name to agrat
+#  - add slack-* files for slapt-get
 #
 # 20070721 CKW release 3 using UCL svn version r4080
 #  - common & rat patched to fix 64 bit issues
