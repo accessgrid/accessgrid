@@ -2,7 +2,7 @@
 name = VenueVNC
 mimetype = application/x-ag-venuevnc
 extension = venuevnc
-files = VenueVNCClient.py
+files = VenueVNCClient.py, vncviewer.exe
 startable = 0
 
 [commands]
