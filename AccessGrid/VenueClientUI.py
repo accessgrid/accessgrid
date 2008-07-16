@@ -1709,7 +1709,6 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
 
 
     def ManageNodeCB(self, event):
-        
         if self.nodeManagementFrame:
             self.nodeManagementFrame.Raise()
         else:
@@ -1727,7 +1726,10 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
                 log.exception("VenueClientUI.ManageNodeCB: Can not attach to node %s"%self.venueClient.GetNodeServiceUri())
                               
             if self.nodeManagementFrame.Connected(): # Right node service uri
-                self.nodeManagementFrame.UpdateUI()
+                try:
+                    self.nodeManagementFrame.UpdateUI()
+                except:
+                    log.exception('Error updating UI')
                 self.nodeManagementFrame.Show(True)
 
             else: # Not right node service uri
