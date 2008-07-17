@@ -1,0 +1,62 @@
+#!/usr/bin/make -f
+
+include /usr/share/dpatch/dpatch.make
+
+package = accessgrid3.2
+pkgpath = debian/${package}
+docdir = debian/tmp/usr/share/doc/$(package)
+here=`pwd`
+pkgdir = ${here}/$(pkgpath)
+pythonversion="2.5"
+
+
+
+build: build-stamp
+
+build-stamp: patch-stamp
+	$(checkdir)
+	( export AGBUILDROOT=$(here) && \
+	cd AccessGrid/packaging && \
+	python ./BuildSnapshot.py --no-checkout --dist=debian --pythonversion=${pythonversion} )
+	touch build-stamp
+
+clean:	unpatch
+	dh_testdir
+	rm -f build-stamp
+	dh_clean
+
+binary-indep:	build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+
+	install -d $(pkgpath)/DEBIAN $(docdir)
+	install -m 755 debian/postinst debian/prerm $(pkgpath)/DEBIAN
+
+	HERE=$(here) PKGDIR=$(pkgdir) PYTHONVERSION=${pythonversion} debian/installag.sh
+
+
+	dh_pysupport
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+
+
+binary-arch:	build
+
+
+define checkdir
+	test -f AccessGrid/AccessGrid/Toolkit.py -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

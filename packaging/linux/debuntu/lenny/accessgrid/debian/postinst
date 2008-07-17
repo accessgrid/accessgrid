@@ -1,0 +1,9 @@
+#!/bin/sh
+
+/usr/sbin/update-python-modules -f
+
+if [ -x /usr/bin/agpm3.py ]; then
+  echo "POSTINST: agpm3.py --post-install"
+  /usr/bin/agpm3.py --post-install
+fi
+

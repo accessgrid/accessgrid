@@ -1,0 +1,4 @@
+#!/bin/sh
+
+/usr/sbin/update-python-modules -f
+

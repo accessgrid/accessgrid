@@ -1,0 +1,28 @@
+Source: accessgrid3.2
+Section: AccessGrid
+Priority: optional
+Maintainer: Chris Willing <c.willing@uq.edu.au>
+Build-Depends: debhelper (>= 5.0.38), python-support (>= 0.4), dpatch,
+ python-all-dev, python-setuptools, python-agzsi
+XS-Python-Version: 2.4
+Standards-Version: 3.7.2
+
+Package: accessgrid3.2
+Architecture: all
+Depends: ${python:Depends}, python-feedparser, python-xml,
+ python-zopeinterface, python-twisted-core, python-agzsi,
+ python-bajjer (>= 0.2.5-4),
+ agcommon, python-wxgtk2.6, python-dbus, python-avahi,
+ python-m2crypto (>= 0.17), tightvncserver, xtightvncviewer,
+ ag-vic2.8ucl, ag-rat, wxmozilla, quickbridge,
+ vpcscreen, agvcrlauncher3.1
+Conflicts: accessgrid, accessgrid3, accessgrid3.1
+Replaces: accessgrid, accessgrid3, accessgrid3.1
+Description: AccessGrid Collaboration Toolkit
+ The Access Grid Toolkit provides the necessary components for
+ users to participate in Access Grid based collaborations,
+ and also for developers to work on network services,
+ applications services and node services to extend the
+ functionality of the Access Grid.
+     This module provides the core components
+ to start participating in the Access Grid.

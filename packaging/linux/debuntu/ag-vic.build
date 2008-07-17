@@ -1,11 +1,13 @@
+#!/bin/sh
 
+here=`pwd`
 RET=0
 CLEANONLY=0
 DOCLEANUP=1
 USEEXISTING=0
 
-PKGNAME=
-PKGVERSION=
+PKGNAME=ag-vic2.8ucl
+PKGVERSION=1.4.0r4215
 
 # Ensure some basics are set
 [ -z ${PKGNAME} ] && { echo "PKGNAME needs to be set. Exiting now!"
@@ -19,9 +21,12 @@ PKGVERSION=
 
 # Set as many of these as are needed
 #
-[ -z ${workdir} ] && workdir=${PKGNAME}-${PKGVERSION}
-[ -z ${site0} ] && site0=http://www.vislab.uq.edu.au/ag3/distfiles
-[ -z ${srcpkg0} ] && srcpkg0=${PKGNAME}-${PKGVERSION}.tar.gz
+workdir=mmedia-r4215
+site0=http://www.vislab.uq.edu.au/ag3/distfiles
+srcpkg0=x264-r650.tar.gz
+srcpkg1=${workdir}.tar.gz
+srcpkg2=libswscale-r27137.tar.gz
+srcpkg3=ffmpeg-r13987.tar.gz
 
 myid=`id |cut -d ' ' -f 1 |cut -d '=' -f2 |cut -d '(' -f 1`
 if [ ! "${myid}" = "0" ]; then
@@ -56,7 +61,7 @@ done
 # Clean up a bit
 cleanup () {
   rm -rf ${workdir} *.gz *.bz2
-  rm -f ${PKGNAME}_*
+  rm -rf ${PKGNAME}_*
 }
 
 # Create the build environment (unpack tarballs, insert debian directory)
@@ -64,16 +69,16 @@ cleanup () {
 generate() {
   # Obtain source tarballs
   wget ${site0}/${srcpkg0}
+  wget ${site0}/${srcpkg1}
+  wget ${site0}/${srcpkg2}
+  wget ${site0}/${srcpkg3}
   
   
   # Generate the source environment
-  #
-  # NORMALLY the tarball creates the build directory, so just do
-  tar zxvf ${here}/${srcpkg0}
-
-  # But others need a directory created first, like:
-  # mkdir ${workdir}
-  # ( cd ${workdir} && tar zxvf ${here}/${srcpkg0} )
+  tar zxvf ${srcpkg1}
+  ( cd ${workdir}/vic && tar zxvf ${here}/${srcpkg3} )
+  ( cd ${workdir}/vic/ffmpeg && tar zxvf ${here}/${srcpkg2} )
+  ( cd ${workdir}/vic && tar zxvf ${here}/${srcpkg0} )
   
   cp -a debian ${workdir}/
 }
@@ -88,6 +93,7 @@ if [ $USEEXISTING -eq 0 ]; then
   generate
 fi
 
+exit
 # This is the actual building using fakeroot and pbuilder
 #
 ( cd ${workdir} && dpkg-buildpackage -S -rfakeroot -us -uc )

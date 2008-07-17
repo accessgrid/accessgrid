@@ -4,8 +4,8 @@ CLEANONLY=0
 DOCLEANUP=1
 USEEXISTING=0
 
-PKGNAME=
-PKGVERSION=
+PKGNAME=accessgrid3.2
+PKGVERSION=3.2
 
 # Ensure some basics are set
 [ -z ${PKGNAME} ] && { echo "PKGNAME needs to be set. Exiting now!"
@@ -21,7 +21,7 @@ PKGVERSION=
 #
 [ -z ${workdir} ] && workdir=${PKGNAME}-${PKGVERSION}
 [ -z ${site0} ] && site0=http://www.vislab.uq.edu.au/ag3/distfiles
-[ -z ${srcpkg0} ] && srcpkg0=${PKGNAME}-${PKGVERSION}.tar.gz
+[ -z ${srcpkg0} ] && srcpkg0=AccessGrid-3.2-06721.tar.gz
 
 myid=`id |cut -d ' ' -f 1 |cut -d '=' -f2 |cut -d '(' -f 1`
 if [ ! "${myid}" = "0" ]; then
@@ -67,13 +67,8 @@ generate() {
   
   
   # Generate the source environment
-  #
-  # NORMALLY the tarball creates the build directory, so just do
-  tar zxvf ${here}/${srcpkg0}
-
-  # But others need a directory created first, like:
-  # mkdir ${workdir}
-  # ( cd ${workdir} && tar zxvf ${here}/${srcpkg0} )
+  mkdir ${workdir}
+  ( cd ${workdir} && tar zxvf ${here}/${srcpkg0} )
   
   cp -a debian ${workdir}/
 }
