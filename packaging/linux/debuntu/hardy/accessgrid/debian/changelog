@@ -1,3 +1,9 @@
+accessgrid3.2 (3.2-0r6721) hardy; urgency=low
+
+  * Official beta version 3.2 using svn revision 6721
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 17 Jul 2008 10:03:19 +1000
+
 accessgrid3.2 (3.2-0r6716) hardy; urgency=low
 
   * Pre beta 3.2 test version using svn revision 6716

@@ -1,6 +1,6 @@
 name=accessgrid3.2
 version=3.2
-svnversion=6716
+svnversion=6721
 release=0${svnversion}
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
@@ -217,6 +217,8 @@ fi
 exit
 
 # Changelog
+#
+# CKW 20080717 beta release of 3.2 (svn version 6721)
 #
 # CKW 20080716 pre release (svn version 6716) of 3.2
 #

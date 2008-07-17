@@ -10,7 +10,7 @@ USEEXISTING=0
 #
 workdir=accessgrid3.2-3.2
 site0=http://www.vislab.uq.edu.au/ag3/distfiles
-srcpkg0=AccessGrid-3.2-06716.tar.gz
+srcpkg0=AccessGrid-3.2-06721.tar.gz
 
 myid=`id |cut -d ' ' -f 1 |cut -d '=' -f2 |cut -d '(' -f 1`
 if [ ! "${myid}" = "0" ]; then
