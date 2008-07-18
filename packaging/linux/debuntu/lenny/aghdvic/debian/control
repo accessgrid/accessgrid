@@ -1,0 +1,20 @@
+Source: aghdvic
+Section: AccessGrid
+Priority: optional
+Maintainer: Chris Willing <c.willing@uq.edu.au>
+Build-Depends: autoconf, libx11-dev, libfreetype6-dev, libxext-dev,
+ tk8.4-dev, libxvmc-dev, build-essential, libssl-dev,
+ libiec61883-dev, libgl1-mesa-dev, zip
+Standards-Version: 3.7.2
+
+Package: aghdvic
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, libiec61883-0, libxvmc1
+Provides: aghdvic
+Conflicts: ag-vic, ag-hdvic, hdvideoservices
+Replaces: ag-vic, ag-hdvic, hdvideoservices
+Description: UQVislab version of vic video tool
+ This is the UQVislab version of vic, svn revision 117,
+ with H263, DV and HDV support.
+ .
+ Packaged as Access Grid service packages

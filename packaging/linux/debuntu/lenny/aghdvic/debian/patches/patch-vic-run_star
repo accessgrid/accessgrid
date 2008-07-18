@@ -1,0 +1,27 @@
+--- vic/runDV.orig	2007-08-13 14:38:10.000000000 +1000
++++ vic/runDV	2007-08-14 15:08:38.388779000 +1000
+@@ -1,2 +1,2 @@
+ #!/bin/sh
+-exec ./vic -z 3 -g -h 15 -B 80000 -b 38000 -R 28 -f LavcH263 "$@"
++exec vic -z 3 -g -h 15 -B 80000 -b 38000 -R 28 -f LavcH263 "$@"
+--- vic/runDVslow.orig	2007-08-13 14:38:08.000000000 +1000
++++ vic/runDVslow	2007-08-14 15:10:20.694363000 +1000
+@@ -1,2 +1,2 @@
+ #!/bin/sh
+-exec ./vic -z 3 -g -h 15 -B 80000 -b 38000 -R 28 -f LavcH263 -e 3000x55x7000x12000 "$@"
++exec vic -z 3 -g -h 15 -B 80000 -b 38000 -R 28 -f LavcH263 -e 3000x55x7000x12000 "$@"
+--- vic/runHDV.orig	2007-08-13 14:38:10.000000000 +1000
++++ vic/runHDV	2007-08-14 15:11:46.120723000 +1000
+@@ -1,5 +1,5 @@
+ #!/bin/sh
+-exec ./vic -z 3 -g -h 21 -B 80000 -b 37000 -R 28 -f LavcH263 "$@"
++exec vic -z 3 -g -h 21 -B 80000 -b 37000 -R 28 -f LavcH263 "$@"
+ 
+ # this one is for demo quality, smooth playback with single, or few, streams
+ #./vic -E -W 500 -z 3 -g -h 21 -B 80000 -b 37000 -R 28 -f LavcH263 $* 
+--- vic/runHDVslow.orig	2007-08-13 14:38:10.000000000 +1000
++++ vic/runHDVslow	2007-08-14 15:13:33.136136000 +1000
+@@ -1,2 +1,2 @@
+ #!/bin/sh
+-exec ./vic -z 3 -g -h 21 -B 80000 -b 37000 -R 28 -f LavcH263 -e 3000x55x7000x12000 "$@"
++exec vic -z 3 -g -h 21 -B 80000 -b 37000 -R 28 -f LavcH263 -e 3000x55x7000x12000 "$@"

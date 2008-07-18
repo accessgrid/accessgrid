@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "POSTINST: updating python modules ... "
+/usr/sbin/update-python-modules -f
+
+# Remove left over from previous installation
+rm -f /usr/lib/python2.4/site-packages/agversion.pyc
+
+if [ -x /usr/bin/agpm3.py ]; then
+  echo "POSTINST: agpm3.py --post-install"
+  /usr/bin/agpm3.py --post-install
+fi
+

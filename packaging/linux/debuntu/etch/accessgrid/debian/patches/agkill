@@ -1,0 +1,23 @@
+#!/bin/sh
+
+
+if [ $# -gt 0 ]; then
+  TARGET=$1
+else
+  TARGET=python
+fi
+echo "Target: ${TARGET}"
+
+for i in `ps alx | grep ${TARGET} | grep -v grep | awk ' $4 == 1 { print $3 }'`
+do
+  echo "kill -HUP $i"
+  kill -KILL $i
+done
+for i in `ps alx | grep ${TARGET} | grep -v grep | awk ' $4 == 1 { print $3 }'`
+do
+  echo "kill -TERM $i"
+  kill -TERM $i
+done
+
+#/usr/bin/setpwc -r
+

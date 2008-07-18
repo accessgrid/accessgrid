@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo -n "POSTRM: updating python modules ... "
+/usr/sbin/update-python-modules -f
+echo "DONE"
+
