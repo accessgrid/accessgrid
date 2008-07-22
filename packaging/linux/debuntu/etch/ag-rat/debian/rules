@@ -1,0 +1,70 @@
+#!/usr/bin/make -f
+
+package = ag-rat
+pkgpath = debian/tmp
+docdir = debian/tmp/usr/share/doc/$(package)
+here=`pwd`
+pkgdir = ${here}/$(pkgpath)
+
+include /usr/share/dpatch/dpatch.make
+
+
+build: patch-stamp build-stamp
+build-stamp:
+	$(checkdir)
+	(cd common && ./configure --enable-ipv6 && make)
+	(cd rat && ./configure \
+		--with-tcltk-version=8.4 \
+		--with-tclinc=/usr \
+		--with-tkinc=/usr/include/tcl8.4 \
+		--enable-ipv6 && \
+	make)
+	touch build-stamp
+
+clean:	unpatch
+	$(checkdir)
+	rm -f build
+
+
+binary-arch:	checkroot build-stamp
+	$(checkdir)
+	rm -rf $(pkgpath)
+	install -d $(pkgpath)/DEBIAN $(docdir)
+	install -m 644 rat/COPYRIGHT rat/INSTALL.TXT \
+		rat/README* rat/VERSION rat/MODS \
+		$(docdir)/
+	install -m 755 debian/postinst debian/prerm $(pkgpath)/DEBIAN
+	install -d $(pkgpath)/usr/bin
+	install -d $(pkgpath)/usr/share/man/man1
+	install -m 755 \
+		rat/rat \
+		rat/rat-4.4.01 \
+		rat/rat-4.4.01-ui \
+		rat/rat-4.4.01-media \
+		rat/rat-4.4.01-kill \
+		$(pkgpath)/usr/bin/
+	( cd $(pkgpath)/usr/bin/ && cp -p rat-4.4.01-kill rat-kill )
+	install -m 644 rat/man/man1/rat.1 $(pkgpath)/usr/share/man/man1/
+	dpkg-shlibdeps ${pkgdir}/usr/bin/rat-*
+	strip --strip-unneeded ${pkgdir}/usr/bin/rat-*
+	dpkg-gencontrol -isp
+	chown -R root:root $(pkgpath)
+	chmod -R u+w,go=rX $(pkgpath)
+	dpkg --build $(pkgpath) ..
+
+
+
+binary-indep:	checkroot build
+
+
+define checkdir
+	test -f rat/VERSION -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot
