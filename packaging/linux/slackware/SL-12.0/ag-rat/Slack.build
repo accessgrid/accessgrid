@@ -1,6 +1,6 @@
 name=agrat
 version=4.4.01
-svn_revision=r4215
+svn_revision=r4229
 release=3
 arch=${ARCH:-`uname -m`}
 srcpkg=mmedia-${svn_revision}.tar.gz
@@ -148,8 +148,8 @@ fi
 
 # Changelog
 #
-# 20080715 CKW release 3
-#  - use updated svn version r4215
+# 20080726 CKW release 3
+#  - use updated svn version r4229
 #
 # 20080625 CKW release 2 of 4.4.01
 #  - use UCL svn version r4189
@@ -166,3 +166,14 @@ fi
 # 20070504 CKW First release
 #  - svn checkout http://mediatools.cs.ucl.ac.uk/repos/mmedia/rat/trunk rat
 #
+###################################
+# Retrieve from SVN with:
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/vic/branches/mpeg4 vic
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/rat/trunk rat
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/common/trunk common
+#
+# Don't need these now - use system tcl, tk
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/tcl-8.0/trunk tcl-8.0
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/tk-8.0/trunk tk-8.0
+###################################
+

@@ -1,15 +1,18 @@
-name=AccessGrid
-version=3.1
-release=1
+name=accessgrid3.2
+version=3.2
+svnversion=6721
+release=0${svnversion}
 arch=${ARCH:-`uname -m`}
 prefix=${PREFIX:-/usr}
-srcpkg=${name}-${version}-${release}.tar.gz
+srcpkg=AccessGrid-${version}-${release}.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 pkgname=${name}-${version}-${arch}-${release}.tgz
+functions=/scratch/PKG/functions
+XDG_MERGEDIR=etc/xdg/menus/applications-merged
 
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
@@ -27,6 +30,10 @@ elif [ "${arch}" = "x86_64" ]; then
   SLKCFLAGS="-O2"
 fi
 
+# Add space separated list of build prerequsites (pkg names) here
+#
+prereqs="pkgtools python agzsi pyxml"
+
 here=`pwd`
 
 patch0=${here}/patches/patch-packaging-BuildSnapshot.py
@@ -38,13 +45,18 @@ patch11=${here}/patches/patch-services-node-VideoService-VideoService.build.py
 patch12=${here}/patches/patch-services-node-VideoProducerService-VideoProducerService.build.py
 patch13=${here}/patches/patch-services-node-VideoConsumerService-VideoConsumerService.build.py
 
+patch14=${here}/patches/patch-services-node-VideoProducerServiceH264-VideoProducerServiceH264.py
+patch15=${here}/patches/patch-services-node-VideoServiceH264-VideoServiceH264.build.py
+
+patch19=${here}/patches/patch-packaging-servicesToShip
 patch20=${here}/patches/patch-xfce4-desktop-menu.xml
 
 PATH=/sbin:${PATH}
-. ../functions
+. ${functions}
+
+check_prereqs ${prereqs} || exit
 
 get_srcpkg ${srcpkg}
-
 
 #
 #
@@ -70,6 +82,10 @@ do_patch ${patch10}
 do_patch ${patch11}
 do_patch ${patch12}
 do_patch ${patch13}
+
+do_patch ${patch14}
+do_patch ${patch15}
+do_patch ${patch19}
 
 echo -n "Post-patch sleep ..."
 sleep 5
@@ -99,9 +115,9 @@ cp -R SharedApplications ${pkgdir}/etc/AccessGrid3
 cp -R NodeServices ${pkgdir}/etc/AccessGrid3
 
 # Gnome main menu
-mkdir -p ${pkgdir}/etc/xdg/menus/applications-merged
+mkdir -p ${pkgdir}/${XDG_MERGEDIR}
 cp ${builddir}/AccessGrid/packaging/linux/xdg/AccessGrid3.menu \
-	${pkgdir}/etc/xdg/menus/applications-merged/
+	${pkgdir}/${XDG_MERGEDIR}/
 # KDE main menu
 mkdir -p ${pkgdir}/opt/kde/etc/xdg/menus/applications-merged
 cp ${builddir}/AccessGrid/packaging/linux/xdg/AccessGrid3.menu \
@@ -133,7 +149,7 @@ cat <<EOF > ${pkgdir}/install/doinst.sh
 
 # Install SharedApplications
 #
-agpm3.py --post-install
+su -c "agpm3.py --post-install"
 
 # Menues for XFCE
 #
@@ -169,7 +185,10 @@ ${name}: This module provides the core components
 ${name}: to start participating in the Access Grid.
 ${name}:
 EOF
-chmod 0644 ${pkgdir}/install/slack-desc
+[ -f ${here}/slack-required ] && cp -p ${here}/slack-required ${pkgdir}/install/
+[ -f ${here}/slack-conflicts ] && cp -p ${here}/slack-conflicts ${pkgdir}/install/
+[ -f ${here}/slack-suggests ] && cp -p ${here}/slack-suggests ${pkgdir}/install/
+chmod 0644 ${pkgdir}/install/slack-*
 
 
 #
@@ -193,6 +212,8 @@ fi
 exit
 
 # Changelog
+#
+# CKHW 20080721 beta release of 3.2 (svn version 6721)
 #
 # CKW 20071221
 #  - 3.1 release

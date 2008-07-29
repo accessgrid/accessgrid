@@ -1,3 +1,9 @@
+ag-rat (4.4.01-2) lenny; urgency=low
+
+  * SVN revision 4229
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 28 Jul 2008 16:51:27 +1000
+
 ag-rat (4.4.01-1) lenny; urgency=low
 
   * SVN revision 4126

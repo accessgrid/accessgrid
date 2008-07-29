@@ -21,7 +21,7 @@ PKGVERSION=4.4.01
 
 # Set as many of these as are needed
 #
-workdir=${WORKDIR:-mmedia-r4215}
+workdir=${WORKDIR:-mmedia-r4229}
 site0=${SITE0:-http://www.vislab.uq.edu.au/ag3/distfiles}
 srcpkg0=${SRCPKG0:-${workdir}.tar.gz}
 

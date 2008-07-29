@@ -1,0 +1,27 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## rat-process.c.dpatch by  <chris@localhost>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad mmedia-r4229~/rat/process.c mmedia-r4229/rat/process.c
+--- mmedia-r4229~/rat/process.c	2008-07-26 12:53:31.000000000 +1000
++++ mmedia-r4229/rat/process.c	2008-07-29 22:07:46.443536750 +1000
+@@ -99,7 +99,7 @@
+                 perror("Cannot fork");
+                 abort();
+         } else if (*pid == 0) {
+-                char **args = xmalloc((2 * num_tokens) + argc + 4);
++                char *args[32];
+                 int numargs=0;
+ 
+                 args[numargs++] = proc_name;
+@@ -116,7 +116,6 @@
+                 execvp( proc_name, args );
+ 	
+                 perror("Cannot execute subprocess");
+-                xfree(args);
+             	/* Note: this MUST NOT be exit() or abort(), since they affect the standard */
+   	        /* IO channels in the parent process (fork duplicates file descriptors, but */
+                 /* they still point to the same underlying file).                           */

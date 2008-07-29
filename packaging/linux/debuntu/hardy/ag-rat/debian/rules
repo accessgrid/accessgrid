@@ -13,13 +13,7 @@ build: patch-stamp build-stamp
 build-stamp:
 	$(checkdir)
 	(cd common && ./configure --enable-ipv6 && make)
-	(cd rat && \
-	./configure \
-		--with-tcltk-version=8.4 \
-		--with-tclinc=/usr/include/tcl \
-		--with-tkinc=/usr/include/tk \
-		--enable-ipv6 && \
-	make)
+	(cd rat && ./configure --enable-ipv6 && make)
 	touch build-stamp
 
 clean:	unpatch

@@ -1,6 +1,23 @@
---- packaging/BuildSnapshot.py.orig	2007-06-27 13:11:56.586382000 +1000
-+++ packaging/BuildSnapshot.py	2007-06-27 13:23:10.726532000 +1000
-@@ -213,116 +213,16 @@
+--- packaging/BuildSnapshot.py.orig	2008-06-21 13:35:30.000000000 +1000
++++ packaging/BuildSnapshot.py	2008-07-21 22:41:49.849057475 +1000
+@@ -29,11 +29,11 @@
+ 
+ # - Perform general checks
+ #   - setuptools
+-try:
+-    import setuptools
+-except ImportError:
+-    print '* * Error: Required Python module "setuptools" not found'
+-    sys.exit(1)
++#try:
++#    import setuptools
++#except ImportError:
++#    print '* * Error: Required Python module "setuptools" not found'
++#    sys.exit(1)
+ 
+ #   - zsi
+ try:
+@@ -241,116 +241,16 @@
  
  os.environ['PYTHONPATH'] = nppath
  
@@ -119,7 +136,7 @@
  
  
  # Change to packaging dir to build packages
-@@ -365,22 +265,9 @@
+@@ -393,21 +293,8 @@
      sys.exit(1)
  
  
@@ -130,8 +147,8 @@
 -if ret:
 -    print '%s failed with %d; exiting' % (cmd,ret)
 -    sys.exit(1)
+-
 +# media tools are built separately
- 
  
 -cmd = '%s %s %s %s'%(sys.executable, 'BuildVic.py', SourceDir, os.path.join(DestDir,"bin"))
 -print "\n ********* cmd = ",cmd
@@ -139,11 +156,10 @@
 -if ret:
 -    print '%s failed with %d; exiting' % (cmd,ret)
 -    sys.exit(1)
--
+ 
  # Fix shared app *.py files before they're packaged
  #
- print "Fixing shared app *.py files before they're packaged"
-@@ -415,29 +302,6 @@
+@@ -443,29 +330,6 @@
  
  file_list = os.listdir(SourceDir)
  
