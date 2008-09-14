@@ -164,7 +164,7 @@ class AGTkConfig:
                     log.exception("Couldn't make plugin dir.")
 
         # Check the installation
-        if self.pluginDir is not None and not os.path.exists(self.appDir):
+        if self.pluginDir is not None and not os.path.exists(self.pluginDir):
             raise IOError("AGTkConfig: plugin dir does not exist %s." % self.pluginDir)
 
         return str(self.pluginDir)
