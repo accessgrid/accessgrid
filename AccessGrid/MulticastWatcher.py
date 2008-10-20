@@ -131,7 +131,7 @@ class MulticastWatcher:
             self.__Listen()
             self.sock.close()
             self.sock = None
-        return self.mcastStatus.isSet()
+        return int(self.mcastStatus.isSet())
         
     def SetHostPort(self,host,port):
         self.host = host
