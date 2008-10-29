@@ -3544,10 +3544,6 @@ class VenueListPanel(wx.SashLayoutWindow):
                 
         self.__Layout()
         self.__AddEvents()
-        self.__SetProperties()
-
-    def __SetProperties(self):
-        font = wx.Font(12, wx.SWISS, wx.NORMAL, wx.NORMAL, 0, "verdana")
                 
     def __AddEvents(self):
         wx.EVT_SIZE(self,self.__OnSize)
