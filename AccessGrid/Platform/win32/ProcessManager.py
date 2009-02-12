@@ -44,6 +44,13 @@ class ProcessManager:
         @type arglist: list of strings
         @type detached: integer
         """
+        
+        if command.find(" ") != -1: 
+            # 
+            # If there are spaces, quote the command
+            # 
+            command = '"' + command + '"'
+              
         cmdline = command
         for arg in arglist:
             arg = str(arg)
