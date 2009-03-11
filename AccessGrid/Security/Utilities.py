@@ -38,5 +38,6 @@ def IsExpired(x509):
     before = time.mktime(before_tuple) - time.timezone
     after = time.mktime(after_tuple) - time.timezone
     if now < before or now > after:
-        return 0
+        return 1
 
+    return 0
