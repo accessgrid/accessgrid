@@ -48,10 +48,9 @@ log = Log.GetLogger('ServiceDiscovery')
 
 haveAvahi = False
 haveBonjour = False
-try:
-    import avahi
+if os.path.exists('/usr/bin/avahi-publish-service'):
     haveAvahi = True
-except ImportError,e:
+else:
     try:
         if IsWindows():
             # Hack to avoid warning dialog on Windows in absence of Bonjour libs
@@ -266,32 +265,38 @@ if haveAvahi:
             if port == 0:
                 raise PublisherError('Service registered with invalid port %d' % (port,))
 
+            devnull = file(os.devnull, "r+")
+
             # Create a text record
             txtRecordTxt = 'url=' + url
-            txtRecord = avahi.string_array_to_txt_array([txtRecordTxt])
-
-            bus = dbus.SystemBus()
-            server = dbus.Interface(bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER),
-                                    avahi.DBUS_INTERFACE_SERVER)
-            self.group = dbus.Interface(bus.get_object(avahi.DBUS_NAME, server.EntryGroupNew()),
-                                        avahi.DBUS_INTERFACE_ENTRY_GROUP)
 
             self.registerFlag = 0
-            self.group.AddService(avahi.IF_UNSPEC,
-                                  avahi.PROTO_UNSPEC,
-                                  dbus.UInt32(0),
-                                  serviceName,
-                                  regtype,
-                                  'local.',
-                                  "",
-                                  dbus.UInt16(port),
-                                  txtRecord)
-            self.group.Commit()
-            self.registerFlag = 1
+            self.subproc = subprocess.Popen(['/usr/bin/avahi-publish-service',
+                                             serviceName,
+                                             regtype,
+                                             str(port),
+                                             txtRecordTxt],
+                                            preexec_fn=self.__ProcessDeathSig,
+                                            stderr=devnull,
+                                            bufsize=1,
+                                            close_fds=True)
+            if self.subproc :
+                self.registerFlag = 1
+                self.subproc.wait()
 
+        def __ProcessDeathSig(self):
+            """
+            Set up SIGINT to be the signal for the child when the parent dies.
+            """
+            import ctypes
+
+            PR_SET_PDEATHSIG = 1
+            libc = ctypes.CDLL('libc.so.6')
+            libc.prctl(PR_SET_PDEATHSIG, signal.SIGINT , 0, 0, 0)
+            
         def Stop(self):
-            if not self.group is None:
-                self.group.Free()
+            if self.subproc :
+                os.kill(self.subproc.pid, signal.SIGINT)
 
         def IsRegistered(self):
             return self.registerFlag
@@ -354,7 +359,7 @@ if haveAvahi:
                     self.__RemoveService(line[1:])
 
         def Stop(self):
-            os.kill(self.subproc.pid, signal.SIGHUP)
+            os.kill(self.subproc.pid, signal.SIGINT)
             self.running = 0
 
         def IsRunning(self):
