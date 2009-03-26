@@ -359,7 +359,7 @@ if haveAvahi:
                     self.__RemoveService(line[1:])
 
         def Stop(self):
-            os.kill(self.subproc.pid, signal.SIGINT)
+            os.kill(self.subproc.pid, signal.SIGHUP)
             self.running = 0
 
         def IsRunning(self):
