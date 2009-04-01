@@ -199,7 +199,7 @@ class vncServer:
                     # instead of twm if it is available 
                     windowmanager = "twm"
                     if os.path.exists("/usr/X11R6/bin/mwm") or os.path.exists("/usr/bin/mwm"):
-                        windowmanager = "mwm" 
+                        windowmanager = "mwm -xrm 'Mwm*usePager: false' -xrm 'Mwm*edgeScrollX:0' -xrm 'Mwm*edgeScrollY:0' " 
                     defaultStartup= "#!/bin/sh\n\n" +     \
                         "#xrdb $HOME/.Xresources\n" +     \
                         "xsetroot -solid grey\n" +        \
