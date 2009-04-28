@@ -16,6 +16,22 @@ import time
 
 __revision__ = "$Id: Utilities.py,v 1.9 2007-10-01 16:49:40 turam Exp $"
 
+def NewMd5Hash(subject):
+    """
+    Return a new md5 hash.
+
+    The hashlib module is new in python 2.5 and deprecates
+    the md5 module in python 2.6 but is unavailable in python 2.4.
+    NewMd5Hash returns a new md5 hash using whichever of these modules
+    is available.
+    """
+    try:
+        import hashlib
+        return hashlib.md5(subject)
+    except ImportError:
+        import md5
+        return md5.new(subject)
+
 def GetCNFromX509Subject(subject):
     """
     Return a short form of the CN in an X509Subject object.

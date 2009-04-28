@@ -33,7 +33,6 @@ import os
 import os.path
 import time
 import string
-import md5
 import struct
 import weakref
 
@@ -53,7 +52,7 @@ import cStringIO
 from AccessGrid import Log
 from AccessGrid import Utilities
 from AccessGrid.Security import ProxyGen
-from AccessGrid.Security.Utilities import IsExpired
+from AccessGrid.Security.Utilities import IsExpired, NewMd5Hash
 
 log = Log.GetLogger(Log.CertificateRepository)
 
@@ -901,7 +900,7 @@ class CertificateRepository:
         # md5 hash of the key's public-key modulus.
         #
 
-        dig = md5.new(pkey.get_modulus())
+        dig = NewMd5Hash(pkey.get_modulus())
         hhash = dig.hexdigest()
 
         path = self.GetPrivateKeyPath(hhash)
@@ -1365,7 +1364,7 @@ class CertificateRequestDescriptor:
     def GetModulusHash(self):
         if self.modulusHash is None:
             m = self.GetModulus()
-            dig = md5.new(m)
+            dig = NewMd5Hash(m)
             self.modulusHash = dig.hexdigest()
         return self.modulusHash
 
@@ -1479,7 +1478,7 @@ class Certificate:
     def GetIssuerHash(self):
         if self.issuerHash is None:
             subj = self.cert.get_issuer().as_der()
-            dig = md5.new(subj)
+            dig = NewMd5Hash(subj)
             self.issuerHash = dig.hexdigest()
 
         return self.issuerHash
@@ -1487,7 +1486,7 @@ class Certificate:
     def GetSubjectHash(self):
         if self.subjectHash is None:
             subj = self.cert.get_subject().as_der()
-            dig = md5.new(subj)
+            dig = NewMd5Hash(subj)
             self.subjectHash = dig.hexdigest()
 
         return self.subjectHash
@@ -1506,7 +1505,7 @@ class Certificate:
             # Get serial number in its 4-byte form
             #
             serial = struct.pack("l", self.cert.get_serial_number())
-            dig = md5.new(issuer)
+            dig = NewMd5Hash(issuer)
             dig.update(serial)
             self.issuerSerialHash = dig.hexdigest()
 
@@ -1519,7 +1518,7 @@ class Certificate:
     def GetModulusHash(self):
         if self.modulusHash is None:
             m = self.GetModulus()
-            dig = md5.new(m)
+            dig = NewMd5Hash(m)
             self.modulusHash = dig.hexdigest()
         return self.modulusHash
 

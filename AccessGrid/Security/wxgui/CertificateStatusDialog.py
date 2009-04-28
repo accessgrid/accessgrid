@@ -1,7 +1,6 @@
 import wx
 
 import time
-import md5
 import os
 
 from AccessGrid import Toolkit
@@ -9,6 +8,7 @@ from AccessGrid import Log
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.Security.CertificateRepository import RepoInvalidCertificate
+from AccessGrid.Security.Utilities import NewMd5Hash
 import CertificateRequestTool
 
 log = Log.GetLogger('CertificateStatusDialog')
@@ -151,7 +151,7 @@ class CertificateStatusDialog(wx.Dialog):
         # Write the cert out to a tempfile, then import.
         #
 
-        hash = md5.new(cert).hexdigest()
+        hash = NewMd5Hash(cert).hexdigest()
         tempfile = os.path.join(UserConfig.instance().GetTempDir(), "%s.pem" % (hash))
 
         try:

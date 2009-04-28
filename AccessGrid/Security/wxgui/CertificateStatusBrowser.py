@@ -1,6 +1,5 @@
 import os.path
 import time
-import md5
 import tempfile
 import StringIO
 
@@ -8,6 +7,7 @@ from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid.Security import CertificateRepository
 from AccessGrid.Security.CRSClient import CRSClient
+from AccessGrid.Security.Utilities import NewMd5Hash
 
 from AccessGrid import Log
 log = Log.GetLogger("CertificateStatus")
@@ -84,7 +84,7 @@ class CertRequestWrapper:
 
         impCert = None
 
-        hash = md5.new(certText).hexdigest()
+        hash = NewMd5Hash(certText).hexdigest()
         temp_path = os.path.join(UserConfig.instance().GetTempDir(), "%s.pem" % (hash))
 
         try:

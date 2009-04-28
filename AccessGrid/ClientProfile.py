@@ -19,10 +19,10 @@ import time
 import os
 import ConfigParser
 import string
-import md5
 
 from AccessGrid.Utilities import LoadConfig, SaveConfig
 from AccessGrid.GUID import GUID
+from AccessGrid.Security.Utilities import NewMd5Hash
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid import Log
 
@@ -358,7 +358,7 @@ class ClientProfileCache:
             profile.Save(filename, saveDnDetails=dnFlag)
 
     def loadProfileFromDN(self, distinguished_name):
-        hsh = md5.new(distinguished_name)
+        hsh = NewMd5Hash(distinguished_name)
         short_filename = hsh.hexdigest()
         filename = os.path.join(self.cachePath, short_filename)
         profile = ClientProfile()
