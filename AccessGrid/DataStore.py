@@ -16,7 +16,6 @@ import time
 import threading
 import re
 import string
-import md5
 import ConfigParser
 import stat
 import urlparse

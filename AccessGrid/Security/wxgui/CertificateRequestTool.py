@@ -33,7 +33,6 @@ from AccessGrid.ServiceProfile import ServiceProfile
 
 import string
 import time
-import md5
 import os
 import os.path
 
