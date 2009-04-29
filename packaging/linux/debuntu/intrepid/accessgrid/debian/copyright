@@ -1,0 +1,22 @@
+This package was debianized by Chris Willing <c.willing@uq.edu.au> on
+Wed, 10 Oct 2007 12:50:59 +1000
+
+It was downloaded from <http://www.vislab.uq.edu.au/ag3/distfiles/AccessGrid-3.1-cvs20071010.tar.gz>
+
+Upstream Author: <put author(s) name and email here>
+
+Copyright: <put the year(s) of the copyright, and the names of the
+            copyright holder(s) here>
+
+License:
+
+<Put the license of the package here>
+
+
+The Debian packaging is (C) 2007, Chris Willing <c.willing@uq.edu.au> and
+is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
+
+
+# Please also look if there are files or directories which have a
+# different copyright/license attached and list them here.
+

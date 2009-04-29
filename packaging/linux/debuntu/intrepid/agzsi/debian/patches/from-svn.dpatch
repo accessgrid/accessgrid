@@ -1,0 +1,152 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## from-svn.dpatch by  <chris@v1>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad agzsi-2.0~/ZSI/TC.py agzsi-2.0/ZSI/TC.py
+--- agzsi-2.0~/ZSI/TC.py	2007-01-31 05:04:09.000000000 +1000
++++ agzsi-2.0/ZSI/TC.py	2008-09-15 16:08:39.872484071 +1000
+@@ -516,12 +516,11 @@
+     logger = _GetLogger('ZSI.TC.Any')
+     parsemap, serialmap = {}, {}
+ 
+-    def __init__(self, pname=None, aslist=False, minOccurs=0, **kw):
+-        TypeCode.__init__(self, pname, minOccurs=minOccurs, **kw)
++    def __init__(self, pname=None, aslist=False, minOccurs=0, unique=False, **kw):
++        TypeCode.__init__(self, pname, minOccurs=minOccurs, unique=unique, **kw)
+         self.aslist = aslist
+-        self.kwargs = {'aslist':aslist}
++        self.kwargs = dict(aslist=aslist, unique=unique)
+         self.kwargs.update(kw)
+-        self.unique = False
+ 
+     # input arg v should be a list of tuples (name, value).
+     def listify(self, v):
+@@ -616,20 +615,23 @@
+         tc = type(pyobj)
+         self.logger.debug('Any serialize -- %s', tc)
+         if tc in _seqtypes:
+-            if self.aslist:
++            if isinstance(self, _AnyLax):
++                kw['name'] = (ns,n)
++                for o in pyobj:
++                    serializer = getattr(o, 'typecode', self.__class__(**self.kwargs)) # also used by _AnyLax()
++                    serializer.serialize(elt, sw, o, **kw)
++            elif self.aslist: # aslist is mainly used for rpc-encoded
+                 array = elt.createAppendElement(ns, n)
+                 array.setAttributeType(SOAP.ENC, "Array")
+                 array.setAttributeNS(self.nspname, 'SOAP-ENC:arrayType', 
+                     "xsd:anyType[" + str(len(pyobj)) + "]" )
+                 for o in pyobj:
+-                    #TODO maybe this should take **self.kwargs...
+-                    serializer = getattr(o, 'typecode', self.__class__()) # also used by _AnyLax()
++                    serializer = getattr(o, 'typecode', self.__class__(**self.kwargs)) # also used by _AnyLax()
+                     serializer.serialize(array, sw, o, name='element', **kw)
+             else:
+                 struct = elt.createAppendElement(ns, n)
+                 for o in pyobj:
+-                    #TODO maybe this should take **self.kwargs...
+-                    serializer = getattr(o, 'typecode', self.__class__()) # also used by _AnyLax()
++                    serializer = getattr(o, 'typecode', self.__class__(**self.kwargs)) # also used by _AnyLax()
+                     serializer.serialize(struct, sw, o, **kw)
+             return
+ 
+diff -urNad agzsi-2.0~/ZSI/generate/commands.py agzsi-2.0/ZSI/generate/commands.py
+--- agzsi-2.0~/ZSI/generate/commands.py	2007-02-02 08:36:26.000000000 +1000
++++ agzsi-2.0/ZSI/generate/commands.py	2008-09-15 16:08:39.868495175 +1000
+@@ -8,7 +8,7 @@
+ from operator import xor
+ import ZSI
+ from ConfigParser import ConfigParser
+-from ZSI.generate.wsdl2python import WriteServiceModule, ServiceDescription
++from ZSI.generate.wsdl2python import WriteServiceModule, ServiceDescription as wsdl2pyServiceDescription
+ from ZSI.wstools import WSDLTools, XMLSchema
+ from ZSI.wstools.logging import setBasicLoggerDEBUG
+ from ZSI.generate import containers, utility
+@@ -178,7 +178,7 @@
+         # Use a different client suffix
+         WriteServiceModule.client_module_suffix = "_client"
+         # Write messages definitions to a separate file.
+-        ServiceDescription.separate_messages = True
++        wsdl2pyServiceDescription.separate_messages = True
+         # Use more simple type and element class names
+         containers.SetTypeNameFunc( lambda n: '%s_' %(NC_to_CN(n)) )
+         containers.SetElementNameFunc( lambda n: '%s' %(NC_to_CN(n)) )
+diff -urNad agzsi-2.0~/samples/Echo/EchoClient.py agzsi-2.0/samples/Echo/EchoClient.py
+--- agzsi-2.0~/samples/Echo/EchoClient.py	2005-02-03 13:38:51.000000000 +1000
++++ agzsi-2.0/samples/Echo/EchoClient.py	2008-09-15 16:08:39.868495175 +1000
+@@ -10,8 +10,5 @@
+ 
+ # Instantiate a client proxy object, then call it
+ hw2 = EchoServerSOAP("http://localhost:9999/EchoServIn")
+-try:
+-    print hw2.Echo("Test INHERIT String")
+-except Exception, e:
+-    print "Failed to echo (Inherited): ", e
++print hw2.Echo("Test INHERIT String")
+ 
+diff -urNad agzsi-2.0~/samples/Echo/EchoServer.py agzsi-2.0/samples/Echo/EchoServer.py
+--- agzsi-2.0~/samples/Echo/EchoServer.py	2006-03-28 17:41:41.000000000 +1000
++++ agzsi-2.0/samples/Echo/EchoServer.py	2008-09-15 16:08:39.868495175 +1000
+@@ -16,7 +16,7 @@
+ # Here we use a Tie approach
+ class EchoServer:
+     def authorize(self, auth_info, post, action):
+-        print "NOT Authorizing TIE Echo"
++        print "Authorizing TIE Echo"
+         ctx = GetSOAPContext()
+         print dir(ctx)
+         print "Container: ", ctx.connection
+@@ -25,7 +25,7 @@
+         print "HTTP Headers:\n", ctx.httpheaders
+         print "----"
+         print "XML Data:\n", ctx.xmldata
+-        return 0
++        return 1
+ 
+     def Echo(self, input):
+         return input * 3
+@@ -34,6 +34,7 @@
+ class EchoServIn(EchoServer_interface.EchoServer):
+     def __init__(self, post='', **kw):
+         EchoServer_interface.EchoServer.__init__(self, post, kw=kw)
++        self.impl = self
+         
+     def authorize(self, auth_info, post, action):
+         print "Authorizing INHERIT Echo"
+diff -urNad agzsi-2.0~/test/test_t8.py agzsi-2.0/test/test_t8.py
+--- agzsi-2.0~/test/test_t8.py	2007-01-25 07:32:03.000000000 +1000
++++ agzsi-2.0/test/test_t8.py	2008-09-15 16:08:39.864777954 +1000
+@@ -132,6 +132,30 @@
+         ps = ParsedSoap(xml, envelope=False)
+         self.failUnless(int(ps.Parse(TC.Any())) == 12)
+ 
++    def check_any_dict_list_rpcenc(self):
++        sw = SoapWriter()
++        testObj = [{"a":1,"b":2}, {"d":4,"e":5}, {"f":{"x":9}, "g":[6,7.0]}]
++        typecode = TC.Any(aslist=True)
++        sw.serialize(testObj, typecode=typecode)
++        xml = str(sw)
++        ps = ParsedSoap(xml)
++        result = TC.Any().parse(ps.body_root, ps)
++        self.failUnless(result == testObj)
++
++    def check_any_dict_list_doclit_lax(self):
++        typecode = TC.AnyElement(aname="any", minOccurs=0, maxOccurs=1, nillable=False, processContents="lax")
++        testObj = {"K1":{"b":1,"c":2}, "K2": [4,5,6], "K3": {"nest":{"egg1":9, "egg2":11}} }
++        # If this fails, debug using simpler data such as this:
++        # testObj = {"K1": [1,2]}
++        from StringIO import StringIO
++        s = StringIO
++        sw = SoapWriter(s)
++        sw.serialize(testObj, typecode)
++        xml = str(sw)
++        ps = ParsedSoap(xml)
++        result = TC.AnyElement(aname="any", minOccurs=0, maxOccurs=1, nillable=False, processContents="lax").parse(ps.body_root, ps)
++        self.failUnless(result == testObj)
++
+ 
+ #
+ # Creates permutation of test options: "check", "check_any", etc

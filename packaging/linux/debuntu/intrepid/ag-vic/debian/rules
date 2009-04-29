@@ -1,0 +1,61 @@
+#!/usr/bin/make -f
+
+package = ag-vic2.8ucl
+pkgpath = debian/tmp
+docdir = debian/tmp/usr/share/doc/$(package)
+here=`pwd`
+pkgdir = ${here}/$(pkgpath)
+
+include /usr/share/dpatch/dpatch.make
+
+
+build: patch-stamp build-stamp
+build-stamp: build-pkg
+	touch $@
+build-pkg:
+	$(checkdir)
+	(cd common && autoconf -f && ./configure && make)
+	(cd vic && autoconf -f && ./configure --prefix=/usr --enable-ipv6 --enable-dvdecode --enable-gpl)
+	(cd vic/ffmpeg && make)
+	(cd vic && make)
+	touch build $@
+
+clean:	unpatch
+	$(checkdir)
+	rm -f build build-stamp
+
+
+binary-arch:	checkroot build
+	$(checkdir)
+	rm -rf $(pkgpath)
+	install -d $(pkgpath)/DEBIAN $(docdir) $(docdir)/html
+	install -m 644 vic/VERSION vic/FILES vic/LICENSE.txt $(docdir)/
+	install -m 644 vic/html/* $(docdir)/html/
+	install -m 755 debian/postinst debian/prerm $(pkgpath)/DEBIAN
+	install -d $(pkgpath)/usr/bin
+	install -d $(pkgpath)/usr/share/man/man1
+	install -m 755 vic/vic vic/histtolut ${pkgdir}/usr/bin/
+	strip --strip-unneeded ${pkgdir}/usr/bin/*
+	install -m 644 vic/vic.1 ${pkgdir}/usr/share/man/man1/
+	dpkg-shlibdeps ${pkgdir}/usr/bin/vic
+	dpkg-gencontrol -isp
+	chown -R root:root $(pkgpath)
+	chmod -R u+w,go=rX $(pkgpath)
+	dpkg --build $(pkgpath) ..
+
+
+binary-indep:	checkroot build
+
+
+define checkdir
+	test -f vic/VERSION -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

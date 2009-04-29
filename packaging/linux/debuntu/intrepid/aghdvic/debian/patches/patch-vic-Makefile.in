@@ -1,0 +1,14 @@
+--- vic/Makefile.in.orig	2007-11-11 12:43:13.000000000 +1000
++++ vic/Makefile.in	2007-11-12 21:04:22.737103000 +1000
+@@ -101,6 +101,11 @@
+ 	$(C++) -o $@ -c $(CFLAGS_NO_OPT) codec/dct.cpp
+ endif
+ 
++# 64 bit systems have problems with -O6 for this file
++# (included since revision 111)
++video/jidctflt.o:
++	$(CC) -o $@ -c -O2 video/jidctflt.c
++
+ ED_YBITS = 4
+ 
+ CC = @CC@

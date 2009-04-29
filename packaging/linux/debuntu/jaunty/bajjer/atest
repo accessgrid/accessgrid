@@ -1,0 +1,6 @@
+
+
+
+changebase=`basename *.dsc .dsc`
+chranges=`ls -1 /var/cache/pbuilder/result/${changebase}*.changes`
+echo "chranges = $chranges"

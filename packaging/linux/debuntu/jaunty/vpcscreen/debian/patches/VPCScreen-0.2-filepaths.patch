@@ -1,0 +1,29 @@
+--- VPCScreen-0.2/VPCScreenCapture.cpp.filepaths	2006-10-10 14:34:06 +1000
++++ VPCScreen-0.2/VPCScreenCapture.cpp	2007-07-27 09:06:37 +1000
+@@ -229,7 +229,7 @@ bool VPCScreenCapture::OnInit()
+   
+   wxImage::AddHandler(new wxGIFHandler);
+   wxXmlResource::Get()->InitAllHandlers();
+-  wxXmlResource::Get()->Load(wxT("VPCScreenCapture.xrc"));
++  wxXmlResource::Get()->Load(wxT("/usr/share/VPCScreen/VPCScreenCapture.xrc"));
+   ScreenCaptureFrame *frame = new ScreenCaptureFrame();
+   if(!frame->initFrame()) {
+ 
+@@ -426,7 +426,7 @@ bool ScreenCaptureFrame::initFrame()
+         if (about_label)
+ 	{
+ 			
+-	  if(!about_label->LoadFile( wxFileName(wxT("vpc-about.html"))))
++	  if(!about_label->LoadFile( wxFileName(wxT("/usr/share/VPCScreen/vpc-about.html"))))
+ 	  {
+ 				wxString msg(wxT("ScreenCaptureFrame::initFrame:Failed to load about information"));
+ 			    wxMessageBox(msg,wxT("Error"), wxOK | wxICON_ERROR,NULL);
+@@ -441,7 +441,7 @@ bool ScreenCaptureFrame::initFrame()
+ 	   } 
+           
+         help_text = XRCCTRL(*helpdlg,"help_text",wxHtmlWindow);
+-        if (help_text&&!help_text->LoadFile(wxFileName(wxT("vpc-help.html"))))
++        if (help_text&&!help_text->LoadFile(wxFileName(wxT("/usr/share/VPCScreen/vpc-help.html"))))
+ 		{
+ 				wxString msg(wxT("ScreenCaptureFrame::initFrame:Failed to load help information"));
+ 			    wxMessageBox(msg,wxT("Error"), wxOK | wxICON_ERROR,NULL);

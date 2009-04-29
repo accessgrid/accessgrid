@@ -1,0 +1,18 @@
+This package was debianized by Chris Willing <c.willing@uq.edu.au> on
+Mon, 12 Jan 2009 10:37:00 +1000
+
+It was downloaded from http://www.vislab.uq.edu.au/research/accessgrid/software/JPEGvideo/linux/JPGVideoServices3-2.6.tar.gz
+
+Upstream Author: Christoph WIlling <c.willing at uq.edu.au>
+
+Copyright: 2009 Christoph Willing
+
+License: GPL
+
+The Debian packaging is (C) 2007, Chris Willing <c.willing@uq.edu.au> and
+is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
+
+
+# Please also look if there are files or directories which have a
+# different copyright/license attached and list them here.
+

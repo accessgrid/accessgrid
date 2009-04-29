@@ -1,0 +1,13 @@
+Source: jpgvideoservices3
+Section: AccessGrid
+Priority: optional
+Maintainer: Chris Willing <c.willing@uq.edu.au>
+Build-Depends: zip
+Standards-Version: 3.7.2
+
+Package: jpgvideoservices3
+Architecture: all
+Depends: ${misc:Depends}, accessgrid3.2 | accessgrid3.1
+Description: AG service packages to use JPEG encoded video
+ This is an AG service packages enabling use JPEG encoded
+ video in an Access Grid session.

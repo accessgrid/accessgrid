@@ -1,0 +1,27 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## packaging-agversion.py.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad accessgrid3.1-3.1~/AccessGrid/packaging/agversion.py accessgrid3.1-3.1/AccessGrid/packaging/agversion.py
+--- accessgrid3.1-3.1~/AccessGrid/packaging/agversion.py	2006-08-05 02:08:32.000000000 +1000
++++ accessgrid3.1-3.1/AccessGrid/packaging/agversion.py	2008-03-24 14:19:54.752031457 +1000
+@@ -13,7 +13,6 @@
+ 
+ import sys
+ import os
+-from distutils.sysconfig import get_python_lib 
+ 
+ class VersionError(Exception):
+     pass
+@@ -33,7 +32,7 @@
+     elif sys.platform in ['darwin']:
+         installpath = '/Applications/AccessGridToolkit3.app/Contents/Resources/lib/python%s/site-packages/AccessGrid%s' % (sys.version[:3],ver)
+     elif sys.platform in ['linux2','freebsd5','freebsd6']:
+-        installpath = '%s/AccessGrid%s' % (get_python_lib(),ver) 
++        installpath = '%s%s/AccessGrid%s' % ('/var/lib/python-support/python', sys.version[:3], ver) 
+ 
+     # confirm that the path exists
+     if not os.path.exists(installpath):

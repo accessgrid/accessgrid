@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo " POSTINST: no post installation actions required:"
+

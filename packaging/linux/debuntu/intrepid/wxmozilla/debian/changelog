@@ -1,0 +1,25 @@
+wxmozilla (0.5.7-0r20070620ubuntu2) hardy; urgency=low
+
+  * Another attempt build for multiple python versions using python-support
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 28 Apr 2008 13:40:43 +1000
+
+wxmozilla (0.5.7-0r20070620ubuntu1) hardy; urgency=low
+
+  * Rebuild for hardy
+  * Attempt build for multiple python versions using python-support
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 30 Mar 2008 14:25:49 +1000
+
+wxmozilla (20070620cvs-1ubuntu1) gutsy; urgency=low
+
+  * Rebuild for gutsy
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 24 Oct 2007 11:31:43 +1000
+
+wxmozilla (20070620cvs-1ubuntu1) feisty; urgency=low
+
+  * Initial release for feisty
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 08 Aug 2007 16:19:53 +1000
+

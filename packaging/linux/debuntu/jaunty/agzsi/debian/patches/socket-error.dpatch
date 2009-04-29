@@ -1,0 +1,35 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## socket-error.dpatch by  <chris@v1>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad agzsi-2.0~/ZSI/client.py agzsi-2.0/ZSI/client.py
+--- agzsi-2.0~/ZSI/client.py	2007-01-26 09:14:13.000000000 +1000
++++ agzsi-2.0/ZSI/client.py	2008-09-15 21:52:30.081756060 +1000
+@@ -10,7 +10,7 @@
+ from ZSI.TC import AnyElement, AnyType, String, TypeCode, _get_global_element_declaration,\
+     _get_type_definition
+ from ZSI.TCcompound import Struct
+-import base64, httplib, Cookie, types, time, urlparse
++import base64, errno, httplib, Cookie, socket, types, time, urlparse
+ from ZSI.address import Address
+ from ZSI.wstools.logging import getLogger as _GetLogger
+ _b64_encode = base64.encodestring
+@@ -346,7 +346,14 @@
+         if self.data: return self.data
+         trace = self.trace
+         while 1:
+-            response = self.h.getresponse()
++            try:
++                response = self.h.getresponse()
++            except socket.error, e:
++                if e in (errno.EAGAIN, errno.EWOULDBLOCK, errno.EINTR):
++                    time.sleep(0.01)
++                    continue
++                else:
++                    raise
+             self.reply_code, self.reply_msg, self.reply_headers, self.data = \
+                 response.status, response.reason, response.msg, response.read()
+             if trace:

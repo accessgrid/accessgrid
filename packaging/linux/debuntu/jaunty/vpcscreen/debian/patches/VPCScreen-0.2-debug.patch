@@ -1,0 +1,30 @@
+--- VPC/src/Filter/VPCImageRescale.cpp.debug	2006-08-25 16:23:15.000000000 +1000
++++ VPC/src/Filter/VPCImageRescale.cpp	2007-07-27 10:28:50.000000000 +1000
+@@ -165,11 +165,13 @@ VPCImageRescale::filterFrame( VPCVideoFr
+ 	buffer_format = VPC_VIDEO_FORMAT_RGB24;
+       }
+ 
++#ifdef DEBUG
+       printf("rescaling rgb24 %dx%d -> %dx%d\n",
+ 	     inputFrame.getWidth(),
+ 	     inputFrame.getHeight(),
+ 	     width,
+ 	     height);
++#endif
+ 
+       rescale_nearest_rgb24_to_rgb24(inputFrame.getBuffer(),
+ 				     inputFrame.getWidth(),
+@@ -194,11 +196,13 @@ VPCImageRescale::filterFrame( VPCVideoFr
+ 	buffer_format = VPC_VIDEO_FORMAT_BGRA;
+       }
+ 
++#ifdef DEBUG
+       printf("rescaling bgra %dx%d -> %dx%d\n",
+ 	     inputFrame.getWidth(),
+ 	     inputFrame.getHeight(),
+ 	     width,
+ 	     height);
++#endif
+ 
+       rescale_nearest_bgra_to_bgra(inputFrame.getBuffer(),
+ 				   inputFrame.getWidth(),

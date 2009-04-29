@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## twisted-internet-_threadedselect.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad twisted-8.0.1~/twisted/internet/_threadedselect.py twisted-8.0.1/twisted/internet/_threadedselect.py
+--- twisted-8.0.1~/twisted/internet/_threadedselect.py	2008-03-05 07:36:22.000000000 +1000
++++ twisted-8.0.1/twisted/internet/_threadedselect.py	2008-04-17 13:12:00.257646276 +1000
+@@ -185,7 +185,7 @@
+                     else:
+                         raise
+                 elif se.args[0] == EINTR:
+-                    return
++                    continue
+                 elif se.args[0] == EBADF:
+                     self._preenDescriptorsInThread()
+                 else:

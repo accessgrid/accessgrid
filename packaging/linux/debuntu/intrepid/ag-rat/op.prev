@@ -1,0 +1,720 @@
+I: using fakeroot in build.
+Current time: Thu Sep 18 13:31:13 EST 2008
+pbuilder-time-stamp: 1221708673
+Building the build Environment
+ -> extracting base tarball [/var/cache/pbuilder/base.tgz]
+ -> creating local configuration
+ -> copying local configuration
+ -> mounting /proc filesystem
+ -> mounting /dev/pts filesystem
+-> Mounting /var/cache/pbuilder/result
+ -> policy-rc.d already exists
+Obtaining the cached apt archive contents
+Installing the build-deps
+ ** Packages in archive but missing from override file: **
+  ag-vic2.8ucl agcommon python-m2crypto python-twisted python-twisted-
+  bin python-twisted-bin-dbg python-twisted-core quickbridge twisted-
+  doc
+
+ Wrote 9 entries to output Packages file.
+Ign file: ./ Release.gpg
+Ign file: ./ Release
+Ign file: ./ Packages
+Ign http://www.vislab.uq.edu.au intrepid/ Release.gpg
+Ign http://www.vislab.uq.edu.au intrepid/ Release
+Get:1 http://mirror.aarnet.edu.au intrepid Release.gpg [189B]
+Get:2 http://mirror.aarnet.edu.au intrepid Release [65.9kB]
+Ign http://www.vislab.uq.edu.au intrepid/ Packages
+Get:3 http://www.vislab.uq.edu.au intrepid/ Packages [3728B]
+Get:4 http://mirror.aarnet.edu.au intrepid/main Packages [1244kB]
+Get:5 http://mirror.aarnet.edu.au intrepid/restricted Packages [7394B]
+Get:6 http://mirror.aarnet.edu.au intrepid/universe Packages [4522kB]
+Get:7 http://mirror.aarnet.edu.au intrepid/multiverse Packages [197kB]
+Fetched 6040kB in 2s (2784kB/s)
+Reading package lists...
+ -> user script /var/cache/pbuilder/build//7354/tmp/hooks/D70results finished
+ -> Attempting to satisfy build-dependencies
+ -> Creating pbuilder-satisfydepends-dummy package
+Package: pbuilder-satisfydepends-dummy
+Version: 0.invalid.0
+Architecture: amd64
+Maintainer: Debian Pbuilder Team <pbuilder-maint@lists.alioth.debian.org>
+Description: Dummy package to satisfy dependencies with aptitude - created by pbuilder
+ This package was created automatically by pbuilder and should
+Depends: python (>= 2.4), dpatch, tk-dev, libx11-dev, libxt-dev, libssl-dev, libxext-dev, libalsaplayer-dev
+dpkg-deb: building package `pbuilder-satisfydepends-dummy' in `/tmp/satisfydepends-aptitude/pbuilder-satisfydepends-dummy.deb'.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+aptitude is already the newest version.
+0 upgraded, 0 newly installed, 0 to remove and 0 not upgraded.
+Selecting previously deselected package pbuilder-satisfydepends-dummy.
+(Reading database ... 12758 files and directories currently installed.)
+Unpacking pbuilder-satisfydepends-dummy (from .../pbuilder-satisfydepends-dummy.deb) ...
+dpkg: dependency problems prevent configuration of pbuilder-satisfydepends-dummy:
+ pbuilder-satisfydepends-dummy depends on dpatch; however:
+  Package dpatch is not installed.
+ pbuilder-satisfydepends-dummy depends on tk-dev; however:
+  Package tk-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libx11-dev; however:
+  Package libx11-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libxt-dev; however:
+  Package libxt-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libssl-dev; however:
+  Package libssl-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libxext-dev; however:
+  Package libxext-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libalsaplayer-dev; however:
+  Package libalsaplayer-dev is not installed.
+dpkg: error processing pbuilder-satisfydepends-dummy (--install):
+ dependency problems - leaving unconfigured
+Errors were encountered while processing:
+ pbuilder-satisfydepends-dummy
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Initializing package states...
+Writing extended state information...
+The following NEW packages will be installed:
+  dpatch{a} libalsaplayer-dev{a} libalsaplayer0{a} libice-dev{a} libice6{a} 
+  libpthread-stubs0{a} libpthread-stubs0-dev{a} libsm-dev{a} libsm6{a} 
+  libssl-dev{a} libx11-6{a} libx11-data{a} libx11-dev{a} libxau-dev{a} 
+  libxau6{a} libxcb-xlib0{a} libxcb-xlib0-dev{a} libxcb1{a} libxcb1-dev{a} 
+  libxdmcp-dev{a} libxdmcp6{a} libxext-dev{a} libxext6{a} libxt-dev{a} 
+  libxt6{a} tcl{a} tcl-dev{a} tcl8.4{a} tcl8.4-dev{a} tk{a} tk-dev{a} 
+  tk8.4{a} tk8.4-dev{a} x11-common{a} x11proto-core-dev{a} 
+  x11proto-input-dev{a} x11proto-kb-dev{a} x11proto-xext-dev{a} 
+  xtrans-dev{a} zlib1g-dev{a} 
+The following partially installed packages will be configured:
+  pbuilder-satisfydepends-dummy 
+0 packages upgraded, 40 newly installed, 0 to remove and 0 not upgraded.
+Need to get 122kB/10.9MB of archives. After unpacking 35.1MB will be used.
+Writing extended state information...
+Get:1 http://mirror.aarnet.edu.au intrepid/universe libalsaplayer0 0.99.80-3ubuntu1 [37.0kB]
+Get:2 http://mirror.aarnet.edu.au intrepid/universe libalsaplayer-dev 0.99.80-3ubuntu1 [85.2kB]
+Extracting templates from packages: 75%Extracting templates from packages: 100%
+Preconfiguring packages ...
+Fetched 122kB in 0s (576kB/s)
+Selecting previously deselected package dpatch.
+(Reading database ... 12758 files and directories currently installed.)
+Unpacking dpatch (from .../archives/dpatch_2.0.29_all.deb) ...
+Selecting previously deselected package tcl8.4.
+Unpacking tcl8.4 (from .../tcl8.4_8.4.19-2_amd64.deb) ...
+Selecting previously deselected package tcl.
+Unpacking tcl (from .../archives/tcl_8.4.16-2_all.deb) ...
+Selecting previously deselected package tcl8.4-dev.
+Unpacking tcl8.4-dev (from .../tcl8.4-dev_8.4.19-2_amd64.deb) ...
+Selecting previously deselected package tcl-dev.
+Unpacking tcl-dev (from .../tcl-dev_8.4.16-2_all.deb) ...
+Selecting previously deselected package libxau6.
+Unpacking libxau6 (from .../libxau6_1%3a1.0.3-3_amd64.deb) ...
+Selecting previously deselected package libxdmcp6.
+Unpacking libxdmcp6 (from .../libxdmcp6_1%3a1.0.2-3_amd64.deb) ...
+Selecting previously deselected package libxcb1.
+Unpacking libxcb1 (from .../libxcb1_1.1-1.1_amd64.deb) ...
+Selecting previously deselected package libxcb-xlib0.
+Unpacking libxcb-xlib0 (from .../libxcb-xlib0_1.1-1.1_amd64.deb) ...
+Selecting previously deselected package libx11-data.
+Unpacking libx11-data (from .../libx11-data_2%3a1.1.4-2_all.deb) ...
+Selecting previously deselected package libx11-6.
+Unpacking libx11-6 (from .../libx11-6_2%3a1.1.4-2_amd64.deb) ...
+Selecting previously deselected package tk8.4.
+Unpacking tk8.4 (from .../tk8.4_8.4.19-1_amd64.deb) ...
+Selecting previously deselected package tk.
+Unpacking tk (from .../archives/tk_8.4.16-2_all.deb) ...
+Selecting previously deselected package x11-common.
+Unpacking x11-common (from .../x11-common_1%3a7.4~2ubuntu1_all.deb) ...
+Setting up x11-common (1:7.4~2ubuntu1) ...
+
+Selecting previously deselected package x11proto-core-dev.
+(Reading database ... 13470 files and directories currently installed.)
+Unpacking x11proto-core-dev (from .../x11proto-core-dev_7.0.12-1_all.deb) ...
+Selecting previously deselected package libxau-dev.
+Unpacking libxau-dev (from .../libxau-dev_1%3a1.0.3-3_amd64.deb) ...
+Selecting previously deselected package libxdmcp-dev.
+Unpacking libxdmcp-dev (from .../libxdmcp-dev_1%3a1.0.2-3_amd64.deb) ...
+Selecting previously deselected package x11proto-input-dev.
+Unpacking x11proto-input-dev (from .../x11proto-input-dev_1.4.3-2ubuntu2_all.deb) ...
+Selecting previously deselected package x11proto-kb-dev.
+Unpacking x11proto-kb-dev (from .../x11proto-kb-dev_1.0.3-3ubuntu1_all.deb) ...
+Selecting previously deselected package xtrans-dev.
+Unpacking xtrans-dev (from .../xtrans-dev_1.2-2_all.deb) ...
+Selecting previously deselected package libpthread-stubs0.
+Unpacking libpthread-stubs0 (from .../libpthread-stubs0_0.1-2_amd64.deb) ...
+Selecting previously deselected package libpthread-stubs0-dev.
+Unpacking libpthread-stubs0-dev (from .../libpthread-stubs0-dev_0.1-2_amd64.deb) ...
+Selecting previously deselected package libxcb1-dev.
+Unpacking libxcb1-dev (from .../libxcb1-dev_1.1-1.1_amd64.deb) ...
+Selecting previously deselected package libxcb-xlib0-dev.
+Unpacking libxcb-xlib0-dev (from .../libxcb-xlib0-dev_1.1-1.1_amd64.deb) ...
+Selecting previously deselected package libx11-dev.
+Unpacking libx11-dev (from .../libx11-dev_2%3a1.1.4-2_amd64.deb) ...
+Selecting previously deselected package libice6.
+Unpacking libice6 (from .../libice6_2%3a1.0.4-1_amd64.deb) ...
+Selecting previously deselected package libsm6.
+Unpacking libsm6 (from .../libsm6_2%3a1.0.3-2_amd64.deb) ...
+Selecting previously deselected package libxt6.
+Unpacking libxt6 (from .../libxt6_1%3a1.0.5-3_amd64.deb) ...
+Selecting previously deselected package libice-dev.
+Unpacking libice-dev (from .../libice-dev_2%3a1.0.4-1_amd64.deb) ...
+Selecting previously deselected package libsm-dev.
+Unpacking libsm-dev (from .../libsm-dev_2%3a1.0.3-2_amd64.deb) ...
+Selecting previously deselected package libxt-dev.
+Unpacking libxt-dev (from .../libxt-dev_1%3a1.0.5-3_amd64.deb) ...
+Selecting previously deselected package tk8.4-dev.
+Unpacking tk8.4-dev (from .../tk8.4-dev_8.4.19-1_amd64.deb) ...
+Selecting previously deselected package tk-dev.
+Unpacking tk-dev (from .../tk-dev_8.4.16-2_all.deb) ...
+Selecting previously deselected package zlib1g-dev.
+Unpacking zlib1g-dev (from .../zlib1g-dev_1%3a1.2.3.3.dfsg-12ubuntu1_amd64.deb) ...
+Selecting previously deselected package libssl-dev.
+Unpacking libssl-dev (from .../libssl-dev_0.9.8g-10.1ubuntu2_amd64.deb) ...
+Selecting previously deselected package libxext6.
+Unpacking libxext6 (from .../libxext6_2%3a1.0.4-1_amd64.deb) ...
+Selecting previously deselected package x11proto-xext-dev.
+Unpacking x11proto-xext-dev (from .../x11proto-xext-dev_7.0.2-6build1_all.deb) ...
+Selecting previously deselected package libxext-dev.
+Unpacking libxext-dev (from .../libxext-dev_2%3a1.0.4-1_amd64.deb) ...
+Selecting previously deselected package libalsaplayer0.
+Unpacking libalsaplayer0 (from .../libalsaplayer0_0.99.80-3ubuntu1_amd64.deb) ...
+Selecting previously deselected package libalsaplayer-dev.
+Unpacking libalsaplayer-dev (from .../libalsaplayer-dev_0.99.80-3ubuntu1_amd64.deb) ...
+Setting up dpatch (2.0.29) ...
+Setting up tcl8.4 (8.4.19-2) ...
+
+Setting up tcl (8.4.16-2) ...
+
+Setting up tcl8.4-dev (8.4.19-2) ...
+Setting up tcl-dev (8.4.16-2) ...
+Setting up libxau6 (1:1.0.3-3) ...
+
+Setting up libxdmcp6 (1:1.0.2-3) ...
+
+Setting up libxcb1 (1.1-1.1) ...
+
+Setting up libxcb-xlib0 (1.1-1.1) ...
+
+Setting up libx11-data (2:1.1.4-2) ...
+Setting up libx11-6 (2:1.1.4-2) ...
+
+Setting up tk8.4 (8.4.19-1) ...
+
+Setting up tk (8.4.16-2) ...
+
+Setting up x11proto-core-dev (7.0.12-1) ...
+Setting up libxau-dev (1:1.0.3-3) ...
+Setting up libxdmcp-dev (1:1.0.2-3) ...
+Setting up x11proto-input-dev (1.4.3-2ubuntu2) ...
+Setting up x11proto-kb-dev (1.0.3-3ubuntu1) ...
+Setting up xtrans-dev (1.2-2) ...
+Setting up libpthread-stubs0 (0.1-2) ...
+Setting up libpthread-stubs0-dev (0.1-2) ...
+Setting up libxcb1-dev (1.1-1.1) ...
+Setting up libxcb-xlib0-dev (1.1-1.1) ...
+Setting up libx11-dev (2:1.1.4-2) ...
+Setting up libice6 (2:1.0.4-1) ...
+
+Setting up libsm6 (2:1.0.3-2) ...
+
+Setting up libxt6 (1:1.0.5-3) ...
+
+Setting up libice-dev (2:1.0.4-1) ...
+Setting up libsm-dev (2:1.0.3-2) ...
+Setting up libxt-dev (1:1.0.5-3) ...
+Setting up tk8.4-dev (8.4.19-1) ...
+Setting up tk-dev (8.4.16-2) ...
+Setting up zlib1g-dev (1:1.2.3.3.dfsg-12ubuntu1) ...
+Setting up libssl-dev (0.9.8g-10.1ubuntu2) ...
+Setting up libxext6 (2:1.0.4-1) ...
+
+Setting up x11proto-xext-dev (7.0.2-6build1) ...
+Setting up libxext-dev (2:1.0.4-1) ...
+Setting up libalsaplayer0 (0.99.80-3ubuntu1) ...
+
+Setting up libalsaplayer-dev (0.99.80-3ubuntu1) ...
+
+Setting up pbuilder-satisfydepends-dummy (0.invalid.0) ...
+Processing triggers for libc6 ...
+ldconfig deferred processing now taking place
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Reading extended state information...
+Initializing package states...
+Writing extended state information...
+ -> Finished parsing the build-deps
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following NEW packages will be installed:
+  fakeroot
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 0B/116kB of archives.
+After this operation, 455kB of additional disk space will be used.
+Selecting previously deselected package fakeroot.
+(Reading database ... 16191 files and directories currently installed.)
+Unpacking fakeroot (from .../fakeroot_1.9.5ubuntu1_amd64.deb) ...
+Setting up fakeroot (1.9.5ubuntu1) ...
+
+Copying back the cached apt archive contents
+ -> new cache content libalsaplayer0_0.99.80-3ubuntu1_amd64.deb added
+ -> new cache content libalsaplayer-dev_0.99.80-3ubuntu1_amd64.deb added
+Copying source file
+    -> copying [../ag-rat_4.4.01-1ubuntu2.dsc]
+    -> copying [../ag-rat_4.4.01-1ubuntu2.tar.gz]
+Extracting source
+dpkg-source: warning: extracting unsigned source package (ag-rat_4.4.01-1ubuntu2.dsc)
+dpkg-source: extracting ag-rat in ag-rat-4.4.01
+dpkg-source: info: unpacking ag-rat_4.4.01-1ubuntu2.tar.gz
+ -> Building the package
+W: no hooks of type A found -- ignoring
+dpkg-buildpackage: set CFLAGS to default value: -g -O2
+dpkg-buildpackage: set CPPFLAGS to default value: 
+dpkg-buildpackage: set LDFLAGS to default value: -Wl,-Bsymbolic-functions
+dpkg-buildpackage: set FFLAGS to default value: -g -O2
+dpkg-buildpackage: set CXXFLAGS to default value: -g -O2
+dpkg-buildpackage: source package ag-rat
+dpkg-buildpackage: source version 4.4.01-1ubuntu2
+dpkg-buildpackage: source changed by Chris Willing <c.willing@uq.edu.au>
+dpkg-buildpackage: host architecture amd64
+ fakeroot debian/rules clean
+dpatch  deapply-all  
+rm -rf patch-stamp patch-stampT debian/patched
+test -f rat/VERSION -a -f debian/rules
+rm -f build
+ dpkg-source -b ag-rat-4.4.01
+dpkg-source: warning: Version number suggests Ubuntu changes, but Maintainer: does not have Ubuntu address
+dpkg-source: warning: Version number suggests Ubuntu changes, but there is no XSBC-Original-Maintainer field
+dpkg-source: info: using source format `1.0'
+dpkg-source: info: building ag-rat in ag-rat_4.4.01-1ubuntu2.tar.gz
+dpkg-source: info: building ag-rat in ag-rat_4.4.01-1ubuntu2.dsc
+ debian/rules build
+test -d debian/patched || install -d debian/patched
+dpatch  apply-all  
+dpatch  cat-all  >>patch-stampT
+mv -f patch-stampT patch-stamp
+test -f rat/VERSION -a -f debian/rules
+(cd common && ./configure --enable-ipv6 && make)
+checking build system type... x86_64-unknown-linux-gnu
+checking host system type... x86_64-unknown-linux-gnu
+checking for gcc... gcc
+checking for C compiler default output... a.out
+checking whether the C compiler works... yes
+checking whether we are cross compiling... no
+checking for suffix of executables... 
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ANSI C... none needed
+checking how to run the C preprocessor... gcc -E
+checking for ranlib... ranlib
+checking for egrep... grep -E
+checking for ANSI C header files... yes
+checking for sys/wait.h that is POSIX.1 compatible... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking sys/time.h usability... yes
+checking sys/time.h presence... yes
+checking for sys/time.h... yes
+checking whether time.h and sys/time.h may both be included... yes
+checking for an ANSI C-conforming const... yes
+checking for size_t... yes
+checking stropts.h usability... yes
+checking stropts.h presence... yes
+checking for stropts.h... yes
+checking sys/filio.h usability... no
+checking sys/filio.h presence... no
+checking for sys/filio.h... no
+checking for stdint.h... (cached) yes
+checking for inttypes.h... (cached) yes
+checking for int8_t... yes
+checking for int16_t... yes
+checking for int32_t... yes
+checking for int64_t... yes
+checking for uint8_t in <stdint.h>... yes
+checking for uint16_t in <stdint.h>... yes
+checking for uint32_t in <stdint.h>... yes
+checking whether byte ordering is bigendian... no
+checking whether char is unsigned... no
+checking for /dev/urandom... yes
+checking for vsnprintf... yes
+checking for inet_pton in <arpa/inet.h>... yes
+checking for inet_ntop in <arpa/inet.h>... yes
+checking for library containing socket... none required
+checking for library containing inet_addr... none required
+checking whether to enable IPv6... yes
+checking ipv6 stack type... linux-glibc
+checking for getipnodebyname in <netdb.h>... no
+checking for struct addrinfo in <netdb.h>... yes
+checking for sin6_len in struct sockaddr_in6... no
+checking for msg_control in struct msghdr... yes
+checking for gtkdoc-scan... no
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating doc/Makefile
+config.status: creating examples/Makefile
+config.status: creating examples/rtp/Makefile
+config.status: creating examples/sdp/Makefile
+config.status: creating examples/sap/Makefile
+config.status: creating src/Makefile
+config.status: creating tests/Makefile
+config.status: creating src/uclconf.h
+make[1]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common'
+for s in src tests examples  ; do (cd $s && make) || exit 1 ; done
+make[2]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/src'
+sed -e 's/.*/#define CCL_VERSION "v&"/' ../VERSION > version.h
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c crypt_random.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c debug.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c md5.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c memory.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c net_udp.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c qfDES.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c util.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c hmac.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c base64.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c ntp.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c rtp.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c drand48.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c mbus_parser.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c mbus_config.c
+mbus_config.c: In function 'rewrite_config':
+mbus_config.c:189: warning: ignoring return value of 'write', declared with attribute warn_unused_result
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c mbus_addr.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c mbus.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c btree.c
+btree.c:46: warning: 'btree_validate_node' defined but not used
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c asarray.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c rijndael-alg-fst.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c rijndael-api-fst.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c sdp.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c sap.c
+sap.c: In function 'print_sap_packet':
+sap.c:160: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+ar r libuclmmbase.a crypt_random.o debug.o md5.o memory.o net_udp.o qfDES.o util.o hmac.o base64.o ntp.o rtp.o drand48.o mbus_parser.o mbus_config.o mbus_addr.o mbus.o btree.o asarray.o  rijndael-alg-fst.o rijndael-api-fst.o sdp.o sap.o 
+ar: creating libuclmmbase.a
+ranlib libuclmmbase.a
+make[2]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/src'
+make[2]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/tests'
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_base64.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_des.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_md5.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_net_udp.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_memory.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_mbus_parser.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_mbus_addr.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_aes.c
+test_aes.c: In function 'rijndaelTKAT':
+test_aes.c:188: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:195: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:198: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:199: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:208: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:215: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:218: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:219: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test.c
+gcc test_base64.o test_des.o test_md5.o test_net_udp.o test_memory.o test_mbus_parser.o test_mbus_addr.o test_aes.o test.o -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  ../src/libuclmmbase.a -L../src   -o test-libcommon
+make[2]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/tests'
+make[2]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/examples'
+for s in rtp sdp sap ; do (cd $s && make) || exit 1; done
+make[3]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/examples/rtp'
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src  -c rtpdemo.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src -o rtpdemo rtpdemo.o -L../../src -luclmmbase
+make[3]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/examples/rtp'
+make[3]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/examples/sdp'
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src  -c sdpdemo.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src -o sdpdemo sdpdemo.o -L../../src -luclmmbase
+make[3]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/examples/sdp'
+make[3]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/examples/sap'
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src  -c sapdemo.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src -o sapdemo sapdemo.o -L../../src -luclmmbase
+make[3]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/examples/sap'
+make[2]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/examples'
+
+*** run "tests/test-libcommon" to run the test suite
+
+make[1]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common'
+(cd rat && ./configure --enable-ipv6 && make)
+checking build system type... x86_64-unknown-linux-gnu
+checking host system type... x86_64-unknown-linux-gnu
+checking target system type... x86_64-unknown-linux-gnu
+checking for gcc... gcc
+checking for C compiler default output file name... a.out
+checking whether the C compiler works... yes
+checking whether we are cross compiling... no
+checking for suffix of executables... 
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ISO C89... none needed
+checking how to run the C preprocessor... gcc -E
+checking for ranlib... ranlib
+checking for grep that handles long lines and -e... /bin/grep
+checking for egrep... /bin/grep -E
+checking for ANSI C header files... yes
+checking for sys/wait.h that is POSIX.1 compatible... yes
+checking for an ANSI C-conforming const... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking for size_t... yes
+checking whether byte ordering is bigendian... no
+checking whether char is unsigned... no
+checking for stdint.h... (cached) yes
+checking for inttypes.h... (cached) yes
+checking stropts.h usability... yes
+checking stropts.h presence... yes
+checking for stropts.h... yes
+checking sys/filio.h usability... no
+checking sys/filio.h presence... no
+checking for sys/filio.h... no
+checking malloc.h usability... yes
+checking malloc.h presence... yes
+checking for malloc.h... yes
+checking bstring.h usability... no
+checking bstring.h presence... no
+checking for bstring.h... no
+checking sys/sockio.h usability... no
+checking sys/sockio.h presence... no
+checking for sys/sockio.h... no
+checking for kill declaration... present
+checking for gettimeofday declaration... present
+checking for library containing socket... none required
+checking for library containing inet_addr... none required
+checking for library containing dlopen... -ldl
+checking for sin... no
+checking for main in -lieee... yes
+checking for int8_t... yes
+checking for int16_t... yes
+checking for int32_t... yes
+checking for int64_t... yes
+checking for uint8_t in <stdint.h>... yes
+checking for uint16_t in <stdint.h>... yes
+checking for uint32_t in <stdint.h>... yes
+checking for usleep... yes
+checking for snprintf... yes
+checking linux/telephony.h usability... yes
+checking linux/telephony.h presence... yes
+checking for linux/telephony.h... yes
+checking for recent telephony drivers... present
+checking alsa/asoundlib.h usability... no
+checking alsa/asoundlib.h presence... no
+checking for alsa/asoundlib.h... no
+checking sys/soundcard.h usability... yes
+checking sys/soundcard.h presence... yes
+checking for sys/soundcard.h... yes
+checking soundcard.h usability... no
+checking soundcard.h presence... no
+checking for soundcard.h... no
+checking for Tcl configuration... found /usr/lib64/tclConfig.sh
+checking for existence of /usr/lib64/tclConfig.sh... loading
+checking for a compatible version of Tcl... Tcl 8.4.19
+checking for Tk configuration... found /usr/lib64/tkConfig.sh
+checking for existence of /usr/lib64/tkConfig.sh... loading
+checking for a compatible version of Tk... Tk 8.4.19
+checking /tmp/buildd/ag-rat-4.4.01/common/src/mbus.h usability... yes
+checking /tmp/buildd/ag-rat-4.4.01/common/src/mbus.h presence... yes
+checking for /tmp/buildd/ag-rat-4.4.01/common/src/mbus.h... yes
+checking for mbus_init in -luclmmbase... yes
+checking signed arithmetic shift right... yes
+checking for g728_encoder_init in -lg728... no
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating ratconf.h
+make[1]: Entering directory `/tmp/buildd/ag-rat-4.4.01/rat'
+Generating version.h
+Generating sdr plugin
+Generating RPM spec file
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c main_control.c
+main_control.c:190: warning: 'address_count' defined but not used
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c mbus_control.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_compat.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c fatal_error.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c process.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cmd_parser.c
+cmd_parser.c: In function 'usage':
+cmd_parser.c:45: warning: format not a string literal and no format arguments
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS main_control.o mbus_control.o codec_compat.o fatal_error.o process.o cmd_parser.o -L/tmp/buildd/ag-rat-4.4.01/common/src -luclmmbase -ldl  -lieee -lm -o rat-4.4.01
+gcc -o tcl2c/tcl2c tcl2c/tcl2c.c
+cat uicomponent_bargraph.tcl uicomponent_chart.tcl uicomponent_help.tcl asfilebox.tcl ui_audiotool.tcl | tcl2c/tcl2c ui_audiotool > ui_audiotool.c
+cat ui_transcoder.tcl | tcl2c/tcl2c ui_transcoder > ui_transcoder.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_audiotool.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_transcoder.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c tcltk.c
+tcltk.c: In function 'tcl_init1':
+tcltk.c:295: warning: passing argument 2 of 'Tcl_Merge' from incompatible pointer type
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c mbus_ui.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c main_ui.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS ui_audiotool.o ui_transcoder.o  tcltk.o mbus_ui.o main_ui.o fatal_error.o -L/tmp/buildd/ag-rat-4.4.01/common/src -luclmmbase  -L/usr/lib -ltcl8.4 -L/usr/lib -ltk8.4 -lX11    -ldl  -lieee -lm -o rat-4.4.01-ui 
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c channel.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c channel_types.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cc_vanilla.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cc_rdncy.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cc_layered.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c render_3D.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c repair.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ts.c
+ts.c: In function 'ts_map32':
+ts.c:65: warning: large integer implicitly truncated to unsigned type
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c playout.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c net.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c source.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c session.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c main_engine.c
+main_engine.c:128: warning: no previous prototype for 'rendezvous_with_controller'
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c mbus_engine.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c audio.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cushion.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c mix.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c parameters.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c transmit.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c playout_calc.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_send_rtp.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_send_audio.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_send_prefs.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_send_stats.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c transcoder.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c rtp_dump.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c rtp_callback.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c settings.c
+settings.c: In function 'save_done':
+settings.c:582: warning: format not a string literal and no format arguments
+settings.c:593: warning: format not a string literal and no format arguments
+settings.c:623: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c pdb.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c pktbuf.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c tonegen.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c voxlet.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev_ixj.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev_oss.c
+auddev_oss.c: In function 'oss_probe_mixer_device':
+auddev_oss.c:149: warning: format not a string literal and no format arguments
+auddev_oss.c: In function 'oss_probe_audio_device':
+auddev_oss.c:256: warning: format not a string literal and no format arguments
+auddev_oss.c: In function 'oss_audio_open':
+auddev_oss.c:632: warning: ignoring return value of 'read', declared with attribute warn_unused_result
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev_null.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c audio_fmt.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c audio_util.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev_trans.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev.c
+ar r libuclaudio.a auddev_ixj.o auddev_oss.o auddev_null.o audio_fmt.o audio_util.o auddev_trans.o auddev.o
+ar: creating libuclaudio.a
+ranlib libuclaudio.a
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_state.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_dvi.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_gsm.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_l8.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_l16.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_g711.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_g726.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_lpc.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_types.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_vdvi.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_g726.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_g726_16.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_g726_24.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_g726_32.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_g726_40.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_gsm.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_lpc.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_vdvi.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_dvi.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c converter.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c convert_util.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c convert_extra.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c convert_linear.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c convert_sinc.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c bitstream.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_wbs.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_wbs.c
+ar r libuclcodec.a codec.o codec_state.o codec_dvi.o codec_gsm.o codec_l8.o codec_l16.o codec_g711.o codec_g726.o codec_lpc.o codec_types.o codec_vdvi.o cx_g726.o cx_g726_16.o cx_g726_24.o cx_g726_32.o cx_g726_40.o cx_gsm.o cx_lpc.o cx_vdvi.o cx_dvi.o converter.o convert_util.o convert_extra.o convert_linear.o convert_sinc.o bitstream.o  codec_wbs.o cx_wbs.o
+ar: creating libuclcodec.a
+ranlib libuclcodec.a
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c sndfile.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c sndfile_au.c
+sndfile_au.c: In function 'sun_write_audio':
+sndfile_au.c:249: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c sndfile_raw.c
+sndfile_raw.c: In function 'raw_write_audio':
+sndfile_raw.c:179: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c sndfile_wav.c
+sndfile_wav.c: In function 'riff_write_audio':
+sndfile_wav.c:403: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c: In function 'riff_write_end':
+sndfile_wav.c:432: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:438: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:444: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:445: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:446: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:447: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:448: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:449: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:450: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:452: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:459: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+ar r libuclsndfile.a sndfile.o sndfile_au.o sndfile_raw.o sndfile_wav.o
+ar: creating libuclsndfile.a
+ranlib libuclsndfile.a
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS channel.o channel_types.o cc_vanilla.o cc_rdncy.o cc_layered.o render_3D.o repair.o  ts.o playout.o net.o source.o session.o main_engine.o mbus_engine.o audio.o cushion.o mix.o parameters.o transmit.o playout_calc.o ui_send_rtp.o ui_send_audio.o ui_send_prefs.o ui_send_stats.o transcoder.o rtp_dump.o rtp_callback.o settings.o pdb.o pktbuf.o tonegen.o voxlet.o fatal_error.o  libuclaudio.a libuclcodec.a libuclsndfile.a  -L/tmp/buildd/ag-rat-4.4.01/common/src -luclmmbase  -ldl  -lieee -lm  -o rat-4.4.01-media
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c rat-kill.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS rat-kill.o -L/tmp/buildd/ag-rat-4.4.01/common/src -luclmmbase -ldl  -lieee -lm -o rat-4.4.01-kill
+Generating rat shell script
+make[1]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/rat'
+touch build-stamp
+ fakeroot debian/rules binary
+test -f rat/VERSION -a -f debian/rules
+test $(id -u) = 0
+test -f rat/VERSION -a -f debian/rules
+rm -rf debian/tmp
+install -d debian/tmp/DEBIAN debian/tmp/usr/share/doc/ag-rat
+install -m 644 rat/COPYRIGHT rat/INSTALL.TXT \
+		rat/README* rat/VERSION rat/MODS \
+		debian/tmp/usr/share/doc/ag-rat/
+install -m 755 debian/postinst debian/prerm debian/tmp/DEBIAN
+install -d debian/tmp/usr/bin
+install -d debian/tmp/usr/share/man/man1
+install -m 755 \
+		rat/rat \
+		rat/rat-4.4.01 \
+		rat/rat-4.4.01-ui \
+		rat/rat-4.4.01-media \
+		rat/rat-4.4.01-kill \
+		debian/tmp/usr/bin/
+( cd debian/tmp/usr/bin/ && cp -p rat-4.4.01-kill rat-kill )
+install -m 644 rat/man/man1/rat.1 debian/tmp/usr/share/man/man1/
+dpkg-shlibdeps `pwd`/debian/tmp/usr/bin/rat-*
+dpkg-shlibdeps: warning: dependency on libdl.so.2 could be avoided if "/tmp/buildd/ag-rat-4.4.01/debian/tmp/usr/bin/rat-kill /tmp/buildd/ag-rat-4.4.01/debian/tmp/usr/bin/rat-4.4.01-ui /tmp/buildd/ag-rat-4.4.01/debian/tmp/usr/bin/rat-4.4.01-media /tmp/buildd/ag-rat-4.4.01/debian/tmp/usr/bin/rat-4.4.01 /tmp/buildd/ag-rat-4.4.01/debian/tmp/usr/bin/rat-4.4.01-kill" were not uselessly linked against it (they use none of its symbols).
+strip --strip-unneeded `pwd`/debian/tmp/usr/bin/rat-*
+dpkg-gencontrol -isp
+dpkg-gencontrol: warning: unknown substitution variable ${misc:Depends}
+chown -R root:root debian/tmp
+chmod -R u+w,go=rX debian/tmp
+dpkg --build debian/tmp ..
+dpkg-deb: building package `ag-rat' in `../ag-rat_4.4.01-1ubuntu2_amd64.deb'.
+ dpkg-genchanges  >../ag-rat_4.4.01-1ubuntu2_amd64.changes
+dpkg-genchanges: including full source code in upload
+dpkg-buildpackage: full upload; Debian-native package (full source is included)
+W: no hooks of type B found -- ignoring
+Copying back the cached apt archive contents
+ -> unmounting /var/cache/pbuilder/result filesystem
+ -> unmounting dev/pts filesystem
+ -> unmounting proc filesystem
+ -> cleaning the build env 
+    -> removing directory /var/cache/pbuilder/build//7354 and its subdirectories
+Current time: Thu Sep 18 13:34:17 EST 2008
+pbuilder-time-stamp: 1221708857

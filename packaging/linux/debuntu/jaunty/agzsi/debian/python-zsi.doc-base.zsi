@@ -1,0 +1,24 @@
+Document: zsi-manual
+Title: The Zolera Soap Infrastructure Developer's Guide
+Author: Rich Salz <rsalz@datapower.com>, Christopher Blunck <blunck@python.org>
+Abstract: the Zolera SOAP Infrastructure
+ ZSI, the Zolera SOAP Infrastructure, is a Python package that provides
+ an implementation of SOAP messaging, as described in The SOAP 1.1
+ Specification. In particular, ZSI parses and generates SOAP messages,
+ and converts between native Python datatypes and SOAP syntax. It can
+ also be used to build applications using SOAP Messages with Attachments.
+ ZSI is ``transport neutral'', and provides only a simple I/O and dispatch
+ framework; a more complete solution is the responsibility of the
+ application using ZSI. As usage patterns emerge, and common application
+ frameworks are more understood, this may change.
+Section: Apps/Programming
+
+Format: PDF
+Files: /usr/share/doc/python-zsi/zsi.pdf.gz
+
+Format: PostScript
+Files: /usr/share/doc/python-zsi/zsi.ps.gz
+
+Format: HTML
+Index: /usr/share/doc/python-zsi/zsi.html
+Files: /usr/share/doc/python-zsi/zsi.html

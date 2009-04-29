@@ -1,0 +1,29 @@
+Document: zsi-user-guide
+Title: The Zolera Soap Infrastructure User's Guide
+Author: Joshua Boverhof <jrboverhof@lbl.gov>, Charles Moad
+Abstract: ZSI, the Zolera SOAP Infrastructure,
+ is a Python package that provides an implementation of the SOAP
+ specification, as described in SOAP 1.1 Specification.
+ .
+ This guide demonstrates how to use ZSI to develop Web Service
+ applications from a Web Services Description Language document.
+ .
+ This document is primarily concerned with demonstrating and documenting
+ how to use a Web Service by creating and accessing Python data for the
+ purposes of sending and receiving SOAP messages. Typecodes are used to
+ marshall Python datatypes into XML, which can be included in a SOAP
+ Envelope. The typecodes are generated from information provided in the
+ WSDL document, and generally describe SOAP and XML Schema data types.
+ For a low-level treatment of typecodes, and a description of SOAP-based
+ processing see the ZSI manual.
+Section: Apps/Programming
+
+Format: PDF
+Files: /usr/share/doc/python-zsi/guide.pdf.gz
+
+Format: PostScript
+Files: /usr/share/doc/python-zsi/guide.ps.gz
+
+Format: HTML
+Index: /usr/share/doc/python-zsi/guide.html
+Files: /usr/share/doc/python-zsi/guide.html

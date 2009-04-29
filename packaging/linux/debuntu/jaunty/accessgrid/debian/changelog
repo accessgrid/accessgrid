@@ -1,0 +1,127 @@
+accessgrid3.2 (3.2-0r67351) jaunty; urgency=low
+
+  * Rebuild for Jaunty Jackalope
+  * Use python-webkit instead of wxMozilla for SharedBrowser
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 01 Apr 2009 16:04:10 +1000
+
+accessgrid3.2 (3.2-0r67351) lenny; urgency=low
+
+  * Add avahi-utils in runtime depends (for ServiceDiscovery)
+  * Re-enable H.264 services
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 31 Mar 2009 08:36:22 +1000
+
+accessgrid3.2 (3.2-0r67350) lenny; urgency=low
+
+  * New 3.2 beta using svn release 6735 (includes dbus/avahi fix)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 27 Mar 2009 13:59:49 +1000
+
+accessgrid3.2 (3.2-0r67233) lenny; urgency=low
+
+  * Add patch for correct output of multicast status to preferences file
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 22 Oct 2008 12:18:24 +1000
+
+accessgrid3.2 (3.2-0r67232) lenny; urgency=low
+
+  * Add (again now that it compiles) vpcscreen as a dependency
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 19 Sep 2008 09:48:47 +1000
+
+accessgrid3.2 (3.2-0r6723) lenny; urgency=low
+
+  * First beta of 3.2 using svn release 6721
+  * Maintain /etc/AccessGrid3 for config files but install.sh ready for
+  *        move to /usr/share/AccessGrid3
+  * Fix agversion patch
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 16 Sep 2008 14:14:44 +1000
+
+accessgrid3.2 (3.2-0r6722) lenny; urgency=low
+
+  * First beta of 3.2 using svn release 6721
+  * Move /etc/AccessGrid3 to /usr/share/AccessGrid3
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 08 Sep 2008 16:09:58 +1000
+
+accessgrid3.2 (3.2-0r6721) lenny; urgency=low
+
+  * First beta of 3.2 using svn release 6721
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 17 Jul 2008 12:43:53 +1000
+
+accessgrid3.2 (3.2-0r6702) lenny; urgency=low
+
+  * Pre-beta of 3.2 using svn release 6702
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 25 Jun 2008 13:10:45 +1000
+
+accessgrid3.1 (3.1-5) lenny; urgency=low
+
+  * Add agvcrlauncher & vpcscreen as dependencies
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 02 May 2008 09:21:18 +1000
+
+accessgrid3.1 (3.1-4) lenny; urgency=low
+
+  * Workaround for video port name probing problem with 64bit python2.4
+  * Restore correct AccessGrid menu location
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 26 Mar 2008 09:34:05 +1000
+
+accessgrid3.1 (3.1-3) lenny; urgency=low
+
+  * New build for lenny, using python-support
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 23 Mar 2008 15:09:10 +1000
+
+accessgrid3.1 (3.1-2) etch; urgency=low
+
+  * Added *H264 services
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 18 Mar 2008 10:51:33 +1000
+
+accessgrid3.1 (3.1-1) etch; urgency=low
+
+  * 3.1 release
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 21 Dec 2007 17:14:45 +1000
+
+accessgrid3.1 (3.1-0cvs20071215-1) etch; urgency=low
+
+  * new 3.1 beta2 snapshot
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 16 Dec 2007 13:26:39 +1000
+
+accessgrid3.1 (3.1-0cvs20071031-2) etch; urgency=low
+
+  * Update vic dependency
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 07 Nov 2007 12:05:20 +1000
+
+accessgrid3.1 (3.1-0cvs20071031-1) etch; urgency=low
+
+  * new 3.1 beta2 snapshot
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 31 Oct 2007 14:57:25 +1000
+
+accessgrid3.1 (3.1-0cvs20071010-2) etch; urgency=low
+
+  * 3.1 beta2 with patch for SharedBrowser
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 11 Oct 2007 14:03:46 +1000
+
+accessgrid3.1 (3.1-0cvs20071010-1) etch; urgency=low
+
+  * Initial release for this snapshot. This is 3.1 beta2
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 10 Oct 2007 12:50:59 +1000
+
+accessgrid3.1 (3.1-0cvs20071005-1) etch; urgency=low
+
+  * Initial release for this snapshot
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 07 Oct 2007 00:29:47 +1000
+

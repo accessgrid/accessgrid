@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+here=`pwd`
+
+# Set any particular variable needed
+#
+#workdir=zsi-2.0
+#site0=http://www.vislab.uq.edu.au/ag3/distfiles
+srcpkg0=zsi-2.0.tar.gz
+
+
+# Load up the default build script
+. ../../agzsi.build
+
+

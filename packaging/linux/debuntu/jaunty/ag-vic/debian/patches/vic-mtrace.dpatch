@@ -1,0 +1,22 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## vic-mtrace.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad mmedia-r4126~/vic/tcl/ui-stats.tcl mmedia-r4126/vic/tcl/ui-stats.tcl
+--- mmedia-r4126~/vic/tcl/ui-stats.tcl	2008-03-15 13:00:52.000000000 +1000
++++ mmedia-r4126/vic/tcl/ui-stats.tcl	2008-03-22 15:59:35.673553948 +1000
+@@ -698,9 +698,9 @@
+ 
+ 	global V
+ 	if {$dir=="to"} {
+-		set cmd "|mtrace [$V(data-net) interface] [$src addr] [$V(data-net) addr]"
++		set cmd "|/usr/sbin/mtrace [$V(data-net) interface] [$src addr] [$V(data-net) addr]"
+ 	} else {
+-		set cmd "|mtrace [$src addr] [$V(data-net) addr]"
++		set cmd "|/usr/sbin/mtrace [$src addr] [$V(data-net) addr]"
+ 	}
+ 	if [catch "open {$cmd} r" fd] {
+ 		$w.t.text insert end "mtrace error: $fd"

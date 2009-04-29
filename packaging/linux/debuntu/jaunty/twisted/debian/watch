@@ -1,0 +1,2 @@
+version=3
+http://tmrc.mit.edu/mirror/twisted/Twisted/(\d\.\d)/ Twisted-([\d\.]*)\.tar\.bz2

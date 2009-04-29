@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+here=`pwd`
+
+# Set any particular variable needed
+#
+WORKDIR=mmedia-r4393
+#SITE0=http://www.vislab.uq.edu.au/ag3/distfiles
+#SRCPKG0=
+
+
+# Load up the default build script
+. ../../ag-rat.build
+
+

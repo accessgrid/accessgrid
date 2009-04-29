@@ -1,0 +1,31 @@
+Source: agzsi
+Section: AccessGrid
+Priority: optional
+#Maintainer: Ubuntu MOTU Developers <ubuntu-motu@lists.ubuntu.com>
+Maintainer: Chris Willing <c.willing@uq.edu.au>
+XSBC-Original-Maintainer: Debian Python Modules Team <python-modules-team@lists.alioth.debian.org>
+Uploaders: Tristan Seligmann <mithrandi@mithrandi.za.net>, Bernd Zeimetz <bernd@bzed.de>, Stefano Zacchiroli <zack@debian.org>
+Build-Depends: cdbs (>= 0.4.41), debhelper (>= 5.0.37.1), python (>= 2.3.5-7), python-support (>= 0.4), dpatch
+XS-Vcs-Svn: svn://svn.debian.org/python-modules/packages/zsi/trunk/
+XS-Vcs-Browser: http://svn.debian.org/wsvn/python-modules/packages/zsi/trunk/
+Standards-Version: 3.7.2
+
+Package: python-agzsi
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}, python-xml
+Conflicts: python2.3-zsi (<= 1.5.0-3), python2.4-zsi (<= 1.5.0-3), python-zsi
+Replaces: python2.3-zsi (<= 1.5.0-3), python2.4-zsi (<= 1.5.0-3), python-zsi
+Description: Zolera Soap Infrastructure
+ ZSI is a Python package that provides an implementation of SOAP messaging,
+ as described in The SOAP 1.1 Specification. In particular, ZSI parses and
+ generates SOAP messages, and converts between native Python datatypes and
+ SOAP syntax. It can also be used to build applications using SOAP Messages
+ with Attachments. ZSI is ``transport neutral'', and provides only a simple
+ I/O and dispatch framework; a more complete solution is the responsibility
+ of the application using ZSI.
+ .
+ This package contains the wsdl2py tool as well as all documentation and
+ makes sure the right ZSI package for the default Debian python version is
+ installed.
+ .
+  Homepage: http://pywebsvcs.sourceforge.net/

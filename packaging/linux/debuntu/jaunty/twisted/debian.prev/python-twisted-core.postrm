@@ -1,0 +1,14 @@
+#! /bin/sh
+
+set -e
+
+case "$1" in
+    purge)
+	find /usr/lib/python[23].*/*-packages/twisted/plugins \
+	    -name dropin.cache | xargs -r rm -f
+	;;
+esac
+
+#DEBHELPER#
+
+exit 0

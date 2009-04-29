@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+here=`pwd`
+
+# Set any particular variable needed
+#
+#workdir=twisted-8.1.0
+#site0=http://www.vislab.uq.edu.au/ag3/distfiles
+srcpkg0=Twisted-8.1.0.tar.bz2
+
+
+# Load up the default build script
+. ../../twisted.build
+
+

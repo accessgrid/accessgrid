@@ -1,0 +1,58 @@
+.\" Copyright © Tristan Seligmann <mithrandi@mithrandi.za.net>
+.\"
+.\" Permission is hereby granted, free of charge, to any person obtaining
+.\" a copy of this software and associated documentation files (the
+.\" "Software"), to deal in the Software without restriction, including
+.\" without limitation the rights to use, copy, modify, merge, publish,
+.\" distribute, sublicense, and/or sell copies of the Software, and to
+.\" permit persons to whom the Software is furnished to do so, subject to
+.\" the following conditions:
+.\"
+.\" The above copyright notice and this permission notice shall be
+.\" included in all copies or substantial portions of the Software.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+.\" EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+.\" NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+.\" LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+.\" OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+.\" WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+.TH WSDL2DISPATCH 1
+.SH NAME
+wsdl2dispatch \- generate Python code skeleton for SOAP server from WSDL
+.SH SYNOPSIS
+.B wsdl2dispatch
+.RI \-f " wsdlfile
+|
+.RI \-u " url
+.RI [ options ]
+.SH DESCRIPTION
+.B wsdl2dispatch
+is a utility to generate a code skeleton from a WSDL file for a SOAP
+server in Python, using ZSI. The programmer still has to implement the
+HTTP server / request handler and the hooks to invoke the actual worker
+methods. Note, however, that ZSI also includes ZSI.ServiceContainer
+which implements the server functionality.
+.SH OPTIONS
+.TP
+.BI \-f " wsdlfile
+Specifies an on-disk WSDL file to parse.
+.TP
+.BI \-u " url
+Specifies a URL pointing to the WSDL file to be parsed.
+.TP
+.BR \-h
+Display a brief help message.
+.TP
+.BR \-e
+Enables experimental server code generation.
+.TP
+.BI \-d " outputdir
+Specifies the directory where the output files will be placed.
+.TP
+.BI \-t " typesmodule
+Specifies a module name to use as the types implementation.
+.SH AUTHOR
+This manpage written by Tristan Seligmann.

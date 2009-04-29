@@ -1,0 +1,42 @@
+ag-rat (4.4.01-1ubuntu5) jaunty; urgency=low
+
+  * New svn version 4393
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 28 Apr 2009 13:46:59 +1000
+
+ag-rat (4.4.01-1ubuntu2) jaunty; urgency=low
+
+  * New build for Jaunty Jackalope
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 27 Apr 2009 15:51:30 +1000
+
+ag-rat (4.4.01-1ubuntu2) hardy; urgency=low
+
+  * New svn version 4229
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 28 Jul 2008 14:43:47 +1000
+
+ag-rat (4.4.01-1ubuntu1) hardy; urgency=low
+
+  * Rebuild for hardy
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 29 Mar 2008 17:08:12 +1000
+
+ag-rat (4.4.01-1) lenny; urgency=low
+
+  * SVN revision 4126
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 22 Mar 2008 21:38:36 +1000
+
+ag-rat (4.4.00-r4109) etch; urgency=low
+
+  * SVN revision 4109
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 06 Nov 2007 21:18:14 +1000
+
+ag-rat (4.4.00) etch; urgency=low
+
+  * First etch version
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 01 Jul 2007 12:48:05 +1000
+

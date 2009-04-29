@@ -1,0 +1,89 @@
+#!/usr/bin/make -f
+
+package = aghdvic
+pkgpath = debian/tmp
+docdir = debian/tmp/usr/share/doc/$(package)
+here=`pwd`
+svcsdir = hdvideoservices-0.25.1
+pkgdir = ${here}/$(pkgpath)
+arch=`uname -m`
+#AGTKDATABASE=/etc
+AGTKDATABASE=/usr/share
+SYSTEMCONFIGBASE=/etc
+
+
+patch:
+	$(checkdir)
+	cat debian/patches/include_memcpy.patch |patch -p0 ; \
+	if [ "${arch}" = "x86_64" ]; then \
+		cat debian/patches/patch-vic-Makefile.in |patch -p0 ; \
+	fi ; \
+	touch patch
+
+
+build:	patch
+	$(checkdir)
+	./configure
+	make
+	touch build
+
+clean:
+	$(checkdir)
+	rm -f build patch
+
+
+binary-arch:	checkroot build
+	$(checkdir)
+	rm -rf $(pkgpath)
+	install -d $(pkgpath)/DEBIAN $(docdir)
+	install -m 755 debian/postinst debian/prerm $(pkgpath)/DEBIAN
+	install -m 644 vic/README* $(docdir)
+	install -d $(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/
+	strip vic/vic
+	cp vic/vic vic/run?* ${svcsdir}/DVideoService/
+	(cd ${svcsdir}/DVideoService ; \
+	zip -0 ../../$(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/DVideoService.zip * )
+
+	cp vic/vic vic/run?* ${svcsdir}/DVideoConsumerService/
+	(cd ${svcsdir}/DVideoConsumerService ; \
+	zip -0 ../../$(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/DVideoConsumerService.zip * )
+
+	cp vic/vic vic/run?* ${svcsdir}/HDVideoService/
+	(cd ${svcsdir}/HDVideoService ; \
+	zip -0 ../../$(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/HDVideoService.zip * )
+
+	cp vic/vic vic/run?* ${svcsdir}/HDVideoConsumerService/
+	(cd ${svcsdir}/HDVideoConsumerService ; \
+	zip -0 ../../$(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/HDVideoConsumerService.zip * )
+
+	cp vic/vic vic/run?* ${svcsdir}/SimpleHDVideoService/
+	(cd ${svcsdir}/SimpleHDVideoService ; \
+	zip -0 ../../$(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/SimpleHDVideoService.zip * )
+
+	cp vic/vic vic/run?* ${svcsdir}/SimpleHDVideoConsumerService/
+	(cd ${svcsdir}/SimpleHDVideoConsumerService ; \
+	zip -0  ../../$(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/SimpleHDVideoConsumerService.zip * )
+
+	install -d $(pkgpath)/${SYSTEMCONFIGBASE}/sysctl.d
+	cp debian/60-aghdvic.conf $(pkgpath)/${SYSTEMCONFIGBASE}/sysctl.d/
+
+	dpkg-gencontrol -isp
+	chown -R root:root $(pkgpath)
+	chmod -R u+w,go=rX $(pkgpath)
+	dpkg --build $(pkgpath) ..
+
+
+binary-indep:	checkroot build
+
+
+define checkdir
+	test -f vic/VERSION -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

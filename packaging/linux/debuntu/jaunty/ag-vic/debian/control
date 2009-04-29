@@ -1,0 +1,15 @@
+Source: ag-vic2.8ucl
+Section: AccessGrid
+Priority: optional
+Maintainer: Chris Willing <c.willing@uq.edu.au>
+Build-Depends: automake, dpatch, libx11-dev, libxt-dev, libxext-dev,
+ libssl-dev, tk-dev, libdv4-dev, subversion, yasm
+Standards-Version: 3.7.2
+
+Package: ag-vic2.8ucl
+Architecture: any
+Depends: ${shlibs:Depends}, tk
+Conflicts: ag-vic, ag-hdvic, vic
+Description: AccessGrid version of vic video tool.
+ This is the UCL version of vic, svn version 4345
+ (20090113)

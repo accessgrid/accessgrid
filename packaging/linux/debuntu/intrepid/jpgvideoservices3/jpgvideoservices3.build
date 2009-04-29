@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+here=`pwd`
+
+# Set any particular variables needed
+#
+#workdir=mmedia-r4215
+#site0=http://www.vislab.uq.edu.au/research/accessgrid/software/JPEGvideo/linux
+#srcpkg0=
+
+
+# Load up the default build script
+. ../../jpgvideoservices3.build
+
+

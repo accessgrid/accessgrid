@@ -1,0 +1,28 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## Platform-unix-Config.py.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad accessgrid3.2-3.2~/AccessGrid/AccessGrid/Platform/unix/Config.py accessgrid3.2-3.2/AccessGrid/AccessGrid/Platform/unix/Config.py
+--- accessgrid3.2-3.2~/AccessGrid/AccessGrid/Platform/unix/Config.py	2008-04-14 08:37:41.000000000 +1000
++++ accessgrid3.2-3.2/AccessGrid/AccessGrid/Platform/unix/Config.py	2008-09-08 15:51:28.959174311 +1000
+@@ -46,7 +46,7 @@
+     if IsFreeBSD():
+         AGTkBasePath = "/usr/local/etc/AccessGrid3"
+     else:
+-        AGTkBasePath = "/etc/AccessGrid3"
++        AGTkBasePath = "/usr/share/AccessGrid3"
+ 
+     def instance(initIfNeeded=0):
+         if Config.AGTkConfig.theAGTkConfigInstance == None:
+@@ -105,7 +105,7 @@
+             self.docDir = os.path.join(self.GetInstallDir(), "doc")
+         else:
+             self.docDir = os.path.join(self.GetInstallDir(), "share", "doc",
+-                                       "AccessGrid-" + str(GetVersion()))
++                                       "accessgrid" + str(GetVersion()))
+     #    # Check dir and make it if needed.
+     #    if self.initIfNeeded:
+     #        if self.docDir is not None and \

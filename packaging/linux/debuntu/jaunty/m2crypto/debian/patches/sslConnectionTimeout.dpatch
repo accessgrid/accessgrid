@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## sslConnectionTimeout.dpatch by  <c.willing@vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Minimize blocking time on dead ssl connections
+
+@DPATCH@
+diff -urNad m2crypto-0.18.2~/M2Crypto/SSL/Connection.py m2crypto-0.18.2/M2Crypto/SSL/Connection.py
+--- m2crypto-0.18.2~/M2Crypto/SSL/Connection.py	2007-06-16 07:34:05.000000000 +1000
++++ m2crypto-0.18.2/M2Crypto/SSL/Connection.py	2008-03-26 12:22:17.692333381 +1000
+@@ -39,6 +39,8 @@
+         self._fileno = self.socket.fileno()
+         
+         self.blocking = self.socket.gettimeout()
++        if self.blocking is None:
++            self.blocking = -1.0
+         
+         self.ssl_close_flag = m2.bio_noclose
+ 

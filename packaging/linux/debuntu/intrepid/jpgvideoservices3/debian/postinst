@@ -1,0 +1,20 @@
+#!/bin/sh
+
+echo " POSTINST: Installing new JPG video services"
+
+SVCSPATH=`python -c "
+import agversion
+agversion.select(3)
+from AccessGrid.Platform.Config import AGTkConfig
+print AGTkConfig.instance().GetNodeServicesDir()
+"`
+[ -z ${SVCSPATH} ] && exit
+
+agpm3.py -z \
+    ${SVCSPATH}/JPGVideoService.zip \
+    ${SVCSPATH}/JPGVideoProducerService.zip \
+    ${SVCSPATH}/JPGVideoConsumerService.zip
+
+#agpm3.py --list-services
+
+

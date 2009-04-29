@@ -1,0 +1,43 @@
+bajjer (0.2.5-3ubuntu2) intrepid; urgency=low
+
+  * New build for intrepid ibex
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 15 Sep 2008 13:14:44 +1000
+
+bajjer (0.2.5-3ubuntu2) hardy; urgency=low
+
+  * Conflicts/Replaces change to better reflect new pkg name
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 08 May 2008 09:16:01 +1000
+
+bajjer (0.2.5-3ubuntu1) hardy; urgency=low
+
+  * Rebuild for hardy - change to cdbs build method
+  * Rename as python-bajjer
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 28 Mar 2008 16:47:54 +1000
+
+bajjer (0.2.5-3) lenny; urgency=low
+
+  * Rebuild for lenny - change to cdbs build method
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 20 Mar 2008 10:34:39 +1000
+
+bajjer (0.2.5-2) etch; urgency=low
+
+  * Added stream.py patch to fully close connections
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 29 Nov 2007 23:43:00 +1000
+
+bajjer (0.2.5-1) etch; urgency=low
+
+  * Added Tom Urams' read speedup patch
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 07 Oct 2007 00:15:31 +1000
+
+bajjer (0.2.5) etch; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 29 May 2007 14:27:05 +1000
+

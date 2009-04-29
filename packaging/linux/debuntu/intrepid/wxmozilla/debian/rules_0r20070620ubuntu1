@@ -1,0 +1,93 @@
+#!/usr/bin/make -f
+
+package = wxmozilla
+pkgdir = debian/$(package)
+pkgtmp = debian/tmp
+docdir = ${pkgdir}/usr/share/doc/$(package)
+
+include /usr/share/dpatch/dpatch.make
+versions := $(shell pyversions -vr)
+
+configure-stamp: patch-stamp
+	dh_testdir
+	autoconf -f
+	touch $@
+
+build:	build-stamp
+	touch $@
+build-stamp: configure-stamp
+	dh_testdir
+	for version in $(versions); \
+	do \
+		PYTHON=python$$version ./configure --prefix=/usr --enable-python --disable-gtktest --enable-xul ; \
+		make ; \
+		make install DESTDIR=$$(pwd)/${pkgtmp} ; \
+		make clean ; \
+	done
+	touch $@
+
+clean:	unpatch
+	$(checkdir)
+	rm -f build build-stamp configure-stamp patch-stamp
+	dh_clean
+
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+
+	install -d ${pkgdir}/DEBIAN $(docdir)
+	install -d ${pkgdir}/usr/share/python-support/wxmozilla/wx-2.8-gtk2-unicode/wx
+	install -d ${pkgdir}/usr/share/python-support/wxmozilla/wx-2.8-gtk2-unicode/wxPython
+	install -d ${pkgdir}/usr/lib/pkgconfig
+	install -d ${pkgdir}/usr/include/wxmozilla/
+	cp -p ${pkgtmp}/usr/lib/python2.4/site-packages/wx-2.8-gtk2-unicode/wx/mozilla.py ${pkgdir}/usr/share/python-support/wxmozilla/wx-2.8-gtk2-unicode/wx/
+	cp -p ${pkgtmp}/usr/lib/python2.4/site-packages/wx-2.8-gtk2-unicode/wxPython/mozilla.py ${pkgdir}/usr/share/python-support/wxmozilla/wx-2.8-gtk2-unicode/wxPython/
+	cp -p ${pkgtmp}/usr/lib/libwxmozilla_gtk2u*a ${pkgdir}/usr/lib/
+	cp -p ${pkgtmp}/usr/lib/libwxmozilla_gtk2u-2.8.so.0.0.0 ${pkgdir}/usr/lib/
+	(cd ${pkgdir}/usr/lib/ && ln -s libwxmozilla_gtk2u-2.8.so.0.0.0 libwxmozilla_gtk2u-2.8.so.0 )
+	(cd ${pkgdir}/usr/lib/ && ln -s libwxmozilla_gtk2u-2.8.so.0.0.0 libwxmozilla_gtk2u-2.8.so )
+	cp -p ${pkgtmp}/usr/lib/pkgconfig/wxmozilla.pc ${pkgdir}/usr/lib/pkgconfig/
+	cp -p ${pkgtmp}/usr/include/wxmozilla/* ${pkgdir}/usr/include/wxmozilla/
+	for version in $(versions); \
+	do \
+		install -d ${pkgdir}/usr/lib/python-support/wxmozilla/python$$version/wx-2.8-gtk2-unicode/wx ; \
+		cp -p ${pkgtmp}/usr/lib/python$$version/site-packages/wx-2.8-gtk2-unicode/wx/_mozilla.* ${pkgdir}/usr/lib/python-support/wxmozilla/python$$version/wx-2.8-gtk2-unicode/wx/ ; \
+	done
+
+	cp -a AUTHORS BUILD.Unix.txt ChangeLog COPYING doc INSTALL NEWS README debian/copyright $(docdir)
+	cp -a debian/changelog $(docdir)/changelog.Debian
+
+
+binary-indep:	build
+	dh_testdir
+	dh_testroot
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs doc/[A-HK-Za-z]*   # Everything but INSTALL.html
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_pysupport
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+
+define checkdir
+	test -f src/wxMozilla.h -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

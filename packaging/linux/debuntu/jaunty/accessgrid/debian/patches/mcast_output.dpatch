@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## mcast_output.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad accessgrid3.2-3.2~/AccessGrid/AccessGrid/MulticastWatcher.py accessgrid3.2-3.2/AccessGrid/AccessGrid/MulticastWatcher.py
+--- accessgrid3.2-3.2~/AccessGrid/AccessGrid/MulticastWatcher.py	2008-03-14 16:20:29.000000000 +1000
++++ accessgrid3.2-3.2/AccessGrid/AccessGrid/MulticastWatcher.py	2008-10-21 10:03:03.853062580 +1000
+@@ -131,7 +131,7 @@
+             self.__Listen()
+             self.sock.close()
+             self.sock = None
+-        return self.mcastStatus.isSet()
++        return int(self.mcastStatus.isSet())
+         
+     def SetHostPort(self,host,port):
+         self.host = host

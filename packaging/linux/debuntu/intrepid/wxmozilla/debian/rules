@@ -1,0 +1,75 @@
+#!/usr/bin/make -f
+
+package = wxmozilla
+pkgdir = debian/$(package)
+pkgtmp = debian/tmp
+docdir = ${pkgdir}/usr/share/doc/$(package)
+
+include /usr/share/dpatch/dpatch.make
+versions := $(shell pyversions -vr)
+
+configure-stamp: patch-stamp
+	dh_testdir
+	autoconf -f
+	touch $@
+
+build:	build-stamp
+	touch $@
+build-stamp: configure-stamp
+	dh_testdir
+	for version in $(versions); \
+	do \
+		PYTHON=python$$version ./configure --prefix=/usr --enable-python --disable-gtktest --enable-xul ; \
+		make ; \
+		make install DESTDIR=$$(pwd)/${pkgdir} ; \
+		make clean ; \
+	done
+	touch $@
+
+clean:	unpatch
+	$(checkdir)
+	rm -f build build-stamp configure-stamp patch-stamp
+	dh_clean
+
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_installdirs
+
+	install -d ${pkgdir}/DEBIAN $(docdir)
+	cp -a AUTHORS BUILD.Unix.txt ChangeLog COPYING doc INSTALL NEWS README debian/copyright $(docdir)
+	cp -a debian/changelog $(docdir)/changelog.Debian
+
+
+binary-indep:	build
+	dh_testdir
+	dh_testroot
+
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs doc/[A-HK-Za-z]*   # Everything but INSTALL.html
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_python
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+
+define checkdir
+	test -f src/wxMozilla.h -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

@@ -1,0 +1,62 @@
+Chris Willing 20080916 
+
+To build any package, cd from here to the apprporiate
+release directory, then to the appropriate package directory.
+Then, run:
+    sudo sh <pkg name>.build
+
+e.g. to build m2crypto for Intrepid Ibex,
+    cd intrepid/m2crypto && sudo sh m2crypto.build
+
+
+The main prequisite for building the AG toolkit itself is
+the agzsi package; it needs to be built and installed before
+the accessgridX.Y package. Otherwise the order is unimportant
+(as far as I know). Nevertheless, I generally tend to build the
+packages in the same order, namely:
+    bajjer
+    agzsi
+    m2crypto
+    twisted
+    agcommon
+    quickbridge
+    ag-vic
+    ag-rat
+    wxmozilla
+    accessgrid
+
+Related packages also available here:
+    aghdvic
+    vpcscreen
+
+
+BUILD ENVIRONMENT
+
+A suitable build environment must exist in order for the build
+scripts to run to completetion. Therefore the following packages
+must already have been installed:
+    build-essential
+    debhelper
+    fakeroot
+    pbuilder
+    cdbs
+    dpatch
+
+In addition, pbuilder needs to be set up (man pbuilder). At the
+least, run:
+    sudo pbuilder create
+
+If you want pbuilder to have access to packages which you have
+already built, but which haven't yet been uploaded to a normal
+repository, a hook file needs to be added to the
+/var/cache/pbuilder/hooks directory. Here is the hook file
+which I use, named "D70results".
+
+#!/bin/sh
+cd /var/cache/pbuilder/result/
+/usr/bin/dpkg-scanpackages . /dev/null > /var/cache/pbuilder/result/Packages
+/usr/bin/apt-get update
+# End of D70results
+
+
+

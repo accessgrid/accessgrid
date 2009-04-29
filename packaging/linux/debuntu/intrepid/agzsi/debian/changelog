@@ -1,0 +1,192 @@
+agzsi (2.0-2ubuntu5) intrepid; urgency=low
+
+  * Fix socket-error patch
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 07 Dec 2008 07:07:08 +1000
+
+agzsi (2.0-2ubuntu4) intrepid; urgency=low
+
+  * Rebuild for Intrepid Ibex with socket error patch for Access Grid
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 15 Sep 2008 14:13:51 +1000
+
+zsi (2.0-2ubuntu4) hardy; urgency=low
+
+  * Readd dependency on python-xml. LP: #199014.
+
+ -- Matthias Klose <doko@ubuntu.com>  Wed, 09 Apr 2008 15:25:46 +0000
+
+zsi (2.0-2ubuntu3) hardy; urgency=low
+
+  * Modify Maintainer value to match the DebianMaintainerField
+    specification.
+
+ -- Andrea Colangelo <warp10@ubuntu.com>  Wed, 02 Apr 2008 08:54:01 +0200
+
+zsi (2.0-2ubuntu2) hardy; urgency=low
+
+  * Revert last change, explicitely add the directory in sys.path,
+    where the old _xmlplus module can be found. LP: #199014.
+
+ -- Matthias Klose <doko@ubuntu.com>  Tue, 01 Apr 2008 14:04:12 +0000
+
+zsi (2.0-2ubuntu1) hardy; urgency=low
+
+  * Drop dependency on python-xml. LP: #199014.
+
+ -- Matthias Klose <doko@ubuntu.com>  Fri, 21 Mar 2008 16:21:29 +0000
+
+zsi (2.0-2) unstable; urgency=low
+
+  * debian/pycompat:
+    - removing file, not needed
+  * debian/pyversions:
+    - limiting supported python versions to 2.4 and higher to make life more
+      easy for backporters. Zsi 2.0 does not support python 2.3 anymore.
+  * debian/watch:
+    - handle -rc versions in a proper way
+  * debian/control:
+    - adding Homepage: link
+
+ -- Bernd Zeimetz <bernd@bzed.de>  Wed, 16 May 2007 12:07:31 +0200
+
+zsi (2.0-1) unstable; urgency=low
+
+  [ Tristan Seligmann ]
+  * New upstream version (closes: #410820).
+  * debian/control
+    - set Maintainer to the team, add me as an uploader
+
+  [ Bernd Zeimetz ]
+  * debian/compat:
+    - bumping compat level to 5, no changes needed
+  * debian/control:
+    - switching dependencies from pycentral to python-support to
+      fix #416103 without hassle
+    - remove no longer needed Provides and X*-Python-Version fields
+    - removing python-all-dev from Build-Depends-Indep
+    - removing python-setuptools from Build-Depends-Indep as the
+      installed Egg-Info will not work on Debian (yet).
+    - add ${misc:Depends} as a dependency
+    - adding XS-Vcs-* fields
+    - adding dpatch to Build-Depends
+    - adding myself to Uploaders
+  * debian/pycompat:
+    - remove file, not needed
+  * debian/python-zsi.doc-base.*, python-zsi.docs:
+    - 2.0 ships with a new documentation, update files accordingly
+  * debian/python-zsi.lintian-overrides
+    - remove file, not needed anymore
+  * debian/source.lintian-overrides
+    - removing now unnecessary overrides, keeping the override
+      for the .cvsignore files in the doc directory
+  * debian/rules:
+    - switching from pycentral to python-support (Closes: #416103)
+    - adding dpatch include
+  * debian/patches/bogus-shebang-remove.dpatch:
+    - adding patch to remove bogus she-bang lines from several files
+  * debian/patches/no-setuptools.dpatch:
+    - make sure we don't use setuptools
+
+  [ Stefano Zacchiroli ]
+  * debian/control
+    - added myself as an Uploader
+  * manpages fixes
+    - wsdl2py: mention that the generated code is Python code, uniform
+      caseness for "WSDL"
+    - wsdl2dispatch: mention Python as above, fixed a typo
+
+ -- Stefano Zacchiroli <zack@debian.org>  Thu, 10 May 2007 12:35:16 +0200
+
+zsi (1.7-2) unstable; urgency=low
+
+  * Bump Standards-Version to 3.7.2 (no changes required).
+  * Move cdbs, debhelper, and python to Build-Depends, as they are needed to
+    run the clean target.
+  * Update package to comply with the new Python policy (closes: #373415).
+    - python-central is used to manage different python versions.
+    - New control headers added as required.
+  * Update Conflicts/Replaces to include python2.4-zsi as well.
+    - These packages were never built for Debian, so this is mainly an Ubuntu
+      courtesy.
+  * Add various lintian overrides with explanatory comments.
+
+ -- Tristan Seligmann <mithrandi@mithrandi.za.net>  Wed, 14 Jun 2006 16:51:12 +0200
+
+zsi (1.7-1) unstable; urgency=low
+
+  * New upstream release.
+  * Adopt package (closes: #282199).
+  * Acknowledge NMU (closes: #256185).
+  * Bump Standards-Version.
+  * Update debian/copyright.
+  * Convert packaging to cdbs.
+  * Eliminate python2.3-zsi package.
+  * Add simple manpages for wsdl2dispatch and wsdl2py.
+  * Add debian/watch file.
+
+ -- Tristan Seligmann <mithrandi@mithrandi.za.net>  Wed, 13 Apr 2005 00:24:49 +0200
+
+zsi (1.5.0-3) unstable; urgency=low
+
+  * QA Group upload orphaning this package
+  * debian/copyright: removed dh_make boilerplatedness
+  * Incorporates previous NMU (closes: #256185)
+
+ -- Andrew Pollock <apollock@debian.org>  Fri,  4 Mar 2005 14:33:36 +1100
+
+zsi (1.5.0-2.1) unstable; urgency=low
+
+  * NMU.
+  * Fix typo in prerm (closes: #256185).
+
+ -- Matthias Klose <doko@debian.org>  Sat,  3 Jul 2004 09:34:31 +0200
+
+zsi (1.5.0-2) unstable; urgency=low
+
+  * Remove mention of python2.2 package in debian/control to work around 
+    a flaw in Debian's testing system: it can not detect that a binary package
+    is never build from a package. Closes: bug#253062
+
+ -- Wichert Akkerman <wichert@wiggy.net>  Sun, 20 Jun 2004 20:44:16 +0200
+ 
+zsi (1.5.0-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Wichert Akkerman <wichert@wiggy.net>  Wed, 02 Jun 2004 12:51:36 +0200
+
+zsi (1.4.1-1) unstable; urgency=low
+
+  * New upstream version
+  * Stop using debian email address
+  * Drop python2.2 support
+
+ -- Wichert Akkerman <wichert@wiggy.net>  Fri, 05 Dec 2003 14:04:33 +0100
+
+zsi (1.4~1-1) unstable; urgency=low
+
+  * New upstream version, now including WSDL handling
+  * Add dependency on python to python-zsi package
+  * Update packaging to use setup.y
+  * Install postinst and prerm for python$pyver-zsi packages
+
+ -- Wichert Akkerman <debian@extern.wiggy.net>  Fri, 12 Sep 2003 16:51:02 +0200
+
+zsi (1.2-7-3) unstable; urgency=low
+
+  * Change default version to python 2.3
+
+ -- Wichert Akkerman <wakkerma@debian.org>  Sat, 09 Aug 2003 02:46:20 +0200
+
+zsi (1.2-7-2) unstable; urgency=low
+
+  * Fix build-depends
+
+ -- Wichert Akkerman <wakkerma@debian.org>  Sat, 07 Jun 2003 01:15:27 +0200
+
+zsi (1.2-7-1) unstable; urgency=low
+
+  * Initial packaging
+
+ -- Wichert Akkerman <wakkerma@debian.org>  Sun, 13 Apr 2003 16:55:33 +0200

@@ -1,0 +1,1835 @@
+--2009-02-20 07:19:59--  http://www.vislab.uq.edu.au/ag3/distfiles/mmedia-r4394.tar.gz
+Resolving www.vislab.uq.edu.au... 130.102.79.1
+Connecting to www.vislab.uq.edu.au|130.102.79.1|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 2650184 (2.5M) [application/x-tar]
+Saving to: `mmedia-r4394.tar.gz'
+
+     0K .......... .......... .......... .......... ..........  1% 55.2M 0s
+    50K .......... .......... .......... .......... ..........  3% 40.5M 0s
+   100K .......... .......... .......... .......... ..........  5% 39.6M 0s
+   150K .......... .......... .......... .......... ..........  7% 26.3M 0s
+   200K .......... .......... .......... .......... ..........  9% 27.3M 0s
+   250K .......... .......... .......... .......... .......... 11% 26.4M 0s
+   300K .......... .......... .......... .......... .......... 13% 26.7M 0s
+   350K .......... .......... .......... .......... .......... 15% 26.7M 0s
+   400K .......... .......... .......... .......... .......... 17% 27.8M 0s
+   450K .......... .......... .......... .......... .......... 19% 27.6M 0s
+   500K .......... .......... .......... .......... .......... 21% 21.7M 0s
+   550K .......... .......... .......... .......... .......... 23% 86.6M 0s
+   600K .......... .......... .......... .......... .......... 25% 84.8M 0s
+   650K .......... .......... .......... .......... .......... 27% 82.7M 0s
+   700K .......... .......... .......... .......... .......... 28% 82.1M 0s
+   750K .......... .......... .......... .......... .......... 30% 87.0M 0s
+   800K .......... .......... .......... .......... .......... 32% 88.1M 0s
+   850K .......... .......... .......... .......... .......... 34% 88.4M 0s
+   900K .......... .......... .......... .......... .......... 36% 65.0M 0s
+   950K .......... .......... .......... .......... .......... 38%  100M 0s
+  1000K .......... .......... .......... .......... .......... 40% 86.6M 0s
+  1050K .......... .......... .......... .......... .......... 42% 92.2M 0s
+  1100K .......... .......... .......... .......... .......... 44% 97.4M 0s
+  1150K .......... .......... .......... .......... .......... 46% 99.0M 0s
+  1200K .......... .......... .......... .......... .......... 48% 61.0M 0s
+  1250K .......... .......... .......... .......... .......... 50% 67.3M 0s
+  1300K .......... .......... .......... .......... .......... 52% 43.7M 0s
+  1350K .......... .......... .......... .......... .......... 54% 85.6M 0s
+  1400K .......... .......... .......... .......... .......... 56% 84.8M 0s
+  1450K .......... .......... .......... .......... .......... 57% 44.5M 0s
+  1500K .......... .......... .......... .......... .......... 59% 62.9M 0s
+  1550K .......... .......... .......... .......... .......... 61% 74.4M 0s
+  1600K .......... .......... .......... .......... .......... 63% 56.4M 0s
+  1650K .......... .......... .......... .......... .......... 65% 64.9M 0s
+  1700K .......... .......... .......... .......... .......... 67% 81.1M 0s
+  1750K .......... .......... .......... .......... .......... 69% 48.7M 0s
+  1800K .......... .......... .......... .......... .......... 71% 77.8M 0s
+  1850K .......... .......... .......... .......... .......... 73% 53.0M 0s
+  1900K .......... .......... .......... .......... .......... 75% 51.2M 0s
+  1950K .......... .......... .......... .......... .......... 77% 54.3M 0s
+  2000K .......... .......... .......... .......... .......... 79% 70.0M 0s
+  2050K .......... .......... .......... .......... .......... 81% 53.2M 0s
+  2100K .......... .......... .......... .......... .......... 83% 56.1M 0s
+  2150K .......... .......... .......... .......... .......... 85% 68.1M 0s
+  2200K .......... .......... .......... .......... .......... 86% 60.0M 0s
+  2250K .......... .......... .......... .......... .......... 88% 78.7M 0s
+  2300K .......... .......... .......... .......... .......... 90% 76.6M 0s
+  2350K .......... .......... .......... .......... .......... 92% 80.1M 0s
+  2400K .......... .......... .......... .......... .......... 94% 81.7M 0s
+  2450K .......... .......... .......... .......... .......... 96% 78.9M 0s
+  2500K .......... .......... .......... .......... .......... 98% 56.3M 0s
+  2550K .......... .......... .......... ........             100% 96.1M=0.05s
+
+2009-02-20 07:19:59 (53.9 MB/s) - `mmedia-r4394.tar.gz' saved [2650184/2650184]
+
+mmedia-r4394/
+mmedia-r4394/common/
+mmedia-r4394/common/.cvsignore
+mmedia-r4394/common/COPYRIGHT
+mmedia-r4394/common/MODS
+mmedia-r4394/common/Makefile.in
+mmedia-r4394/common/README
+mmedia-r4394/common/VERSION
+mmedia-r4394/common/common.dsw
+mmedia-r4394/common/config.guess
+mmedia-r4394/common/config.sub
+mmedia-r4394/common/configure
+mmedia-r4394/common/configure.in
+mmedia-r4394/common/doc/
+mmedia-r4394/common/doc/.cvsignore
+mmedia-r4394/common/doc/Makefile.in
+mmedia-r4394/common/doc/README
+mmedia-r4394/common/doc/html/
+mmedia-r4394/common/doc/html/book1.html
+mmedia-r4394/common/doc/html/uclmmbase-hmac.html
+mmedia-r4394/common/doc/html/uclmmbase-md5.html
+mmedia-r4394/common/doc/html/uclmmbase-net-udp.html
+mmedia-r4394/common/doc/html/uclmmbase-rtp.html
+mmedia-r4394/common/doc/html/uclmmbase.html
+mmedia-r4394/common/doc/tmpl/
+mmedia-r4394/common/doc/tmpl/acconfig.sgml
+mmedia-r4394/common/doc/tmpl/addrinfo.sgml
+mmedia-r4394/common/doc/tmpl/addrsize.sgml
+mmedia-r4394/common/doc/tmpl/asarray.sgml
+mmedia-r4394/common/doc/tmpl/base64.sgml
+mmedia-r4394/common/doc/tmpl/bittypes.sgml
+mmedia-r4394/common/doc/tmpl/btree.sgml
+mmedia-r4394/common/doc/tmpl/cdecl_ext.sgml
+mmedia-r4394/common/doc/tmpl/config_unix.sgml
+mmedia-r4394/common/doc/tmpl/config_win32.sgml
+mmedia-r4394/common/doc/tmpl/crypt_random.sgml
+mmedia-r4394/common/doc/tmpl/debug.sgml
+mmedia-r4394/common/doc/tmpl/drand48.sgml
+mmedia-r4394/common/doc/tmpl/gettimeofday.sgml
+mmedia-r4394/common/doc/tmpl/hmac.sgml
+mmedia-r4394/common/doc/tmpl/inet_ntop.sgml
+mmedia-r4394/common/doc/tmpl/inet_pton.sgml
+mmedia-r4394/common/doc/tmpl/mbus.sgml
+mmedia-r4394/common/doc/tmpl/mbus_addr.sgml
+mmedia-r4394/common/doc/tmpl/mbus_config.sgml
+mmedia-r4394/common/doc/tmpl/mbus_parser.sgml
+mmedia-r4394/common/doc/tmpl/md5.sgml
+mmedia-r4394/common/doc/tmpl/memory.sgml
+mmedia-r4394/common/doc/tmpl/net_udp.sgml
+mmedia-r4394/common/doc/tmpl/ntp.sgml
+mmedia-r4394/common/doc/tmpl/qfDES.sgml
+mmedia-r4394/common/doc/tmpl/rtp.sgml
+mmedia-r4394/common/doc/tmpl/sockstorage.sgml
+mmedia-r4394/common/doc/tmpl/uclconf.sgml
+mmedia-r4394/common/doc/tmpl/uclmmbase-unused.sgml
+mmedia-r4394/common/doc/tmpl/util.sgml
+mmedia-r4394/common/doc/tmpl/version.sgml
+mmedia-r4394/common/doc/tmpl/vsnprintf.sgml
+mmedia-r4394/common/doc/uclmmbase-driver.sgml
+mmedia-r4394/common/doc/uclmmbase-sections.txt
+mmedia-r4394/common/examples/
+mmedia-r4394/common/examples/.cvsignore
+mmedia-r4394/common/examples/Makefile.in
+mmedia-r4394/common/examples/rtp/
+mmedia-r4394/common/examples/rtp/.cvsignore
+mmedia-r4394/common/examples/rtp/Makefile.in
+mmedia-r4394/common/examples/rtp/rtpdemo.c
+mmedia-r4394/common/examples/sap/
+mmedia-r4394/common/examples/sap/Makefile
+mmedia-r4394/common/examples/sap/Makefile.in
+mmedia-r4394/common/examples/sap/sapdemo.c
+mmedia-r4394/common/examples/sdp/
+mmedia-r4394/common/examples/sdp/Makefile
+mmedia-r4394/common/examples/sdp/Makefile.in
+mmedia-r4394/common/examples/sdp/sdpdemo.c
+mmedia-r4394/common/install-sh
+mmedia-r4394/common/src/
+mmedia-r4394/common/src/.cvsignore
+mmedia-r4394/common/src/Makefile.in
+mmedia-r4394/common/src/README.qfdes
+mmedia-r4394/common/src/acconfig.h
+mmedia-r4394/common/src/addrinfo.h
+mmedia-r4394/common/src/addrsize.h
+mmedia-r4394/common/src/asarray.c
+mmedia-r4394/common/src/asarray.h
+mmedia-r4394/common/src/base64.c
+mmedia-r4394/common/src/base64.h
+mmedia-r4394/common/src/bittypes.h
+mmedia-r4394/common/src/boxes-fst.dat
+mmedia-r4394/common/src/btree.c
+mmedia-r4394/common/src/btree.h
+mmedia-r4394/common/src/cdecl_ext.h
+mmedia-r4394/common/src/common.2003.vcproj
+mmedia-r4394/common/src/common.2008.vcproj
+mmedia-r4394/common/src/common.dsp
+mmedia-r4394/common/src/common.vcproj
+mmedia-r4394/common/src/config.h.in
+mmedia-r4394/common/src/config_unix.h
+mmedia-r4394/common/src/config_win32.h
+mmedia-r4394/common/src/crypt_random.c
+mmedia-r4394/common/src/crypt_random.h
+mmedia-r4394/common/src/debug.c
+mmedia-r4394/common/src/debug.h
+mmedia-r4394/common/src/drand48.c
+mmedia-r4394/common/src/drand48.h
+mmedia-r4394/common/src/getaddrinfo.c
+mmedia-r4394/common/src/gettimeofday.c
+mmedia-r4394/common/src/gettimeofday.h
+mmedia-r4394/common/src/hmac.c
+mmedia-r4394/common/src/hmac.h
+mmedia-r4394/common/src/inet_ntop.c
+mmedia-r4394/common/src/inet_ntop.h
+mmedia-r4394/common/src/inet_pton.c
+mmedia-r4394/common/src/inet_pton.h
+mmedia-r4394/common/src/mbus.c
+mmedia-r4394/common/src/mbus.h
+mmedia-r4394/common/src/mbus_addr.c
+mmedia-r4394/common/src/mbus_addr.h
+mmedia-r4394/common/src/mbus_config.c
+mmedia-r4394/common/src/mbus_config.h
+mmedia-r4394/common/src/mbus_parser.c
+mmedia-r4394/common/src/mbus_parser.h
+mmedia-r4394/common/src/md5.c
+mmedia-r4394/common/src/md5.h
+mmedia-r4394/common/src/memory.c
+mmedia-r4394/common/src/memory.h
+mmedia-r4394/common/src/net_udp.c
+mmedia-r4394/common/src/net_udp.h
+mmedia-r4394/common/src/ntp.c
+mmedia-r4394/common/src/ntp.h
+mmedia-r4394/common/src/qfDES.c
+mmedia-r4394/common/src/qfDES.h
+mmedia-r4394/common/src/rijndael-alg-fst.c
+mmedia-r4394/common/src/rijndael-alg-fst.h
+mmedia-r4394/common/src/rijndael-api-fst.c
+mmedia-r4394/common/src/rijndael-api-fst.h
+mmedia-r4394/common/src/rtp.c
+mmedia-r4394/common/src/rtp.h
+mmedia-r4394/common/src/sap.c
+mmedia-r4394/common/src/sap.h
+mmedia-r4394/common/src/sdp.c
+mmedia-r4394/common/src/sdp.h
+mmedia-r4394/common/src/sockstorage.h
+mmedia-r4394/common/src/util.c
+mmedia-r4394/common/src/util.h
+mmedia-r4394/common/src/vsnprintf.c
+mmedia-r4394/common/src/vsnprintf.h
+mmedia-r4394/common/tests/
+mmedia-r4394/common/tests/.cvsignore
+mmedia-r4394/common/tests/Makefile.in
+mmedia-r4394/common/tests/test.c
+mmedia-r4394/common/tests/test_aes.c
+mmedia-r4394/common/tests/test_aes.h
+mmedia-r4394/common/tests/test_aes.results.cbc_d_m.txt
+mmedia-r4394/common/tests/test_aes.results.cbc_e_m.txt
+mmedia-r4394/common/tests/test_aes.results.ecb_d_m.txt
+mmedia-r4394/common/tests/test_aes.results.ecb_e_m.txt
+mmedia-r4394/common/tests/test_aes.results.ecb_iv.txt
+mmedia-r4394/common/tests/test_aes.results.ecb_tbl.txt
+mmedia-r4394/common/tests/test_aes.results.ecb_vk.txt
+mmedia-r4394/common/tests/test_aes.results.ecb_vt.txt
+mmedia-r4394/common/tests/test_aes.table.128
+mmedia-r4394/common/tests/test_aes.table.192
+mmedia-r4394/common/tests/test_aes.table.256
+mmedia-r4394/common/tests/test_base64.c
+mmedia-r4394/common/tests/test_base64.h
+mmedia-r4394/common/tests/test_des.c
+mmedia-r4394/common/tests/test_des.h
+mmedia-r4394/common/tests/test_mbus_addr.c
+mmedia-r4394/common/tests/test_mbus_addr.h
+mmedia-r4394/common/tests/test_mbus_parser.c
+mmedia-r4394/common/tests/test_mbus_parser.h
+mmedia-r4394/common/tests/test_md5.c
+mmedia-r4394/common/tests/test_md5.h
+mmedia-r4394/common/tests/test_memory.c
+mmedia-r4394/common/tests/test_memory.h
+mmedia-r4394/common/tests/test_net_udp.c
+mmedia-r4394/common/tests/test_net_udp.h
+mmedia-r4394/common/tests/testcommon.dsp
+mmedia-r4394/common/tests/testcommon.vcproj
+mmedia-r4394/rat/
+mmedia-r4394/rat/.cvsignore
+mmedia-r4394/rat/COPYRIGHT
+mmedia-r4394/rat/INSTALL.TXT
+mmedia-r4394/rat/MODS
+mmedia-r4394/rat/Makefile.in
+mmedia-r4394/rat/README
+mmedia-r4394/rat/README.HPUX10
+mmedia-r4394/rat/README.IXJ
+mmedia-r4394/rat/README.RELEASES
+mmedia-r4394/rat/README.WB-ADPCM
+mmedia-r4394/rat/README.debug
+mmedia-r4394/rat/README.devices
+mmedia-r4394/rat/README.files
+mmedia-r4394/rat/README.g728
+mmedia-r4394/rat/README.gsm
+mmedia-r4394/rat/README.mbus
+mmedia-r4394/rat/README.playout
+mmedia-r4394/rat/README.reporting-bugs
+mmedia-r4394/rat/README.settings
+mmedia-r4394/rat/README.timestamps
+mmedia-r4394/rat/README.voxlet
+mmedia-r4394/rat/VERSION
+mmedia-r4394/rat/acconfig.h
+mmedia-r4394/rat/aclocal.m4
+mmedia-r4394/rat/asfilebox.tcl
+mmedia-r4394/rat/auddev.c
+mmedia-r4394/rat/auddev.h
+mmedia-r4394/rat/auddev_alsa.c
+mmedia-r4394/rat/auddev_alsa.h
+mmedia-r4394/rat/auddev_atm.c
+mmedia-r4394/rat/auddev_atm.h
+mmedia-r4394/rat/auddev_ixj.c
+mmedia-r4394/rat/auddev_ixj.h
+mmedia-r4394/rat/auddev_luigi.c
+mmedia-r4394/rat/auddev_luigi.h
+mmedia-r4394/rat/auddev_macosx.c
+mmedia-r4394/rat/auddev_macosx.h
+mmedia-r4394/rat/auddev_netbsd.c
+mmedia-r4394/rat/auddev_netbsd.h
+mmedia-r4394/rat/auddev_newpcm.c
+mmedia-r4394/rat/auddev_newpcm.h
+mmedia-r4394/rat/auddev_null.c
+mmedia-r4394/rat/auddev_null.h
+mmedia-r4394/rat/auddev_osprey.c
+mmedia-r4394/rat/auddev_osprey.h
+mmedia-r4394/rat/auddev_oss.c
+mmedia-r4394/rat/auddev_oss.h
+mmedia-r4394/rat/auddev_pca.c
+mmedia-r4394/rat/auddev_pca.h
+mmedia-r4394/rat/auddev_sgi.c
+mmedia-r4394/rat/auddev_sgi.h
+mmedia-r4394/rat/auddev_sparc.c
+mmedia-r4394/rat/auddev_sparc.h
+mmedia-r4394/rat/auddev_trans.c
+mmedia-r4394/rat/auddev_trans.h
+mmedia-r4394/rat/auddev_win32.c
+mmedia-r4394/rat/auddev_win32.h
+mmedia-r4394/rat/audio.c
+mmedia-r4394/rat/audio.h
+mmedia-r4394/rat/audio_fmt.c
+mmedia-r4394/rat/audio_fmt.h
+mmedia-r4394/rat/audio_types.h
+mmedia-r4394/rat/audio_util.c
+mmedia-r4394/rat/audio_util.h
+mmedia-r4394/rat/bin2c.c
+mmedia-r4394/rat/bitstream.c
+mmedia-r4394/rat/bitstream.h
+mmedia-r4394/rat/cc_layered.c
+mmedia-r4394/rat/cc_layered.h
+mmedia-r4394/rat/cc_rdncy.c
+mmedia-r4394/rat/cc_rdncy.h
+mmedia-r4394/rat/cc_vanilla.c
+mmedia-r4394/rat/cc_vanilla.h
+mmedia-r4394/rat/channel.c
+mmedia-r4394/rat/channel.h
+mmedia-r4394/rat/channel_types.c
+mmedia-r4394/rat/channel_types.h
+mmedia-r4394/rat/cmd_parser.c
+mmedia-r4394/rat/cmd_parser.h
+mmedia-r4394/rat/codec.c
+mmedia-r4394/rat/codec.h
+mmedia-r4394/rat/codec_acm.c
+mmedia-r4394/rat/codec_acm.h
+mmedia-r4394/rat/codec_compat.c
+mmedia-r4394/rat/codec_compat.h
+mmedia-r4394/rat/codec_dvi.c
+mmedia-r4394/rat/codec_dvi.h
+mmedia-r4394/rat/codec_g711.c
+mmedia-r4394/rat/codec_g711.h
+mmedia-r4394/rat/codec_g726.c
+mmedia-r4394/rat/codec_g726.h
+mmedia-r4394/rat/codec_g728.c
+mmedia-r4394/rat/codec_g728.h
+mmedia-r4394/rat/codec_gsm.c
+mmedia-r4394/rat/codec_gsm.h
+mmedia-r4394/rat/codec_l16.c
+mmedia-r4394/rat/codec_l16.h
+mmedia-r4394/rat/codec_l8.c
+mmedia-r4394/rat/codec_l8.h
+mmedia-r4394/rat/codec_lpc.c
+mmedia-r4394/rat/codec_lpc.h
+mmedia-r4394/rat/codec_state.c
+mmedia-r4394/rat/codec_state.h
+mmedia-r4394/rat/codec_types.c
+mmedia-r4394/rat/codec_types.h
+mmedia-r4394/rat/codec_vdvi.c
+mmedia-r4394/rat/codec_vdvi.h
+mmedia-r4394/rat/codec_wbs.c
+mmedia-r4394/rat/codec_wbs.h
+mmedia-r4394/rat/config.guess
+mmedia-r4394/rat/config.h.in
+mmedia-r4394/rat/config.sub
+mmedia-r4394/rat/config_unix.h
+mmedia-r4394/rat/config_win32.h
+mmedia-r4394/rat/configure
+mmedia-r4394/rat/configure.in
+mmedia-r4394/rat/convert_acm.c
+mmedia-r4394/rat/convert_acm.h
+mmedia-r4394/rat/convert_extra.c
+mmedia-r4394/rat/convert_extra.h
+mmedia-r4394/rat/convert_linear.c
+mmedia-r4394/rat/convert_linear.h
+mmedia-r4394/rat/convert_sinc.c
+mmedia-r4394/rat/convert_sinc.h
+mmedia-r4394/rat/convert_util.c
+mmedia-r4394/rat/convert_util.h
+mmedia-r4394/rat/converter.c
+mmedia-r4394/rat/converter.h
+mmedia-r4394/rat/converter_types.h
+mmedia-r4394/rat/cushion.c
+mmedia-r4394/rat/cushion.h
+mmedia-r4394/rat/cx_dvi.c
+mmedia-r4394/rat/cx_dvi.h
+mmedia-r4394/rat/cx_g726.c
+mmedia-r4394/rat/cx_g726.h
+mmedia-r4394/rat/cx_g726_16.c
+mmedia-r4394/rat/cx_g726_24.c
+mmedia-r4394/rat/cx_g726_32.c
+mmedia-r4394/rat/cx_g726_40.c
+mmedia-r4394/rat/cx_gsm.c
+mmedia-r4394/rat/cx_gsm.h
+mmedia-r4394/rat/cx_lpc.c
+mmedia-r4394/rat/cx_lpc.h
+mmedia-r4394/rat/cx_vdvi.c
+mmedia-r4394/rat/cx_vdvi.h
+mmedia-r4394/rat/cx_wbs.c
+mmedia-r4394/rat/cx_wbs.h
+mmedia-r4394/rat/decim_3528kHz_8kHz.inc
+mmedia-r4394/rat/fatal_error.c
+mmedia-r4394/rat/fatal_error.h
+mmedia-r4394/rat/install-sh
+mmedia-r4394/rat/installer.c
+mmedia-r4394/rat/main_control.c
+mmedia-r4394/rat/main_engine.c
+mmedia-r4394/rat/main_ui.c
+mmedia-r4394/rat/man/
+mmedia-r4394/rat/man/man1/
+mmedia-r4394/rat/man/man1/rat.1
+mmedia-r4394/rat/mbus_control.c
+mmedia-r4394/rat/mbus_control.h
+mmedia-r4394/rat/mbus_engine.c
+mmedia-r4394/rat/mbus_engine.h
+mmedia-r4394/rat/mbus_ui.c
+mmedia-r4394/rat/mbus_ui.h
+mmedia-r4394/rat/mix.c
+mmedia-r4394/rat/mix.h
+mmedia-r4394/rat/net.c
+mmedia-r4394/rat/net.h
+mmedia-r4394/rat/parameters.c
+mmedia-r4394/rat/parameters.h
+mmedia-r4394/rat/pdb.c
+mmedia-r4394/rat/pdb.h
+mmedia-r4394/rat/pktbuf.c
+mmedia-r4394/rat/pktbuf.h
+mmedia-r4394/rat/playout.c
+mmedia-r4394/rat/playout.h
+mmedia-r4394/rat/playout_calc.c
+mmedia-r4394/rat/playout_calc.h
+mmedia-r4394/rat/process.c
+mmedia-r4394/rat/process.h
+mmedia-r4394/rat/rat-kill.c
+mmedia-r4394/rat/rat-nsis-installer.nsi
+mmedia-r4394/rat/rat.dsp
+mmedia-r4394/rat/rat.dsw
+mmedia-r4394/rat/rat.iwz
+mmedia-r4394/rat/rat.sln
+mmedia-r4394/rat/rat.spec
+mmedia-r4394/rat/rat.vcproj
+mmedia-r4394/rat/ratmedia.dsp
+mmedia-r4394/rat/ratmedia.vcproj
+mmedia-r4394/rat/ratui.dsp
+mmedia-r4394/rat/ratui.vcproj
+mmedia-r4394/rat/render_3D.c
+mmedia-r4394/rat/render_3D.h
+mmedia-r4394/rat/repair.c
+mmedia-r4394/rat/repair.h
+mmedia-r4394/rat/repair_types.h
+mmedia-r4394/rat/rtp_callback.c
+mmedia-r4394/rat/rtp_callback.h
+mmedia-r4394/rat/rtp_dump.c
+mmedia-r4394/rat/rtp_dump.h
+mmedia-r4394/rat/sdr2.plugin.in
+mmedia-r4394/rat/session.c
+mmedia-r4394/rat/session.h
+mmedia-r4394/rat/settings.c
+mmedia-r4394/rat/settings.h
+mmedia-r4394/rat/sndfile.c
+mmedia-r4394/rat/sndfile.h
+mmedia-r4394/rat/sndfile_au.c
+mmedia-r4394/rat/sndfile_au.h
+mmedia-r4394/rat/sndfile_raw.c
+mmedia-r4394/rat/sndfile_raw.h
+mmedia-r4394/rat/sndfile_types.h
+mmedia-r4394/rat/sndfile_wav.c
+mmedia-r4394/rat/sndfile_wav.h
+mmedia-r4394/rat/source.c
+mmedia-r4394/rat/source.h
+mmedia-r4394/rat/tcl.m4
+mmedia-r4394/rat/tcl2c/
+mmedia-r4394/rat/tcl2c/.cvsignore
+mmedia-r4394/rat/tcl2c/tcl2c.c
+mmedia-r4394/rat/tcl2c/tcl2c.dsp
+mmedia-r4394/rat/tcltk.c
+mmedia-r4394/rat/tcltk.h
+mmedia-r4394/rat/tests/
+mmedia-r4394/rat/tests/Makefile
+mmedia-r4394/rat/tests/README
+mmedia-r4394/rat/tests/native.c
+mmedia-r4394/rat/tests/rtone.c
+mmedia-r4394/rat/tests/test_3d.c
+mmedia-r4394/rat/tests/test_audio_fmt_convert.c
+mmedia-r4394/rat/tests/test_channel.c
+mmedia-r4394/rat/tests/test_codecs.c
+mmedia-r4394/rat/tests/test_convert.c
+mmedia-r4394/rat/tests/test_convert.sh
+mmedia-r4394/rat/tests/test_iphlpapi.cpp
+mmedia-r4394/rat/tests/test_pktbuf.c
+mmedia-r4394/rat/tests/test_rdncy.c
+mmedia-r4394/rat/tests/test_repair.c
+mmedia-r4394/rat/tests/test_ts.c
+mmedia-r4394/rat/tonegen.c
+mmedia-r4394/rat/tonegen.h
+mmedia-r4394/rat/transcoder.c
+mmedia-r4394/rat/transcoder.h
+mmedia-r4394/rat/transmit.c
+mmedia-r4394/rat/transmit.h
+mmedia-r4394/rat/ts.c
+mmedia-r4394/rat/ts.h
+mmedia-r4394/rat/uclaudio.dsp
+mmedia-r4394/rat/uclaudio.vcproj
+mmedia-r4394/rat/uclcodec.dsp
+mmedia-r4394/rat/uclcodec.vcproj
+mmedia-r4394/rat/uclsndfile.dsp
+mmedia-r4394/rat/uclsndfile.vcproj
+mmedia-r4394/rat/ui_audiotool.tcl
+mmedia-r4394/rat/ui_installer.tcl
+mmedia-r4394/rat/ui_original.tcl
+mmedia-r4394/rat/ui_send_audio.c
+mmedia-r4394/rat/ui_send_audio.h
+mmedia-r4394/rat/ui_send_prefs.c
+mmedia-r4394/rat/ui_send_prefs.h
+mmedia-r4394/rat/ui_send_rtp.c
+mmedia-r4394/rat/ui_send_rtp.h
+mmedia-r4394/rat/ui_send_stats.c
+mmedia-r4394/rat/ui_send_stats.h
+mmedia-r4394/rat/ui_transcoder.tcl
+mmedia-r4394/rat/uicomponent_bargraph.tcl
+mmedia-r4394/rat/uicomponent_chart.tcl
+mmedia-r4394/rat/uicomponent_help.tcl
+mmedia-r4394/rat/usleep.c
+mmedia-r4394/rat/usleep.h
+mmedia-r4394/rat/voxlet.c
+mmedia-r4394/rat/voxlet.h
+mmedia-r4394/rat/win32.c
+mmedia-r4394/rat/xbm/
+mmedia-r4394/rat/xbm/balloon.xbm
+mmedia-r4394/rat/xbm/disk.xbm
+mmedia-r4394/rat/xbm/left.xbm
+mmedia-r4394/rat/xbm/pause.xbm
+mmedia-r4394/rat/xbm/play.xbm
+mmedia-r4394/rat/xbm/rat2.xbm
+mmedia-r4394/rat/xbm/rat_med.xbm
+mmedia-r4394/rat/xbm/rat_small.xbm
+mmedia-r4394/rat/xbm/rec.xbm
+mmedia-r4394/rat/xbm/reception.xbm
+mmedia-r4394/rat/xbm/right.xbm
+mmedia-r4394/rat/xbm/stop.xbm
+mmedia-r4394/rat/xbm/ucl.xbm
+mmedia-r4394/rat/xbm/waveform.xbm
+mmedia-r4394/vic/
+mmedia-r4394/vic/CHANGES.html
+mmedia-r4394/vic/FILES
+mmedia-r4394/vic/LICENSE.txt
+mmedia-r4394/vic/Makefile.in
+mmedia-r4394/vic/README
+mmedia-r4394/vic/README.WIN32
+mmedia-r4394/vic/Tcl.cpp
+mmedia-r4394/vic/Tcl2.cpp
+mmedia-r4394/vic/VERSION
+mmedia-r4394/vic/aclocal.m4
+mmedia-r4394/vic/assistor-list.h
+mmedia-r4394/vic/bsd-endian.h
+mmedia-r4394/vic/cm170.ppm
+mmedia-r4394/vic/codec/
+mmedia-r4394/vic/codec/cellb_tables.c
+mmedia-r4394/vic/codec/compositor.cpp
+mmedia-r4394/vic/codec/databuffer.cpp
+mmedia-r4394/vic/codec/databuffer.h
+mmedia-r4394/vic/codec/dct.cpp
+mmedia-r4394/vic/codec/dct.h
+mmedia-r4394/vic/codec/decoder-bvc.cpp
+mmedia-r4394/vic/codec/decoder-cellb.cpp
+mmedia-r4394/vic/codec/decoder-cosmo.cpp
+mmedia-r4394/vic/codec/decoder-dv.cpp
+mmedia-r4394/vic/codec/decoder-h261.cpp
+mmedia-r4394/vic/codec/decoder-h261as.cpp
+mmedia-r4394/vic/codec/decoder-h261v1.cpp
+mmedia-r4394/vic/codec/decoder-h263.cpp
+mmedia-r4394/vic/codec/decoder-h263.h
+mmedia-r4394/vic/codec/decoder-h263v2.cpp
+mmedia-r4394/vic/codec/decoder-h264.cpp
+mmedia-r4394/vic/codec/decoder-jpeg.cpp
+mmedia-r4394/vic/codec/decoder-jpeg.h
+mmedia-r4394/vic/codec/decoder-mpeg4.cpp
+mmedia-r4394/vic/codec/decoder-nv.cpp
+mmedia-r4394/vic/codec/decoder-pvh.cpp
+mmedia-r4394/vic/codec/decoder-raw.cpp
+mmedia-r4394/vic/codec/decoder-scr.cpp
+mmedia-r4394/vic/codec/decoder.cpp
+mmedia-r4394/vic/codec/decoder.h
+mmedia-r4394/vic/codec/encoder-bvc.cpp
+mmedia-r4394/vic/codec/encoder-cellb.cpp
+mmedia-r4394/vic/codec/encoder-h261.cpp
+mmedia-r4394/vic/codec/encoder-h261as.cpp
+mmedia-r4394/vic/codec/encoder-h263.cpp
+mmedia-r4394/vic/codec/encoder-h263.h
+mmedia-r4394/vic/codec/encoder-h263v2.cpp
+mmedia-r4394/vic/codec/encoder-h264.cpp
+mmedia-r4394/vic/codec/encoder-jpeg.cpp
+mmedia-r4394/vic/codec/encoder-mpeg4.cpp
+mmedia-r4394/vic/codec/encoder-nv.cpp
+mmedia-r4394/vic/codec/encoder-pvh.cpp
+mmedia-r4394/vic/codec/encoder-raw.cpp
+mmedia-r4394/vic/codec/ffmpeg_codec.cpp
+mmedia-r4394/vic/codec/ffmpeg_codec.h
+mmedia-r4394/vic/codec/framer-cellb.cpp
+mmedia-r4394/vic/codec/framer-h261.cpp
+mmedia-r4394/vic/codec/framer-h261.h
+mmedia-r4394/vic/codec/framer-h261hw.cpp
+mmedia-r4394/vic/codec/framer-jpeg.cpp
+mmedia-r4394/vic/codec/h263/
+mmedia-r4394/vic/codec/h263/DataTypes.h
+mmedia-r4394/vic/codec/h263/H263 Erlangen codec.dsp
+mmedia-r4394/vic/codec/h263/H263_cbpb.h
+mmedia-r4394/vic/codec/h263/H263_cbpyI.h
+mmedia-r4394/vic/codec/h263/H263_cbpyP.h
+mmedia-r4394/vic/codec/h263/H263_esclevel.h
+mmedia-r4394/vic/codec/h263/H263_escrun.h
+mmedia-r4394/vic/codec/h263/H263_intradc.h
+mmedia-r4394/vic/codec/h263/H263_mcbpcI.h
+mmedia-r4394/vic/codec/h263/H263_mcbpcP.h
+mmedia-r4394/vic/codec/h263/H263_modb.h
+mmedia-r4394/vic/codec/h263/H263_mvd.h
+mmedia-r4394/vic/codec/h263/H263_tcoef.h
+mmedia-r4394/vic/codec/h263/Motion.h
+mmedia-r4394/vic/codec/h263/Util.h
+mmedia-r4394/vic/codec/h263/bitIn.c
+mmedia-r4394/vic/codec/h263/bitIn.h
+mmedia-r4394/vic/codec/h263/bitIn.p
+mmedia-r4394/vic/codec/h263/bitOut.c
+mmedia-r4394/vic/codec/h263/bitOut.h
+mmedia-r4394/vic/codec/h263/bitOut.p
+mmedia-r4394/vic/codec/h263/block.c
+mmedia-r4394/vic/codec/h263/code.c
+mmedia-r4394/vic/codec/h263/code.h
+mmedia-r4394/vic/codec/h263/common.h
+mmedia-r4394/vic/codec/h263/common.p
+mmedia-r4394/vic/codec/h263/config.h
+mmedia-r4394/vic/codec/h263/defs.h
+mmedia-r4394/vic/codec/h263/error.h
+mmedia-r4394/vic/codec/h263/fdct.c
+mmedia-r4394/vic/codec/h263/getblk.c
+mmedia-r4394/vic/codec/h263/getgob.c
+mmedia-r4394/vic/codec/h263/gethdr.c
+mmedia-r4394/vic/codec/h263/getvlc.c
+mmedia-r4394/vic/codec/h263/getvlc.h
+mmedia-r4394/vic/codec/h263/h263.h
+mmedia-r4394/vic/codec/h263/h263dec.c
+mmedia-r4394/vic/codec/h263/h263decoder.h
+mmedia-r4394/vic/codec/h263/h263decoder.p
+mmedia-r4394/vic/codec/h263/h263enc.c
+mmedia-r4394/vic/codec/h263/h263encoder.h
+mmedia-r4394/vic/codec/h263/h263encoder.p
+mmedia-r4394/vic/codec/h263/h263mux.c
+mmedia-r4394/vic/codec/h263/h263rtp.c
+mmedia-r4394/vic/codec/h263/idctdec.c
+mmedia-r4394/vic/codec/h263/idctenc.c
+mmedia-r4394/vic/codec/h263/indices.h
+mmedia-r4394/vic/codec/h263/input.c
+mmedia-r4394/vic/codec/h263/motion.c
+mmedia-r4394/vic/codec/h263/recon.c
+mmedia-r4394/vic/codec/h263/reconh263.c
+mmedia-r4394/vic/codec/h263/sac.c
+mmedia-r4394/vic/codec/h263/sactbls.h
+mmedia-r4394/vic/codec/h263/structs.h
+mmedia-r4394/vic/codec/huffcode.c
+mmedia-r4394/vic/codec/jpeg/
+mmedia-r4394/vic/codec/jpeg/jpeg.cpp
+mmedia-r4394/vic/codec/jpeg/jpeg.h
+mmedia-r4394/vic/codec/p64/
+mmedia-r4394/vic/codec/p64/mkhuff.cpp
+mmedia-r4394/vic/codec/p64/p64-huff.h
+mmedia-r4394/vic/codec/p64/p64.cpp
+mmedia-r4394/vic/codec/p64/p64.h
+mmedia-r4394/vic/codec/p64/p64as.cpp
+mmedia-r4394/vic/codec/p64/p64as.h
+mmedia-r4394/vic/codec/p64/p64dump.cpp
+mmedia-r4394/vic/codec/p64/p64dump.h
+mmedia-r4394/vic/codec/packetbuffer.cpp
+mmedia-r4394/vic/codec/packetbuffer.h
+mmedia-r4394/vic/codec/pvh-huff.c
+mmedia-r4394/vic/codec/pvh-huff.h
+mmedia-r4394/vic/codec/pvh.h
+mmedia-r4394/vic/codec/rtp_h264_depayloader.cpp
+mmedia-r4394/vic/codec/rtp_h264_depayloader.h
+mmedia-r4394/vic/codec/tmn/
+mmedia-r4394/vic/codec/tmn/CHANGES
+mmedia-r4394/vic/codec/tmn/Makefile
+mmedia-r4394/vic/codec/tmn/Makefile.lib
+mmedia-r4394/vic/codec/tmn/README
+mmedia-r4394/vic/codec/tmn/TAGS
+mmedia-r4394/vic/codec/tmn/TODO
+mmedia-r4394/vic/codec/tmn/coder.c
+mmedia-r4394/vic/codec/tmn/config.h
+mmedia-r4394/vic/codec/tmn/copyit
+mmedia-r4394/vic/codec/tmn/countbit.c
+mmedia-r4394/vic/codec/tmn/dct.c
+mmedia-r4394/vic/codec/tmn/filter.c
+mmedia-r4394/vic/codec/tmn/h263coder.h
+mmedia-r4394/vic/codec/tmn/indices.h
+mmedia-r4394/vic/codec/tmn/intra_pred.c
+mmedia-r4394/vic/codec/tmn/io.c
+mmedia-r4394/vic/codec/tmn/macros.h
+mmedia-r4394/vic/codec/tmn/main.c
+mmedia-r4394/vic/codec/tmn/main.h
+mmedia-r4394/vic/codec/tmn/malloc_debug.c
+mmedia-r4394/vic/codec/tmn/mot_est.c
+mmedia-r4394/vic/codec/tmn/pred.c
+mmedia-r4394/vic/codec/tmn/putbits.c
+mmedia-r4394/vic/codec/tmn/putvlc.c
+mmedia-r4394/vic/codec/tmn/putvlc.h
+mmedia-r4394/vic/codec/tmn/quant.c
+mmedia-r4394/vic/codec/tmn/ratectrl.c
+mmedia-r4394/vic/codec/tmn/sac.c
+mmedia-r4394/vic/codec/tmn/sactbls.h
+mmedia-r4394/vic/codec/tmn/sim.h
+mmedia-r4394/vic/codec/tmn/snr.c
+mmedia-r4394/vic/codec/tmn/tmn.dsp
+mmedia-r4394/vic/codec/tmn/vlc.h
+mmedia-r4394/vic/codec/tmn-x/
+mmedia-r4394/vic/codec/tmn-x/H263v2 Enc_tmnx.dsp
+mmedia-r4394/vic/codec/tmn-x/Makefile
+mmedia-r4394/vic/codec/tmn-x/Makefile.mak
+mmedia-r4394/vic/codec/tmn-x/coder.c
+mmedia-r4394/vic/codec/tmn-x/config.h
+mmedia-r4394/vic/codec/tmn-x/countbit.c
+mmedia-r4394/vic/codec/tmn-x/dct.c
+mmedia-r4394/vic/codec/tmn-x/filter.c
+mmedia-r4394/vic/codec/tmn-x/h263coder.h
+mmedia-r4394/vic/codec/tmn-x/indices.h
+mmedia-r4394/vic/codec/tmn-x/intra_pred.c
+mmedia-r4394/vic/codec/tmn-x/io.c
+mmedia-r4394/vic/codec/tmn-x/macros.h
+mmedia-r4394/vic/codec/tmn-x/main.c
+mmedia-r4394/vic/codec/tmn-x/main.h
+mmedia-r4394/vic/codec/tmn-x/malloc_debug.c
+mmedia-r4394/vic/codec/tmn-x/mot_est.c
+mmedia-r4394/vic/codec/tmn-x/pred.c
+mmedia-r4394/vic/codec/tmn-x/putbits.c
+mmedia-r4394/vic/codec/tmn-x/putvlc.c
+mmedia-r4394/vic/codec/tmn-x/putvlc.h
+mmedia-r4394/vic/codec/tmn-x/quant.c
+mmedia-r4394/vic/codec/tmn-x/ratectrl.c
+mmedia-r4394/vic/codec/tmn-x/sac.c
+mmedia-r4394/vic/codec/tmn-x/sactbls.h
+mmedia-r4394/vic/codec/tmn-x/sim.h
+mmedia-r4394/vic/codec/tmn-x/snr.c
+mmedia-r4394/vic/codec/tmn-x/vlc.h
+mmedia-r4394/vic/codec/tmndec/
+mmedia-r4394/vic/codec/tmndec/CHANGES
+mmedia-r4394/vic/codec/tmndec/H263v2 Dec_tmndec.dsp
+mmedia-r4394/vic/codec/tmndec/Makefile
+mmedia-r4394/vic/codec/tmndec/Makefile.bak
+mmedia-r4394/vic/codec/tmndec/Makefile.lib
+mmedia-r4394/vic/codec/tmndec/Makefile.mak
+mmedia-r4394/vic/codec/tmndec/Makefile.win32
+mmedia-r4394/vic/codec/tmndec/README
+mmedia-r4394/vic/codec/tmndec/TODO
+mmedia-r4394/vic/codec/tmndec/config.h
+mmedia-r4394/vic/codec/tmndec/display.c
+mmedia-r4394/vic/codec/tmndec/dither.c
+mmedia-r4394/vic/codec/tmndec/getbits.c
+mmedia-r4394/vic/codec/tmndec/getblk.c
+mmedia-r4394/vic/codec/tmndec/gethdr.c
+mmedia-r4394/vic/codec/tmndec/getpic.c
+mmedia-r4394/vic/codec/tmndec/getvlc.c
+mmedia-r4394/vic/codec/tmndec/getvlc.h
+mmedia-r4394/vic/codec/tmndec/global.h
+mmedia-r4394/vic/codec/tmndec/idct.c
+mmedia-r4394/vic/codec/tmndec/idctref.c
+mmedia-r4394/vic/codec/tmndec/indices.h
+mmedia-r4394/vic/codec/tmndec/libh263.h
+mmedia-r4394/vic/codec/tmndec/recon.c
+mmedia-r4394/vic/codec/tmndec/sac.c
+mmedia-r4394/vic/codec/tmndec/sactbls.h
+mmedia-r4394/vic/codec/tmndec/store.c
+mmedia-r4394/vic/codec/tmndec/tmndec.c
+mmedia-r4394/vic/codec/tmndec/tmndec.h
+mmedia-r4394/vic/codec/tmndec/tmndec.mak
+mmedia-r4394/vic/codec/tmndec/win.c
+mmedia-r4394/vic/codec/tmndec/win.h
+mmedia-r4394/vic/codec/tmndec/yuv2rgb.c
+mmedia-r4394/vic/codec/tmndec/yuvrgb24.c
+mmedia-r4394/vic/codec/transcoder-jpeg.cpp
+mmedia-r4394/vic/codec/x264encoder.cpp
+mmedia-r4394/vic/codec/x264encoder.h
+mmedia-r4394/vic/config.guess
+mmedia-r4394/vic/config.h
+mmedia-r4394/vic/config.sub
+mmedia-r4394/vic/config_arch.h
+mmedia-r4394/vic/configure
+mmedia-r4394/vic/configure.in
+mmedia-r4394/vic/configure.in.head
+mmedia-r4394/vic/configure.in.tail
+mmedia-r4394/vic/configure.in.tk
+mmedia-r4394/vic/convex_hull.c
+mmedia-r4394/vic/copy_dll.sh
+mmedia-r4394/vic/cpu/
+mmedia-r4394/vic/cpu/cpudetect.c
+mmedia-r4394/vic/cpu/cpudetect.h
+mmedia-r4394/vic/cpu/cpuid.cpp
+mmedia-r4394/vic/cpu/cpuid_win.asm
+mmedia-r4394/vic/cpu/cputable.h
+mmedia-r4394/vic/crdef.h
+mmedia-r4394/vic/gamma.gif
+mmedia-r4394/vic/getopt.c
+mmedia-r4394/vic/global.h
+mmedia-r4394/vic/html/
+mmedia-r4394/vic/html/CHANGES.html
+mmedia-r4394/vic/html/rd.gif
+mmedia-r4394/vic/html/rd.html
+mmedia-r4394/vic/html/research.html
+mmedia-r4394/vic/html/screen-dump.gif
+mmedia-r4394/vic/html/screen-dump.html
+mmedia-r4394/vic/html/vic.html
+mmedia-r4394/vic/html/whats-new.html
+mmedia-r4394/vic/huffman.h
+mmedia-r4394/vic/idlecallback.cpp
+mmedia-r4394/vic/idlecallback.h
+mmedia-r4394/vic/install-sh
+mmedia-r4394/vic/iohandler.cpp
+mmedia-r4394/vic/iohandler.h
+mmedia-r4394/vic/jv-cube-128.ppm
+mmedia-r4394/vic/jv-cube-64.ppm
+mmedia-r4394/vic/main.cpp
+mmedia-r4394/vic/makefile.mak
+mmedia-r4394/vic/md5.h
+mmedia-r4394/vic/md5c.c
+mmedia-r4394/vic/media-timer.cpp
+mmedia-r4394/vic/media-timer.h
+mmedia-r4394/vic/mkdep
+mmedia-r4394/vic/mkversion.c
+mmedia-r4394/vic/module.cpp
+mmedia-r4394/vic/module.h
+mmedia-r4394/vic/net/
+mmedia-r4394/vic/net/cb.cpp
+mmedia-r4394/vic/net/cbAppInit.c
+mmedia-r4394/vic/net/communicator.cpp
+mmedia-r4394/vic/net/confbus.cpp
+mmedia-r4394/vic/net/crypt-des.cpp
+mmedia-r4394/vic/net/crypt-dull.cpp
+mmedia-r4394/vic/net/crypt-rijndael.cpp
+mmedia-r4394/vic/net/crypt.cpp
+mmedia-r4394/vic/net/crypt.h
+mmedia-r4394/vic/net/group-ipc.cpp
+mmedia-r4394/vic/net/group-ipc.h
+mmedia-r4394/vic/net/inet.c
+mmedia-r4394/vic/net/inet.h
+mmedia-r4394/vic/net/inet6.c
+mmedia-r4394/vic/net/inet6.h
+mmedia-r4394/vic/net/mbus_engine.cpp
+mmedia-r4394/vic/net/mbus_engine.h
+mmedia-r4394/vic/net/mbus_handler.cpp
+mmedia-r4394/vic/net/mbus_handler.h
+mmedia-r4394/vic/net/net-addr.cpp
+mmedia-r4394/vic/net/net-addr.h
+mmedia-r4394/vic/net/net-atm.cpp
+mmedia-r4394/vic/net/net-ip.cpp
+mmedia-r4394/vic/net/net-ipv6.cpp
+mmedia-r4394/vic/net/net-rtip.cpp
+mmedia-r4394/vic/net/net.cpp
+mmedia-r4394/vic/net/net.h
+mmedia-r4394/vic/net/pktbuf.cpp
+mmedia-r4394/vic/net/pktbuf.h
+mmedia-r4394/vic/net/pkttbl.cpp
+mmedia-r4394/vic/net/pkttbl.h
+mmedia-r4394/vic/net/rt.h
+mmedia-r4394/vic/output-file.cpp
+mmedia-r4394/vic/output-fileStream.cpp
+mmedia-r4394/vic/random.c
+mmedia-r4394/vic/rate-variable.cpp
+mmedia-r4394/vic/render/
+mmedia-r4394/vic/render/color-dither.cpp
+mmedia-r4394/vic/render/color-ed.cpp
+mmedia-r4394/vic/render/color-gray.cpp
+mmedia-r4394/vic/render/color-hi.cpp
+mmedia-r4394/vic/render/color-hist.cpp
+mmedia-r4394/vic/render/color-hist.h
+mmedia-r4394/vic/render/color-mono.cpp
+mmedia-r4394/vic/render/color-pseudo.cpp
+mmedia-r4394/vic/render/color-pseudo.h
+mmedia-r4394/vic/render/color-quant.cpp
+mmedia-r4394/vic/render/color-swscale.cpp
+mmedia-r4394/vic/render/color-true.cpp
+mmedia-r4394/vic/render/color-yuv.cpp
+mmedia-r4394/vic/render/color.cpp
+mmedia-r4394/vic/render/color.h
+mmedia-r4394/vic/render/histtolut/
+mmedia-r4394/vic/render/histtolut/convex_hull.c
+mmedia-r4394/vic/render/histtolut/histtolut.2003.vcproj
+mmedia-r4394/vic/render/histtolut/histtolut.2008.vcproj
+mmedia-r4394/vic/render/histtolut/histtolut.cpp
+mmedia-r4394/vic/render/histtolut/histtolut.dsp
+mmedia-r4394/vic/render/histtolut/histtolut.vcproj
+mmedia-r4394/vic/render/mkbv/
+mmedia-r4394/vic/render/mkbv/mkbv.2003.vcproj
+mmedia-r4394/vic/render/mkbv/mkbv.2008.vcproj
+mmedia-r4394/vic/render/mkbv/mkbv.c
+mmedia-r4394/vic/render/mkbv/mkbv.dsp
+mmedia-r4394/vic/render/mkbv/mkbv.vcproj
+mmedia-r4394/vic/render/mkcube/
+mmedia-r4394/vic/render/mkcube/mkcube.2003.vcproj
+mmedia-r4394/vic/render/mkcube/mkcube.2008.vcproj
+mmedia-r4394/vic/render/mkcube/mkcube.cpp
+mmedia-r4394/vic/render/mkcube/mkcube.dsp
+mmedia-r4394/vic/render/mkcube/mkcube.vcproj
+mmedia-r4394/vic/render/mkhuff/
+mmedia-r4394/vic/render/mkhuff/mkhuff.2003.vcproj
+mmedia-r4394/vic/render/mkhuff/mkhuff.2008.vcproj
+mmedia-r4394/vic/render/mkhuff/mkhuff.cpp
+mmedia-r4394/vic/render/mkhuff/mkhuff.dsp
+mmedia-r4394/vic/render/mkhuff/mkhuff.vcproj
+mmedia-r4394/vic/render/ppm.cpp
+mmedia-r4394/vic/render/ppmtolut/
+mmedia-r4394/vic/render/ppmtolut/ppmtolut.2003.vcproj
+mmedia-r4394/vic/render/ppmtolut/ppmtolut.2008.vcproj
+mmedia-r4394/vic/render/ppmtolut/ppmtolut.c
+mmedia-r4394/vic/render/ppmtolut/ppmtolut.dsp
+mmedia-r4394/vic/render/ppmtolut/ppmtolut.vcproj
+mmedia-r4394/vic/render/renderer-window.cpp
+mmedia-r4394/vic/render/renderer-window.h
+mmedia-r4394/vic/render/renderer.cpp
+mmedia-r4394/vic/render/renderer.h
+mmedia-r4394/vic/render/rgb-converter.cpp
+mmedia-r4394/vic/render/rgb-converter.h
+mmedia-r4394/vic/render/vw.cpp
+mmedia-r4394/vic/render/vw.h
+mmedia-r4394/vic/render/xvideo.cpp
+mmedia-r4394/vic/render/xvideo.h
+mmedia-r4394/vic/rtp/
+mmedia-r4394/vic/rtp/h261_play.cpp
+mmedia-r4394/vic/rtp/ntp-time.h
+mmedia-r4394/vic/rtp/pktbuf-rtp.cpp
+mmedia-r4394/vic/rtp/pktbuf-rtp.h
+mmedia-r4394/vic/rtp/rtp.h
+mmedia-r4394/vic/rtp/session-ivs.cpp
+mmedia-r4394/vic/rtp/session-nv.cpp
+mmedia-r4394/vic/rtp/session-rtpv1.cpp
+mmedia-r4394/vic/rtp/session-rtpv1.h
+mmedia-r4394/vic/rtp/session.cpp
+mmedia-r4394/vic/rtp/session.h
+mmedia-r4394/vic/rtp/source.cpp
+mmedia-r4394/vic/rtp/source.h
+mmedia-r4394/vic/rtp/transmitter.cpp
+mmedia-r4394/vic/rtp/transmitter.h
+mmedia-r4394/vic/rtp/vdd.cpp
+mmedia-r4394/vic/rv.h
+mmedia-r4394/vic/strtol.c
+mmedia-r4394/vic/strtoul.c
+mmedia-r4394/vic/sys-time.h
+mmedia-r4394/vic/tcl/
+mmedia-r4394/vic/tcl/accessgrid.tcl
+mmedia-r4394/vic/tcl/ag-pixrate.tcl
+mmedia-r4394/vic/tcl/autoplace_ui.tcl
+mmedia-r4394/vic/tcl/cf-confbus.tcl
+mmedia-r4394/vic/tcl/cf-main.tcl
+mmedia-r4394/vic/tcl/cf-network.tcl
+mmedia-r4394/vic/tcl/cf-tm.tcl
+mmedia-r4394/vic/tcl/cf-util.tcl
+mmedia-r4394/vic/tcl/entry.tcl
+mmedia-r4394/vic/tcl/tcl2cpp/
+mmedia-r4394/vic/tcl/tcl2cpp/tcl2cpp.2003.vcproj
+mmedia-r4394/vic/tcl/tcl2cpp/tcl2cpp.2008.vcproj
+mmedia-r4394/vic/tcl/tcl2cpp/tcl2cpp.c
+mmedia-r4394/vic/tcl/tcl2cpp/tcl2cpp.dsp
+mmedia-r4394/vic/tcl/tcl2cpp/tcl2cpp.vcproj
+mmedia-r4394/vic/tcl/tkerror.tcl
+mmedia-r4394/vic/tcl/ui-ctrlmenu.tcl
+mmedia-r4394/vic/tcl/ui-extout.tcl
+mmedia-r4394/vic/tcl/ui-grabber.tcl
+mmedia-r4394/vic/tcl/ui-h261_play.tcl
+mmedia-r4394/vic/tcl/ui-help.tcl
+mmedia-r4394/vic/tcl/ui-main.tcl
+mmedia-r4394/vic/tcl/ui-relate.tcl
+mmedia-r4394/vic/tcl/ui-resource.tcl
+mmedia-r4394/vic/tcl/ui-srclist.tcl
+mmedia-r4394/vic/tcl/ui-stats.tcl
+mmedia-r4394/vic/tcl/ui-switcher.tcl
+mmedia-r4394/vic/tcl/ui-titlemaker.tcl
+mmedia-r4394/vic/tcl/ui-unix.tcl
+mmedia-r4394/vic/tcl/ui-util.tcl
+mmedia-r4394/vic/tcl/ui-vdd.tcl
+mmedia-r4394/vic/tcl/ui-win32.tcl
+mmedia-r4394/vic/tcl/ui-windows.tcl
+mmedia-r4394/vic/tcl.m4
+mmedia-r4394/vic/tcl2c++.c
+mmedia-r4394/vic/timer.cpp
+mmedia-r4394/vic/timer.h
+mmedia-r4394/vic/title-maker
+mmedia-r4394/vic/tkStripchart.c
+mmedia-r4394/vic/tkWinColor.c
+mmedia-r4394/vic/ucl_logo.ppm
+mmedia-r4394/vic/vic-nsis-installer.nsi
+mmedia-r4394/vic/vic.1
+mmedia-r4394/vic/vic.2003.sln
+mmedia-r4394/vic/vic.2003.vcproj
+mmedia-r4394/vic/vic.2008.sln
+mmedia-r4394/vic/vic.2008.vcproj
+mmedia-r4394/vic/vic.dsp
+mmedia-r4394/vic/vic.dsw
+mmedia-r4394/vic/vic.mak
+mmedia-r4394/vic/vic.sln
+mmedia-r4394/vic/vic.spec
+mmedia-r4394/vic/vic.vcproj
+mmedia-r4394/vic/vic_tcl.h
+mmedia-r4394/vic/video/
+mmedia-r4394/vic/video/assistor-jv.cpp
+mmedia-r4394/vic/video/assistor-list.cpp
+mmedia-r4394/vic/video/assistor-list.h
+mmedia-r4394/vic/video/assistor-plx.cpp
+mmedia-r4394/vic/video/assistor-xil.cpp
+mmedia-r4394/vic/video/crossbar.cpp
+mmedia-r4394/vic/video/crossbar.h
+mmedia-r4394/vic/video/deinterlace.cpp
+mmedia-r4394/vic/video/deinterlace.h
+mmedia-r4394/vic/video/device-input.h
+mmedia-r4394/vic/video/device-output.h
+mmedia-r4394/vic/video/device.cpp
+mmedia-r4394/vic/video/grabber-bttv.cpp
+mmedia-r4394/vic/video/grabber-cosmo.cpp
+mmedia-r4394/vic/video/grabber-file.cpp
+mmedia-r4394/vic/video/grabber-jv.cpp
+mmedia-r4394/vic/video/grabber-linux1394.cpp
+mmedia-r4394/vic/video/grabber-linux1394.h
+mmedia-r4394/vic/video/grabber-macosx.cpp
+mmedia-r4394/vic/video/grabber-meteor.cpp
+mmedia-r4394/vic/video/grabber-mme.cpp
+mmedia-r4394/vic/video/grabber-plx.cpp
+mmedia-r4394/vic/video/grabber-qcam.cpp
+mmedia-r4394/vic/video/grabber-rtvc.cpp
+mmedia-r4394/vic/video/grabber-slv.cpp
+mmedia-r4394/vic/video/grabber-spigot.cpp
+mmedia-r4394/vic/video/grabber-still.cpp
+mmedia-r4394/vic/video/grabber-sunrise.cpp
+mmedia-r4394/vic/video/grabber-svideo.cpp
+mmedia-r4394/vic/video/grabber-v4l2-old.cpp
+mmedia-r4394/vic/video/grabber-v4l2.cpp
+mmedia-r4394/vic/video/grabber-video4linux.cpp
+mmedia-r4394/vic/video/grabber-vigra.cpp
+mmedia-r4394/vic/video/grabber-vl.cpp
+mmedia-r4394/vic/video/grabber-vpix.cpp
+mmedia-r4394/vic/video/grabber-win32.cpp
+mmedia-r4394/vic/video/grabber-win32DS.cpp
+mmedia-r4394/vic/video/grabber-win32DS.h
+mmedia-r4394/vic/video/grabber-x11.cpp
+mmedia-r4394/vic/video/grabber-xil.cpp
+mmedia-r4394/vic/video/grabber-xv.cpp
+mmedia-r4394/vic/video/grabber.cpp
+mmedia-r4394/vic/video/grabber.h
+mmedia-r4394/vic/video/jidctflt.c
+mmedia-r4394/vic/video/jvs.h
+mmedia-r4394/vic/video/output-vl.cpp
+mmedia-r4394/vic/video/plxfuncs.h
+mmedia-r4394/vic/video/tinyjpeg-internal.h
+mmedia-r4394/vic/video/tinyjpeg.c
+mmedia-r4394/vic/video/tinyjpeg.h
+mmedia-r4394/vic/video/videodev.h
+mmedia-r4394/vic/video/videodev2-old.h
+mmedia-r4394/vic/video/videodev2.h
+mmedia-r4394/vic/video/xil.h
+mmedia-r4394/vic/video/yuv_convert.cpp
+mmedia-r4394/vic/video/yuv_convert.h
+dpkg-buildpackage: warning: using a gain-root-command while being root
+dpkg-buildpackage: set CFLAGS to default value: -g -O2
+dpkg-buildpackage: set CPPFLAGS to default value: 
+dpkg-buildpackage: set LDFLAGS to default value: -Wl,-Bsymbolic-functions
+dpkg-buildpackage: set FFLAGS to default value: -g -O2
+dpkg-buildpackage: set CXXFLAGS to default value: -g -O2
+dpkg-buildpackage: source package ag-rat
+dpkg-buildpackage: source version 4.4.01-1ubuntu6
+dpkg-buildpackage: source changed by Chris Willing <c.willing@uq.edu.au>
+dpkg-checkbuilddeps: Unmet build dependencies: tk-dev libssl-dev libalsaplayer-dev
+dpkg-buildpackage: warning: Build dependencies/conflicts unsatisfied; aborting.
+dpkg-buildpackage: warning: (Use -d flag to override.)
+dpkg-buildpackage: warning: This is currently a non-fatal warning with -S, but
+dpkg-buildpackage: warning: will probably become fatal in the future.
+ fakeroot debian/rules clean
+dpatch  deapply-all  
+rm -rf patch-stamp patch-stampT debian/patched
+test -f rat/VERSION -a -f debian/rules
+rm -f build
+ dpkg-source -b mmedia-r4394
+dpkg-source: warning: Version number suggests Ubuntu changes, but Maintainer: does not have Ubuntu address
+dpkg-source: warning: Version number suggests Ubuntu changes, but there is no XSBC-Original-Maintainer field
+dpkg-source: warning: source directory 'mmedia-r4394' is not <sourcepackage>-<upstreamversion> 'ag-rat-4.4.01'
+dpkg-source: info: using source format `1.0'
+dpkg-source: info: building ag-rat in ag-rat_4.4.01-1ubuntu6.tar.gz
+dpkg-source: info: building ag-rat in ag-rat_4.4.01-1ubuntu6.dsc
+ dpkg-genchanges -S >../ag-rat_4.4.01-1ubuntu6_source.changes
+dpkg-genchanges: including full source code in upload
+dpkg-buildpackage: source only upload: Debian-native package
+I: using fakeroot in build.
+Current time: Fri Feb 20 07:20:06 EST 2009
+pbuilder-time-stamp: 1235078406
+Building the build Environment
+ -> extracting base tarball [/var/cache/pbuilder/base.tgz]
+ -> creating local configuration
+ -> copying local configuration
+ -> mounting /proc filesystem
+ -> mounting /dev/pts filesystem
+-> Mounting /var/cache/pbuilder/result
+ -> policy-rc.d already exists
+Obtaining the cached apt archive contents
+Installing the build-deps
+ ! Package aghdvic (filename ./aghdvic_0r117-3_amd64.deb) is repeat but newer version;
+   used that one and ignored data from ./aghdvic_0r117-2_amd64.deb !
+ ! Package aghdvic (filename ./aghdvic_0r117-4_amd64.deb) is repeat but newer version;
+   used that one and ignored data from ./aghdvic_0r117-3_amd64.deb !
+ ! Package ag-vic2.8ucl (filename ./ag-vic2.8ucl_1.4-0ubuntu2_amd64.deb) is repeat but newer version;
+   used that one and ignored data from ./ag-vic2.8ucl_1.4-0ubuntu1_amd64.deb !
+ ! Package ag-rat (filename ./ag-rat_4.4.01-1ubuntu3_amd64.deb) is repeat but newer version;
+   used that one and ignored data from ./ag-rat_4.4.01-1ubuntu2_amd64.deb !
+ ! Package ag-rat (filename ./ag-rat_4.4.01-1ubuntu4_amd64.deb) is repeat but newer version;
+   used that one and ignored data from ./ag-rat_4.4.01-1ubuntu3_amd64.deb !
+ ! Package ag-rat (filename ./ag-rat_4.4.01-1ubuntu5_amd64.deb) is repeat but newer version;
+   used that one and ignored data from ./ag-rat_4.4.01-1ubuntu4_amd64.deb !
+ ** Packages in archive but missing from override file: **
+  accessgrid3.2 ag-rat ag-vic2.8ucl agcommon aghdvic agwine agwine-dev
+  dvts libquanta python-m2crypto python-twisted python-twisted-bin
+  python-twisted-bin-dbg python-twisted-core quickbridge twisted-doc
+  vpcscreen wxmozilla
+
+ Wrote 18 entries to output Packages file.
+Ign file: ./ Release.gpg
+Ign file: ./ Release
+Ign file: ./ Packages
+Get:1 http://mirror.aarnet.edu.au intrepid Release.gpg [189B]
+Get:2 http://mirror.aarnet.edu.au intrepid Release [65.9kB]
+Ign http://www.vislab.uq.edu.au intrepid/ Release.gpg
+Ign http://www.vislab.uq.edu.au intrepid/ Release
+Ign http://www.vislab.uq.edu.au intrepid/ Packages
+Get:3 http://www.vislab.uq.edu.au intrepid/ Packages [6580B]
+Get:4 http://mirror.aarnet.edu.au intrepid/main Packages [1254kB]
+Get:5 http://mirror.aarnet.edu.au intrepid/restricted Packages [8420B]
+Get:6 http://mirror.aarnet.edu.au intrepid/universe Packages [4516kB]
+Get:7 http://mirror.aarnet.edu.au intrepid/multiverse Packages [192kB]
+Fetched 6043kB in 2s (2656kB/s)
+Reading package lists...
+ -> user script /var/cache/pbuilder/build//6917/tmp/hooks/D70results finished
+ -> Attempting to satisfy build-dependencies
+ -> Creating pbuilder-satisfydepends-dummy package
+Package: pbuilder-satisfydepends-dummy
+Version: 0.invalid.0
+Architecture: amd64
+Maintainer: Debian Pbuilder Team <pbuilder-maint@lists.alioth.debian.org>
+Description: Dummy package to satisfy dependencies with aptitude - created by pbuilder
+ This package was created automatically by pbuilder and should
+Depends: python (>= 2.4), dpatch, tk-dev, libx11-dev, libxt-dev, libssl-dev, libxext-dev, libasound2-dev, libalsaplayer-dev
+dpkg-deb: building package `pbuilder-satisfydepends-dummy' in `/tmp/satisfydepends-aptitude/pbuilder-satisfydepends-dummy.deb'.
+Reading package lists...
+Building dependency tree...
+Reading state information...
+aptitude is already the newest version.
+0 upgraded, 0 newly installed, 0 to remove and 61 not upgraded.
+Selecting previously deselected package pbuilder-satisfydepends-dummy.
+(Reading database ... 12758 files and directories currently installed.)
+Unpacking pbuilder-satisfydepends-dummy (from .../pbuilder-satisfydepends-dummy.deb) ...
+dpkg: dependency problems prevent configuration of pbuilder-satisfydepends-dummy:
+ pbuilder-satisfydepends-dummy depends on dpatch; however:
+  Package dpatch is not installed.
+ pbuilder-satisfydepends-dummy depends on tk-dev; however:
+  Package tk-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libx11-dev; however:
+  Package libx11-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libxt-dev; however:
+  Package libxt-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libssl-dev; however:
+  Package libssl-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libxext-dev; however:
+  Package libxext-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libasound2-dev; however:
+  Package libasound2-dev is not installed.
+ pbuilder-satisfydepends-dummy depends on libalsaplayer-dev; however:
+  Package libalsaplayer-dev is not installed.
+dpkg: error processing pbuilder-satisfydepends-dummy (--install):
+ dependency problems - leaving unconfigured
+Errors were encountered while processing:
+ pbuilder-satisfydepends-dummy
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Initializing package states...
+Writing extended state information...
+The following NEW packages will be installed:
+  dpatch{a} libalsaplayer-dev{a} libalsaplayer0{a} libasound2{a} 
+  libasound2-dev{a} libice-dev{a} libice6{a} libpthread-stubs0{a} 
+  libpthread-stubs0-dev{a} libsm-dev{a} libsm6{a} libssl-dev{a} libx11-6{a} 
+  libx11-data{a} libx11-dev{a} libxau-dev{a} libxau6{a} libxcb-xlib0{a} 
+  libxcb-xlib0-dev{a} libxcb1{a} libxcb1-dev{a} libxdmcp-dev{a} 
+  libxdmcp6{a} libxext-dev{a} libxext6{a} libxi-dev{a} libxi6{a} 
+  libxt-dev{a} libxt6{a} tcl{a} tcl-dev{a} tcl8.4{a} tcl8.4-dev{a} tk{a} 
+  tk-dev{a} tk8.4{a} tk8.4-dev{a} x11-common{a} x11proto-core-dev{a} 
+  x11proto-input-dev{a} x11proto-kb-dev{a} x11proto-xext-dev{a} 
+  xtrans-dev{a} zlib1g-dev{a} 
+The following partially installed packages will be configured:
+  pbuilder-satisfydepends-dummy 
+0 packages upgraded, 44 newly installed, 0 to remove and 61 not upgraded.
+Need to get 0B/11.9MB of archives. After unpacking 39.3MB will be used.
+Writing extended state information...
+Extracting templates from packages: 68%Extracting templates from packages: 100%
+Preconfiguring packages ...
+Selecting previously deselected package dpatch.
+(Reading database ... 12758 files and directories currently installed.)
+Unpacking dpatch (from .../archives/dpatch_2.0.29_all.deb) ...
+Selecting previously deselected package tcl8.4.
+Unpacking tcl8.4 (from .../tcl8.4_8.4.19-2_amd64.deb) ...
+Selecting previously deselected package tcl.
+Unpacking tcl (from .../archives/tcl_8.4.16-2_all.deb) ...
+Selecting previously deselected package tcl8.4-dev.
+Unpacking tcl8.4-dev (from .../tcl8.4-dev_8.4.19-2_amd64.deb) ...
+Selecting previously deselected package tcl-dev.
+Unpacking tcl-dev (from .../tcl-dev_8.4.16-2_all.deb) ...
+Selecting previously deselected package libxau6.
+Unpacking libxau6 (from .../libxau6_1%3a1.0.3-3_amd64.deb) ...
+Selecting previously deselected package libxdmcp6.
+Unpacking libxdmcp6 (from .../libxdmcp6_1%3a1.0.2-3_amd64.deb) ...
+Selecting previously deselected package libxcb1.
+Unpacking libxcb1 (from .../libxcb1_1.1-1.1_amd64.deb) ...
+Selecting previously deselected package libxcb-xlib0.
+Unpacking libxcb-xlib0 (from .../libxcb-xlib0_1.1-1.1_amd64.deb) ...
+Selecting previously deselected package libx11-data.
+Unpacking libx11-data (from .../libx11-data_2%3a1.1.5-2ubuntu1_all.deb) ...
+Selecting previously deselected package libx11-6.
+Unpacking libx11-6 (from .../libx11-6_2%3a1.1.5-2ubuntu1_amd64.deb) ...
+Selecting previously deselected package tk8.4.
+Unpacking tk8.4 (from .../tk8.4_8.4.19-1_amd64.deb) ...
+Selecting previously deselected package tk.
+Unpacking tk (from .../archives/tk_8.4.16-2_all.deb) ...
+Selecting previously deselected package x11-common.
+Unpacking x11-common (from .../x11-common_1%3a7.4~5ubuntu3_all.deb) ...
+Setting up x11-common (1:7.4~5ubuntu3) ...
+
+Selecting previously deselected package x11proto-core-dev.
+(Reading database ... 13470 files and directories currently installed.)
+Unpacking x11proto-core-dev (from .../x11proto-core-dev_7.0.12-1_all.deb) ...
+Selecting previously deselected package libxau-dev.
+Unpacking libxau-dev (from .../libxau-dev_1%3a1.0.3-3_amd64.deb) ...
+Selecting previously deselected package libxdmcp-dev.
+Unpacking libxdmcp-dev (from .../libxdmcp-dev_1%3a1.0.2-3_amd64.deb) ...
+Selecting previously deselected package libxext6.
+Unpacking libxext6 (from .../libxext6_2%3a1.0.4-1_amd64.deb) ...
+Selecting previously deselected package libxi6.
+Unpacking libxi6 (from .../libxi6_2%3a1.1.3-2build1_amd64.deb) ...
+Selecting previously deselected package x11proto-xext-dev.
+Unpacking x11proto-xext-dev (from .../x11proto-xext-dev_7.0.2-6build1_all.deb) ...
+Selecting previously deselected package libxext-dev.
+Unpacking libxext-dev (from .../libxext-dev_2%3a1.0.4-1_amd64.deb) ...
+Selecting previously deselected package libxi-dev.
+Unpacking libxi-dev (from .../libxi-dev_2%3a1.1.3-2build1_amd64.deb) ...
+Selecting previously deselected package x11proto-input-dev.
+Unpacking x11proto-input-dev (from .../x11proto-input-dev_1.4.3-2ubuntu6_all.deb) ...
+Selecting previously deselected package x11proto-kb-dev.
+Unpacking x11proto-kb-dev (from .../x11proto-kb-dev_1.0.3-3ubuntu1_all.deb) ...
+Selecting previously deselected package xtrans-dev.
+Unpacking xtrans-dev (from .../xtrans-dev_1.2-2_all.deb) ...
+Selecting previously deselected package libpthread-stubs0.
+Unpacking libpthread-stubs0 (from .../libpthread-stubs0_0.1-2_amd64.deb) ...
+Selecting previously deselected package libpthread-stubs0-dev.
+Unpacking libpthread-stubs0-dev (from .../libpthread-stubs0-dev_0.1-2_amd64.deb) ...
+Selecting previously deselected package libxcb1-dev.
+Unpacking libxcb1-dev (from .../libxcb1-dev_1.1-1.1_amd64.deb) ...
+Selecting previously deselected package libxcb-xlib0-dev.
+Unpacking libxcb-xlib0-dev (from .../libxcb-xlib0-dev_1.1-1.1_amd64.deb) ...
+Selecting previously deselected package libx11-dev.
+Unpacking libx11-dev (from .../libx11-dev_2%3a1.1.5-2ubuntu1_amd64.deb) ...
+Selecting previously deselected package libice6.
+Unpacking libice6 (from .../libice6_2%3a1.0.4-1_amd64.deb) ...
+Selecting previously deselected package libsm6.
+Unpacking libsm6 (from .../libsm6_2%3a1.0.3-2_amd64.deb) ...
+Selecting previously deselected package libxt6.
+Unpacking libxt6 (from .../libxt6_1%3a1.0.5-3_amd64.deb) ...
+Selecting previously deselected package libice-dev.
+Unpacking libice-dev (from .../libice-dev_2%3a1.0.4-1_amd64.deb) ...
+Selecting previously deselected package libsm-dev.
+Unpacking libsm-dev (from .../libsm-dev_2%3a1.0.3-2_amd64.deb) ...
+Selecting previously deselected package libxt-dev.
+Unpacking libxt-dev (from .../libxt-dev_1%3a1.0.5-3_amd64.deb) ...
+Selecting previously deselected package tk8.4-dev.
+Unpacking tk8.4-dev (from .../tk8.4-dev_8.4.19-1_amd64.deb) ...
+Selecting previously deselected package tk-dev.
+Unpacking tk-dev (from .../tk-dev_8.4.16-2_all.deb) ...
+Selecting previously deselected package zlib1g-dev.
+Unpacking zlib1g-dev (from .../zlib1g-dev_1%3a1.2.3.3.dfsg-12ubuntu1_amd64.deb) ...
+Selecting previously deselected package libssl-dev.
+Unpacking libssl-dev (from .../libssl-dev_0.9.8g-10.1ubuntu2_amd64.deb) ...
+Selecting previously deselected package libasound2.
+Unpacking libasound2 (from .../libasound2_1.0.17a-0ubuntu4_amd64.deb) ...
+Selecting previously deselected package libasound2-dev.
+Unpacking libasound2-dev (from .../libasound2-dev_1.0.17a-0ubuntu4_amd64.deb) ...
+Selecting previously deselected package libalsaplayer0.
+Unpacking libalsaplayer0 (from .../libalsaplayer0_0.99.80-3ubuntu1_amd64.deb) ...
+Selecting previously deselected package libalsaplayer-dev.
+Unpacking libalsaplayer-dev (from .../libalsaplayer-dev_0.99.80-3ubuntu1_amd64.deb) ...
+Setting up dpatch (2.0.29) ...
+Setting up tcl8.4 (8.4.19-2) ...
+
+Setting up tcl (8.4.16-2) ...
+
+Setting up tcl8.4-dev (8.4.19-2) ...
+Setting up tcl-dev (8.4.16-2) ...
+Setting up libxau6 (1:1.0.3-3) ...
+
+Setting up libxdmcp6 (1:1.0.2-3) ...
+
+Setting up libxcb1 (1.1-1.1) ...
+
+Setting up libxcb-xlib0 (1.1-1.1) ...
+
+Setting up libx11-data (2:1.1.5-2ubuntu1) ...
+Setting up libx11-6 (2:1.1.5-2ubuntu1) ...
+
+Setting up tk8.4 (8.4.19-1) ...
+
+Setting up tk (8.4.16-2) ...
+
+Setting up x11proto-core-dev (7.0.12-1) ...
+Setting up libxau-dev (1:1.0.3-3) ...
+Setting up libxdmcp-dev (1:1.0.2-3) ...
+Setting up libxext6 (2:1.0.4-1) ...
+
+Setting up libxi6 (2:1.1.3-2build1) ...
+
+Setting up x11proto-kb-dev (1.0.3-3ubuntu1) ...
+Setting up xtrans-dev (1.2-2) ...
+Setting up libpthread-stubs0 (0.1-2) ...
+Setting up libpthread-stubs0-dev (0.1-2) ...
+Setting up libxcb1-dev (1.1-1.1) ...
+Setting up libxcb-xlib0-dev (1.1-1.1) ...
+Setting up libice6 (2:1.0.4-1) ...
+
+Setting up libsm6 (2:1.0.3-2) ...
+
+Setting up libxt6 (1:1.0.5-3) ...
+
+Setting up libice-dev (2:1.0.4-1) ...
+Setting up libsm-dev (2:1.0.3-2) ...
+Setting up zlib1g-dev (1:1.2.3.3.dfsg-12ubuntu1) ...
+Setting up libssl-dev (0.9.8g-10.1ubuntu2) ...
+Setting up libasound2 (1.0.17a-0ubuntu4) ...
+
+Setting up libasound2-dev (1.0.17a-0ubuntu4) ...
+
+Setting up libalsaplayer0 (0.99.80-3ubuntu1) ...
+
+Setting up libalsaplayer-dev (0.99.80-3ubuntu1) ...
+
+Setting up x11proto-xext-dev (7.0.2-6build1) ...
+Setting up libxext-dev (2:1.0.4-1) ...
+Setting up libxi-dev (2:1.1.3-2build1) ...
+Setting up x11proto-input-dev (1.4.3-2ubuntu6) ...
+Setting up libx11-dev (2:1.1.5-2ubuntu1) ...
+Setting up libxt-dev (1:1.0.5-3) ...
+Setting up tk8.4-dev (8.4.19-1) ...
+Setting up tk-dev (8.4.16-2) ...
+Setting up pbuilder-satisfydepends-dummy (0.invalid.0) ...
+Processing triggers for libc6 ...
+ldconfig deferred processing now taking place
+Reading package lists...
+Building dependency tree...
+Reading state information...
+Reading extended state information...
+Initializing package states...
+Writing extended state information...
+ -> Finished parsing the build-deps
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following NEW packages will be installed:
+  fakeroot
+0 upgraded, 1 newly installed, 0 to remove and 61 not upgraded.
+Need to get 0B/116kB of archives.
+After this operation, 455kB of additional disk space will be used.
+Selecting previously deselected package fakeroot.
+(Reading database ... 16371 files and directories currently installed.)
+Unpacking fakeroot (from .../fakeroot_1.9.5ubuntu1_amd64.deb) ...
+Setting up fakeroot (1.9.5ubuntu1) ...
+
+Copying back the cached apt archive contents
+Copying source file
+    -> copying [../ag-rat_4.4.01-1ubuntu6.dsc]
+    -> copying [../ag-rat_4.4.01-1ubuntu6.tar.gz]
+Extracting source
+dpkg-source: warning: extracting unsigned source package (ag-rat_4.4.01-1ubuntu6.dsc)
+dpkg-source: extracting ag-rat in ag-rat-4.4.01
+dpkg-source: info: unpacking ag-rat_4.4.01-1ubuntu6.tar.gz
+ -> Building the package
+W: no hooks of type A found -- ignoring
+dpkg-buildpackage: set CFLAGS to default value: -g -O2
+dpkg-buildpackage: set CPPFLAGS to default value: 
+dpkg-buildpackage: set LDFLAGS to default value: -Wl,-Bsymbolic-functions
+dpkg-buildpackage: set FFLAGS to default value: -g -O2
+dpkg-buildpackage: set CXXFLAGS to default value: -g -O2
+dpkg-buildpackage: source package ag-rat
+dpkg-buildpackage: source version 4.4.01-1ubuntu6
+dpkg-buildpackage: source changed by Chris Willing <c.willing@uq.edu.au>
+dpkg-buildpackage: host architecture amd64
+ fakeroot debian/rules clean
+dpatch  deapply-all  
+rm -rf patch-stamp patch-stampT debian/patched
+test -f rat/VERSION -a -f debian/rules
+rm -f build
+ dpkg-source -b ag-rat-4.4.01
+dpkg-source: warning: Version number suggests Ubuntu changes, but Maintainer: does not have Ubuntu address
+dpkg-source: warning: Version number suggests Ubuntu changes, but there is no XSBC-Original-Maintainer field
+dpkg-source: info: using source format `1.0'
+dpkg-source: info: building ag-rat in ag-rat_4.4.01-1ubuntu6.tar.gz
+dpkg-source: info: building ag-rat in ag-rat_4.4.01-1ubuntu6.dsc
+ debian/rules build
+test -d debian/patched || install -d debian/patched
+dpatch  apply-all  
+dpatch  cat-all  >>patch-stampT
+mv -f patch-stampT patch-stamp
+test -f rat/VERSION -a -f debian/rules
+(cd common && ./configure --enable-ipv6 && make)
+checking build system type... x86_64-unknown-linux-gnu
+checking host system type... x86_64-unknown-linux-gnu
+checking for gcc... gcc
+checking for C compiler default output... a.out
+checking whether the C compiler works... yes
+checking whether we are cross compiling... no
+checking for suffix of executables... 
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ANSI C... none needed
+checking how to run the C preprocessor... gcc -E
+checking for ranlib... ranlib
+checking for egrep... grep -E
+checking for ANSI C header files... yes
+checking for sys/wait.h that is POSIX.1 compatible... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking sys/time.h usability... yes
+checking sys/time.h presence... yes
+checking for sys/time.h... yes
+checking whether time.h and sys/time.h may both be included... yes
+checking for an ANSI C-conforming const... yes
+checking for size_t... yes
+checking stropts.h usability... yes
+checking stropts.h presence... yes
+checking for stropts.h... yes
+checking sys/filio.h usability... no
+checking sys/filio.h presence... no
+checking for sys/filio.h... no
+checking for stdint.h... (cached) yes
+checking for inttypes.h... (cached) yes
+checking for int8_t... yes
+checking for int16_t... yes
+checking for int32_t... yes
+checking for int64_t... yes
+checking for uint8_t in <stdint.h>... yes
+checking for uint16_t in <stdint.h>... yes
+checking for uint32_t in <stdint.h>... yes
+checking whether byte ordering is bigendian... no
+checking whether char is unsigned... no
+checking for /dev/urandom... yes
+checking for vsnprintf... yes
+checking for inet_pton in <arpa/inet.h>... yes
+checking for inet_ntop in <arpa/inet.h>... yes
+checking for library containing socket... none required
+checking for library containing inet_addr... none required
+checking whether to enable IPv6... yes
+checking ipv6 stack type... linux-glibc
+checking for getipnodebyname in <netdb.h>... no
+checking for struct addrinfo in <netdb.h>... yes
+checking for sin6_len in struct sockaddr_in6... no
+checking for msg_control in struct msghdr... yes
+checking for gtkdoc-scan... no
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating doc/Makefile
+config.status: creating examples/Makefile
+config.status: creating examples/rtp/Makefile
+config.status: creating examples/sdp/Makefile
+config.status: creating examples/sap/Makefile
+config.status: creating src/Makefile
+config.status: creating tests/Makefile
+config.status: creating src/uclconf.h
+make[1]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common'
+for s in src tests examples  ; do (cd $s && make) || exit 1 ; done
+make[2]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/src'
+sed -e 's/.*/#define CCL_VERSION "v&"/' ../VERSION > version.h
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c crypt_random.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c debug.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c md5.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c memory.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c net_udp.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c qfDES.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c util.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c hmac.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c base64.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c ntp.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c rtp.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c drand48.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c mbus_parser.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c mbus_config.c
+mbus_config.c: In function 'rewrite_config':
+mbus_config.c:189: warning: ignoring return value of 'write', declared with attribute warn_unused_result
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c mbus_addr.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c mbus.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c btree.c
+btree.c:46: warning: 'btree_validate_node' defined but not used
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c asarray.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c rijndael-alg-fst.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c rijndael-api-fst.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c sdp.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  -c sap.c
+sap.c: In function 'print_sap_packet':
+sap.c:160: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
+ar r libuclmmbase.a crypt_random.o debug.o md5.o memory.o net_udp.o qfDES.o util.o hmac.o base64.o ntp.o rtp.o drand48.o mbus_parser.o mbus_config.o mbus_addr.o mbus.o btree.o asarray.o  rijndael-alg-fst.o rijndael-api-fst.o sdp.o sap.o 
+ar: creating libuclmmbase.a
+ranlib libuclmmbase.a
+make[2]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/src'
+make[2]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/tests'
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_base64.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_des.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_md5.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_net_udp.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_memory.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_mbus_parser.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_mbus_addr.c
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test_aes.c
+test_aes.c: In function 'rijndaelTKAT':
+test_aes.c:188: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:195: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:198: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:199: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:208: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:215: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:218: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+test_aes.c:219: warning: ignoring return value of 'fscanf', declared with attribute warn_unused_result
+gcc -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H   -c test.c
+gcc test_base64.o test_des.o test_md5.o test_net_udp.o test_memory.o test_mbus_parser.o test_mbus_addr.o test_aes.o test.o -I../src -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H  ../src/libuclmmbase.a -L../src   -o test-libcommon
+make[2]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/tests'
+make[2]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/examples'
+for s in rtp sdp sap ; do (cd $s && make) || exit 1; done
+make[3]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/examples/rtp'
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src  -c rtpdemo.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src -o rtpdemo rtpdemo.o -L../../src -luclmmbase
+make[3]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/examples/rtp'
+make[3]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/examples/sdp'
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src  -c sdpdemo.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src -o sdpdemo sdpdemo.o -L../../src -luclmmbase
+make[3]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/examples/sdp'
+make[3]: Entering directory `/tmp/buildd/ag-rat-4.4.01/common/examples/sap'
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src  -c sapdemo.c
+gcc -DINET6 -g -O2 -W -Wall -Wwrite-strings -Wbad-function-cast -Wmissing-prototypes -Wcast-qual -Wmissing-declarations -DHAVE_CONFIG_H -I../../src -o sapdemo sapdemo.o -L../../src -luclmmbase
+make[3]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/examples/sap'
+make[2]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common/examples'
+
+*** run "tests/test-libcommon" to run the test suite
+
+make[1]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/common'
+(cd rat && ./configure --enable-ipv6 && make)
+checking build system type... x86_64-unknown-linux-gnu
+checking host system type... x86_64-unknown-linux-gnu
+checking target system type... x86_64-unknown-linux-gnu
+checking for gcc... gcc
+checking for C compiler default output file name... a.out
+checking whether the C compiler works... yes
+checking whether we are cross compiling... no
+checking for suffix of executables... 
+checking for suffix of object files... o
+checking whether we are using the GNU C compiler... yes
+checking whether gcc accepts -g... yes
+checking for gcc option to accept ISO C89... none needed
+checking how to run the C preprocessor... gcc -E
+checking for ranlib... ranlib
+checking for grep that handles long lines and -e... /bin/grep
+checking for egrep... /bin/grep -E
+checking for ANSI C header files... yes
+checking for sys/wait.h that is POSIX.1 compatible... yes
+checking for an ANSI C-conforming const... yes
+checking for sys/types.h... yes
+checking for sys/stat.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for memory.h... yes
+checking for strings.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for unistd.h... yes
+checking for size_t... yes
+checking whether byte ordering is bigendian... no
+checking whether char is unsigned... no
+checking for stdint.h... (cached) yes
+checking for inttypes.h... (cached) yes
+checking stropts.h usability... yes
+checking stropts.h presence... yes
+checking for stropts.h... yes
+checking sys/filio.h usability... no
+checking sys/filio.h presence... no
+checking for sys/filio.h... no
+checking malloc.h usability... yes
+checking malloc.h presence... yes
+checking for malloc.h... yes
+checking bstring.h usability... no
+checking bstring.h presence... no
+checking for bstring.h... no
+checking sys/sockio.h usability... no
+checking sys/sockio.h presence... no
+checking for sys/sockio.h... no
+checking for kill declaration... present
+checking for gettimeofday declaration... present
+checking for library containing socket... none required
+checking for library containing inet_addr... none required
+checking for library containing dlopen... -ldl
+checking for sin... no
+checking for main in -lieee... yes
+checking for int8_t... yes
+checking for int16_t... yes
+checking for int32_t... yes
+checking for int64_t... yes
+checking for uint8_t in <stdint.h>... yes
+checking for uint16_t in <stdint.h>... yes
+checking for uint32_t in <stdint.h>... yes
+checking for usleep... yes
+checking for snprintf... yes
+checking linux/telephony.h usability... yes
+checking linux/telephony.h presence... yes
+checking for linux/telephony.h... yes
+checking for recent telephony drivers... present
+checking for ALSA driver... checking alsa/asoundlib.h usability... yes
+checking alsa/asoundlib.h presence... yes
+checking for alsa/asoundlib.h... yes
+checking sys/soundcard.h usability... yes
+checking sys/soundcard.h presence... yes
+checking for sys/soundcard.h... yes
+checking soundcard.h usability... no
+checking soundcard.h presence... no
+checking for soundcard.h... no
+checking for Tcl configuration... found /usr/lib64/tclConfig.sh
+checking for existence of /usr/lib64/tclConfig.sh... loading
+checking for a compatible version of Tcl... Tcl 8.4.19
+checking for Tk configuration... found /usr/lib64/tkConfig.sh
+checking for existence of /usr/lib64/tkConfig.sh... loading
+checking for a compatible version of Tk... Tk 8.4.19
+checking /tmp/buildd/ag-rat-4.4.01/common/src/mbus.h usability... yes
+checking /tmp/buildd/ag-rat-4.4.01/common/src/mbus.h presence... yes
+checking for /tmp/buildd/ag-rat-4.4.01/common/src/mbus.h... yes
+checking for mbus_init in -luclmmbase... yes
+checking signed arithmetic shift right... yes
+checking for g728_encoder_init in -lg728... no
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating ratconf.h
+make[1]: Entering directory `/tmp/buildd/ag-rat-4.4.01/rat'
+Generating version.h
+Generating sdr plugin
+Generating RPM spec file
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c main_control.c
+main_control.c:190: warning: 'address_count' defined but not used
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c mbus_control.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_compat.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c fatal_error.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c process.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cmd_parser.c
+cmd_parser.c: In function 'usage':
+cmd_parser.c:45: warning: format not a string literal and no format arguments
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS main_control.o mbus_control.o codec_compat.o fatal_error.o process.o cmd_parser.o -L/tmp/buildd/ag-rat-4.4.01/common/src -luclmmbase -ldl  -lieee -lm -o rat-4.4.01
+gcc -o tcl2c/tcl2c tcl2c/tcl2c.c
+cat uicomponent_bargraph.tcl uicomponent_chart.tcl uicomponent_help.tcl asfilebox.tcl ui_audiotool.tcl | tcl2c/tcl2c ui_audiotool > ui_audiotool.c
+cat ui_transcoder.tcl | tcl2c/tcl2c ui_transcoder > ui_transcoder.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_audiotool.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_transcoder.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c tcltk.c
+tcltk.c: In function 'tcl_init1':
+tcltk.c:295: warning: passing argument 2 of 'Tcl_Merge' from incompatible pointer type
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c mbus_ui.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c main_ui.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS ui_audiotool.o ui_transcoder.o  tcltk.o mbus_ui.o main_ui.o fatal_error.o -L/tmp/buildd/ag-rat-4.4.01/common/src -luclmmbase  -L/usr/lib -ltcl8.4 -L/usr/lib -ltk8.4 -lX11    -ldl  -lieee -lm -o rat-4.4.01-ui 
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c channel.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c channel_types.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cc_vanilla.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cc_rdncy.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cc_layered.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c render_3D.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c repair.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ts.c
+ts.c: In function 'ts_map32':
+ts.c:65: warning: large integer implicitly truncated to unsigned type
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c playout.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c net.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c source.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c session.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c main_engine.c
+main_engine.c:128: warning: no previous prototype for 'rendezvous_with_controller'
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c mbus_engine.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c audio.c
+audio.c: In function 'audio_device_reconfigure':
+audio.c:272: warning: implicit declaration of function 'strcasestr'
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cushion.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c mix.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c parameters.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c transmit.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c playout_calc.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_send_rtp.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_send_audio.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_send_prefs.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c ui_send_stats.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c transcoder.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c rtp_dump.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c rtp_callback.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c settings.c
+settings.c: In function 'save_done':
+settings.c:582: warning: format not a string literal and no format arguments
+settings.c:593: warning: format not a string literal and no format arguments
+settings.c:623: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c pdb.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c pktbuf.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c tonegen.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c voxlet.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev_ixj.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev_alsa.c
+auddev_alsa.c: In function 'clear_current':
+auddev_alsa.c:121: warning: cast from pointer to integer of different size
+auddev_alsa.c: In function 'open_stream':
+auddev_alsa.c:348: warning: 'snd_pcm_sw_params_set_xfer_align' is deprecated (declared at /usr/include/alsa/pcm.h:1111)
+auddev_alsa.c: In function 'alsa_audio_oport_details':
+auddev_alsa.c:1073: warning: comparison between signed and unsigned
+auddev_alsa.c: In function 'alsa_audio_is_ready':
+auddev_alsa.c:1190: warning: 'avail' may be used uninitialized in this function
+auddev_alsa.c: In function 'alsa_audio_read':
+auddev_alsa.c:886: warning: 'bread' may be used uninitialized in this function
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev_oss.c
+auddev_oss.c: In function 'oss_probe_mixer_device':
+auddev_oss.c:149: warning: format not a string literal and no format arguments
+auddev_oss.c: In function 'oss_probe_audio_device':
+auddev_oss.c:256: warning: format not a string literal and no format arguments
+auddev_oss.c: In function 'oss_audio_open':
+auddev_oss.c:632: warning: ignoring return value of 'read', declared with attribute warn_unused_result
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev_null.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c audio_fmt.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c audio_util.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev_trans.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c auddev.c
+ar r libuclaudio.a auddev_ixj.o auddev_alsa.o auddev_oss.o auddev_null.o audio_fmt.o audio_util.o auddev_trans.o auddev.o
+ar: creating libuclaudio.a
+ranlib libuclaudio.a
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_state.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_dvi.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_gsm.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_l8.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_l16.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_g711.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_g726.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_lpc.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_types.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_vdvi.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_g726.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_g726_16.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_g726_24.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_g726_32.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_g726_40.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_gsm.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_lpc.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_vdvi.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_dvi.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c converter.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c convert_util.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c convert_extra.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c convert_linear.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c convert_sinc.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c bitstream.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c codec_wbs.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c cx_wbs.c
+ar r libuclcodec.a codec.o codec_state.o codec_dvi.o codec_gsm.o codec_l8.o codec_l16.o codec_g711.o codec_g726.o codec_lpc.o codec_types.o codec_vdvi.o cx_g726.o cx_g726_16.o cx_g726_24.o cx_g726_32.o cx_g726_40.o cx_gsm.o cx_lpc.o cx_vdvi.o cx_dvi.o converter.o convert_util.o convert_extra.o convert_linear.o convert_sinc.o bitstream.o  codec_wbs.o cx_wbs.o
+ar: creating libuclcodec.a
+ranlib libuclcodec.a
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c sndfile.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c sndfile_au.c
+sndfile_au.c: In function 'sun_write_audio':
+sndfile_au.c:249: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c sndfile_raw.c
+sndfile_raw.c: In function 'raw_write_audio':
+sndfile_raw.c:179: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c sndfile_wav.c
+sndfile_wav.c: In function 'riff_write_audio':
+sndfile_wav.c:403: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c: In function 'riff_write_end':
+sndfile_wav.c:432: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:438: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:444: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:445: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:446: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:447: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:448: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:449: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:450: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:452: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+sndfile_wav.c:459: warning: ignoring return value of 'fwrite', declared with attribute warn_unused_result
+ar r libuclsndfile.a sndfile.o sndfile_au.o sndfile_raw.o sndfile_wav.o
+ar: creating libuclsndfile.a
+ranlib libuclsndfile.a
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS channel.o channel_types.o cc_vanilla.o cc_rdncy.o cc_layered.o render_3D.o repair.o  ts.o playout.o net.o source.o session.o main_engine.o mbus_engine.o audio.o cushion.o mix.o parameters.o transmit.o playout_calc.o ui_send_rtp.o ui_send_audio.o ui_send_prefs.o ui_send_stats.o transcoder.o rtp_dump.o rtp_callback.o settings.o pdb.o pktbuf.o tonegen.o voxlet.o fatal_error.o  libuclaudio.a libuclcodec.a libuclsndfile.a  -L/tmp/buildd/ag-rat-4.4.01/common/src -luclmmbase -lasound -ldl  -lieee -lm  -o rat-4.4.01-media
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS  -I/tmp/buildd/ag-rat-4.4.01/common/src  -I/usr/include/tcl8.4 -I/usr/include/tcl8.4  -c rat-kill.c
+gcc -g -O2 -W -Wall -Wbad-function-cast -Wmissing-prototypes -DHAVE_CONFIG_H -DHIDE_SOURCE_STRINGS rat-kill.o -L/tmp/buildd/ag-rat-4.4.01/common/src -luclmmbase -ldl  -lieee -lm -o rat-4.4.01-kill
+Generating rat shell script
+make[1]: Leaving directory `/tmp/buildd/ag-rat-4.4.01/rat'
+touch build-stamp
+ fakeroot debian/rules binary
+test -f rat/VERSION -a -f debian/rules
+test $(id -u) = 0
+test -f rat/VERSION -a -f debian/rules
+rm -rf debian/tmp
+install -d debian/tmp/DEBIAN debian/tmp/usr/share/doc/ag-rat
+install -m 644 rat/COPYRIGHT rat/INSTALL.TXT \
+		rat/README* rat/VERSION rat/MODS \
+		debian/tmp/usr/share/doc/ag-rat/
+install -m 755 debian/postinst debian/prerm debian/tmp/DEBIAN
+install -d debian/tmp/usr/bin
+install -d debian/tmp/usr/share/man/man1
+install -m 755 \
+		rat/rat \
+		rat/rat-4.4.01 \
+		rat/rat-4.4.01-ui \
+		rat/rat-4.4.01-media \
+		rat/rat-4.4.01-kill \
+		debian/tmp/usr/bin/
+( cd debian/tmp/usr/bin/ && cp -p rat-4.4.01-kill rat-kill )
+install -m 644 rat/man/man1/rat.1 debian/tmp/usr/share/man/man1/
+dpkg-shlibdeps `pwd`/debian/tmp/usr/bin/rat-*
+dpkg-shlibdeps: warning: dependency on libdl.so.2 could be avoided if "/tmp/buildd/ag-rat-4.4.01/debian/tmp/usr/bin/rat-kill /tmp/buildd/ag-rat-4.4.01/debian/tmp/usr/bin/rat-4.4.01-ui /tmp/buildd/ag-rat-4.4.01/debian/tmp/usr/bin/rat-4.4.01-media /tmp/buildd/ag-rat-4.4.01/debian/tmp/usr/bin/rat-4.4.01 /tmp/buildd/ag-rat-4.4.01/debian/tmp/usr/bin/rat-4.4.01-kill" were not uselessly linked against it (they use none of its symbols).
+strip --strip-unneeded `pwd`/debian/tmp/usr/bin/rat-*
+dpkg-gencontrol -isp
+dpkg-gencontrol: warning: unknown substitution variable ${misc:Depends}
+chown -R root:root debian/tmp
+chmod -R u+w,go=rX debian/tmp
+dpkg --build debian/tmp ..
+dpkg-deb: building package `ag-rat' in `../ag-rat_4.4.01-1ubuntu6_amd64.deb'.
+ dpkg-genchanges  >../ag-rat_4.4.01-1ubuntu6_amd64.changes
+dpkg-genchanges: including full source code in upload
+dpkg-buildpackage: full upload; Debian-native package (full source is included)
+W: no hooks of type B found -- ignoring
+Copying back the cached apt archive contents
+ -> unmounting /var/cache/pbuilder/result filesystem
+ -> unmounting dev/pts filesystem
+ -> unmounting proc filesystem
+ -> cleaning the build env 
+    -> removing directory /var/cache/pbuilder/build//6917 and its subdirectories
+Current time: Fri Feb 20 07:23:54 EST 2009
+pbuilder-time-stamp: 1235078634
+OK
+

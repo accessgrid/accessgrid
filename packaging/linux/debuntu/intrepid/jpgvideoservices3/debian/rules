@@ -1,0 +1,57 @@
+#!/usr/bin/make -f
+
+package = jpgvideoservices3
+pkgpath = debian/tmp
+docdir = debian/tmp/usr/share/doc/$(package)
+here=`pwd`
+pkgdir = ${here}/$(pkgpath)
+#AGTKDATABASE=/etc
+AGTKDATABASE=/usr/share
+SYSTEMCONFIGBASE=/etc
+
+
+build:
+	$(checkdir)
+	touch build
+
+clean:
+	$(checkdir)
+	rm -f build
+
+
+binary-arch:	checkroot build
+	$(checkdir)
+	rm -rf $(pkgpath)
+	install -d $(pkgpath)/DEBIAN $(docdir)
+	#install -m 755 debian/prerm debian/postinst $(pkgpath)/DEBIAN
+	install -d $(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/
+
+	(cd JPGVideoService ; \
+	zip -0 ../$(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/JPGVideoService.zip * )
+
+	(cd JPGVideoProducerService ; \
+	zip -0 ../$(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/JPGVideoProducerService.zip * )
+
+	(cd JPGVideoConsumerService ; \
+	zip -0 ../$(pkgpath)/${AGTKDATABASE}/AccessGrid3/NodeServices/JPGVideoConsumerService.zip * )
+
+	dpkg-gencontrol -isp
+	chown -R root:root $(pkgpath)
+	chmod -R u+w,go=rX $(pkgpath)
+	dpkg --build $(pkgpath) ..
+
+
+binary-indep:	checkroot build
+
+
+define checkdir
+	test -f installjpg.sh -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

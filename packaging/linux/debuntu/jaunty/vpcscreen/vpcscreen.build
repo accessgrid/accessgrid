@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+here=`pwd`
+
+# Set any particular variable needed
+#
+#workdir=vpcscreen-0.2
+#site0=http://www.vislab.uq.edu.au/ag3/distfiles
+scrpkg0=vpcscreen-0.2.tar.gz
+
+
+# Load up the default build script
+. ../../vpcscreen.build
+
+

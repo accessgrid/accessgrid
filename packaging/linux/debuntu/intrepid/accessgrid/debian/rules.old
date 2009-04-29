@@ -1,0 +1,59 @@
+#!/usr/bin/make -f
+
+SHELL = /bin/bash
+export DH_PYCENTRAL=nomove
+
+# all versions
+PYVERS  := $(shell pyversions -vs)
+VER     := $(shell /usr/bin/python -c 'import sys; print sys.version[:3]')
+
+package = accessgrid
+pkgpath = debian/tmp
+docdir = debian/tmp/usr/share/doc/$(package)
+here=`pwd`
+pkgdir = ${here}/$(pkgpath)
+
+patched:
+	HERE=$(here) debian/do_patches
+	touch $@
+
+build:	patched build-stamp
+build-stamp: $(PYVERS:%=build-python%)
+	touch $@
+build-python%:
+	$(checkdir)
+	HERE=$(here) PYTHONVERSION=$* debian/buildag.sh
+	touch $@
+
+clean:
+	$(checkdir)
+	rm -f build
+
+
+binary-indep:	checkroot build
+	$(checkdir)
+	rm -rf $(pkgpath)
+	install -d $(pkgpath)/DEBIAN $(docdir)
+	install -m 755 debian/postinst debian/prerm $(pkgpath)/DEBIAN
+	HERE=$(here) PKGDIR=$(pkgdir) PYTHONVERSION="2.4" debian/installag.sh
+	dpkg-gencontrol -isp
+	chown -R root:root $(pkgpath)
+	chmod -R u+w,go=rX $(pkgpath)
+	dpkg --build $(pkgpath) ..
+
+
+
+binary-arch:	checkroot build
+
+
+define checkdir
+	test -f AccessGrid/AccessGrid/Toolkit.py -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

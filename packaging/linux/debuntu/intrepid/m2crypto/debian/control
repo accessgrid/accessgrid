@@ -1,0 +1,25 @@
+Source: m2crypto
+Section: AccessGrid
+Priority: optional
+Maintainer: Dima Barsky <dima@debian.org>
+Build-Depends: debhelper (>= 5.0.37.2), dpatch,
+ python-all-dev (>= 2.3.5-11), python-support (>= 0.4),
+ libssl-dev (>= 0.9.7), swig (>= 1.3.24), python-setuptools (>=0.6c5-3)
+Standards-Version: 3.8.0
+
+Package: python-m2crypto
+Architecture: any
+Depends: ${python:Depends}, ${shlibs:Depends}
+Provides: ${python:Provides}, m2crypto 
+Conflicts: m2crypto (<< 0.18-2.2) 
+Replaces: m2crypto (<< 0.18-2.2)
+Description: a crypto and SSL toolkit for Python
+ m2crypto features the following:
+   * RSA, DSA, DH, HMACs, message digests, symmetric ciphers (including AES).
+   * SSL functionality to implement clients and servers.
+   * HTTPS extensions to Python's httplib, urllib, and xmlrpclib.
+   * Unforgeable HMAC'ing AuthCookies for web session management.
+   * FTP/TLS client and server.
+   * S/MIME.
+   * ZServerSSL: A HTTPS server for Zope.
+   * ZSmime: An S/MIME messenger for Zope.

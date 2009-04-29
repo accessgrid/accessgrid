@@ -1,0 +1,43 @@
+vpcscreen (0.2-3) intrepid; urgency=low
+
+  * New build for Intrepid Ibex
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 16 Sep 2008 22:13:33 +1000
+
+vpcscreen (0.2-3) hardy; urgency=low
+
+  * Make VPCScreenProducer.py a conffiles entry
+  *	(to avoid removal when accessgrid3.1 package is removed/purged)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 08 May 2008 12:45:19 +1000
+
+vpcscreen (0.2-2) hardy; urgency=low
+
+  * Rebuild using wxgtk2.8 (was 2.6)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 27 Apr 2008 21:09:34 +1000
+
+vpcscreen (0.2-1) hardy; urgency=low
+
+  * Rebuild for hardy
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 24 Apr 2008 15:27:40 +1000
+
+vpcscreen (0.2-1) gutsy; urgency=low
+
+  * Rearranged locations for vpc-about & vpc-help files
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 18 Dec 2007 15:38:59 +1000
+
+vpcscreen (0.2-0ubuntu2) gutsy; urgency=low
+
+  * Fixed copyright details (to ANU, not UChicago)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 08 Nov 2007 11:17:49 +1000
+
+vpcscreen (0.2-0ubuntu1) gutsy; urgency=low
+
+  * Initial release for gutsy
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 30 Oct 2007 20:54:19 +1000
+
