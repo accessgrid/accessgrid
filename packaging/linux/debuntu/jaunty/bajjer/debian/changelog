@@ -1,3 +1,9 @@
+bajjer (0.2.5-3ubuntu3) jaunty; urgency=low
+
+  * Patch stream.py to use wrapper for sha hashes
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 29 Apr 2009 16:46:07 +1000
+
 bajjer (0.2.5-3ubuntu2) jaunty; urgency=low
 
   * New build for jaunty jackalope
