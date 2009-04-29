@@ -1,3 +1,25 @@
+accessgrid3.2 (3.2-0r67350) hardy; urgency=low
+
+  * New 3.2 beta using svn release 6735 (includes dbus/avahi fix)
+  * Remove previous multicast patch (also fixed in 6735)
+  * Re-enable H264 services (v32servicesH264.dpatch)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 30 Mar 2009 09:42:50 +1000
+
+accessgrid3.2 (3.2-0r67213) hardy; urgency=low
+
+  * Patch to fix writing of multicast status to preferences file
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 21 Oct 2008 10:22:38 +1000
+
+accessgrid3.2 (3.2-0r67212) hardy; urgency=low
+
+  * Fix agversion patch
+  * Prepare for moving config files to /usr/share/AccessGrid3
+  * Fix handling of config file removal
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 02 Oct 2008 10:54:34 +1000
+
 accessgrid3.2 (3.2-0r6721) hardy; urgency=low
 
   * Official beta version 3.2 using svn revision 6721

@@ -1,7 +1,7 @@
 packaging-BuildSnapshot.py
 packaging-agversion.py
 servicesNoBuild
-#servicesH264
+v32servicesH264
 ZSI-Server.py
 Platform-unix-Config.py
-SharedBrowser.py
+WebkitBrowser

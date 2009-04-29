@@ -21,7 +21,7 @@ PKGVERSION=4.4.01
 
 # Set as many of these as are needed
 #
-workdir=${WORKDIR:-mmedia-r4229}
+workdir=${WORKDIR:-mmedia-r4345}
 site0=${SITE0:-http://www.vislab.uq.edu.au/ag3/distfiles}
 srcpkg0=${SRCPKG0:-${workdir}.tar.gz}
 
@@ -86,9 +86,10 @@ fi
 
 # This is the actual building using fakeroot and pbuilder
 #
-( cd ${workdir} && dpkg-buildpackage -S -rfakeroot -us -uc )
-RET=`expr $RET + $?`
-( cd ${workdir} && pbuilder build ../*.dsc 2>&1 |tee ../op )
+##( cd ${workdir} && dpkg-buildpackage -S -rfakeroot -us -uc )
+##RET=`expr $RET + $?`
+##( cd ${workdir} && pbuilder build ../*.dsc 2>&1 |tee ../op )
+( cd ${workdir} && pdebuild 2>&1 |tee ../op )
 RET=`expr $RET + $?`
 if [ $RET -gt 0 ]; then
   echo "ERROR building. Exiting now!"

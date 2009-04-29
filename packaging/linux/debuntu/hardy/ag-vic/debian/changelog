@@ -1,3 +1,9 @@
+ag-vic2.8ucl (1.4-0ubuntu2) hardy; urgency=low
+
+  * New upstream realease (SVN r4345) - fixes JPEG rendering
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 14 Jan 2009 06:09:49 +1000
+
 ag-vic2.8ucl (1.4-0ubuntu1) hardy; urgency=low
 
   * New upstream realease (SVN r4215)

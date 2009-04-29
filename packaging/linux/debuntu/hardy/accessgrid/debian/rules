@@ -7,6 +7,7 @@ pkgpath = debian/${package}
 docdir = debian/tmp/usr/share/doc/$(package)
 here=`pwd`
 pkgdir = ${here}/$(pkgpath)
+pythonversion="2.5"
 
 
 
@@ -16,7 +17,7 @@ build-stamp: patch-stamp
 	$(checkdir)
 	( export AGBUILDROOT=$(here) && \
 	cd AccessGrid/packaging && \
-	python ./BuildSnapshot.py --no-checkout --dist=debian --pythonversion=2.5 )
+	python ./BuildSnapshot.py --no-checkout --dist=debian --pythonversion=${pythonversion} )
 	touch build-stamp
 
 clean:	unpatch
@@ -31,10 +32,8 @@ binary-indep:	build
 	dh_installdirs
 
 	install -d $(pkgpath)/DEBIAN $(docdir)
-	install -m 755 debian/postinst debian/prerm $(pkgpath)/DEBIAN
 
-	HERE=$(here) PKGDIR=$(pkgdir) PYTHONVERSION="2.5" debian/installag.sh
-
+	HERE=$(here) PKGDIR=$(pkgdir) PYTHONVERSION=${pythonversion} debian/installag.sh
 
 	dh_pysupport
 	dh_installdeb

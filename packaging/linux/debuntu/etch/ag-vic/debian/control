@@ -9,8 +9,8 @@ Standards-Version: 3.7.2
 
 Package: ag-vic2.8ucl
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, tk8.4
+Depends: ${shlibs:Depends}, tk8.4
 Conflicts: ag-vic, ag-hdvic, vic
 Description: AccessGrid version of vic video tool.
- This is the UCL version of vic, svn version 4126
- (20080315)
+ This is the UCL version of vic, svn version 4345
+ (20090113)

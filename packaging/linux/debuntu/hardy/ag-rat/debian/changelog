@@ -1,3 +1,10 @@
+ag-rat (4.4.01-1ubuntu3) hardy; urgency=low
+
+  * New svn version 4345
+  * Add libasound2-dev as build-dep (for ALSA support)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 12 Feb 2009 14:29:06 +1000
+
 ag-rat (4.4.01-1ubuntu2) hardy; urgency=low
 
   * New svn version 4229

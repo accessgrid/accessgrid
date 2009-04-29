@@ -5,22 +5,55 @@
 ## DP: No description.
 
 @DPATCH@
-diff -urNad mmedia-r4126~/vic/render/color-swscale.cpp mmedia-r4126/vic/render/color-swscale.cpp
---- mmedia-r4126~/vic/render/color-swscale.cpp	2008-03-15 13:00:51.000000000 +1000
-+++ mmedia-r4126/vic/render/color-swscale.cpp	2008-03-22 16:04:12.841348837 +1000
-@@ -70,13 +70,13 @@
+diff -urNad mmedia-r4345~/vic/render/color-swscale.cpp mmedia-r4345/vic/render/color-swscale.cpp
+--- mmedia-r4345~/vic/render/color-swscale.cpp	2009-01-13 14:57:02.000000000 +1000
++++ mmedia-r4345/vic/render/color-swscale.cpp	2009-01-13 16:42:27.054538763 +1000
+@@ -74,13 +74,13 @@
  
- #ifdef RUNTIME_CPUDETECT	    
+ #ifdef RUNTIME_CPUDETECT
  	      flags |= (available_cpu_flags & FF_CPU_MMX ? SWS_CPU_CAPS_MMX : 0);
 -	      flags |= (available_cpu_flags & FF_CPU_MMXEXT ? SWS_CPU_CAPS_MMX2 : 0);
 +	      // flags |= (available_cpu_flags & FF_CPU_MMXEXT ? SWS_CPU_CAPS_MMX2 : 0);
  	      flags |= (available_cpu_flags & FF_CPU_3DNOW ? SWS_CPU_CAPS_3DNOW : 0);
  	      flags |= (available_cpu_flags & FF_CPU_ALTIVEC ? SWS_CPU_CAPS_ALTIVEC : 0);
  #elif defined(HAVE_MMX)
- 		  flags |= SWS_CPU_CAPS_MMX;
+ 	      flags |= SWS_CPU_CAPS_MMX;
  	#if defined(HAVE_MMX2)
--		  flags |= SWS_CPU_CAPS_MMX2;
-+		  // flags |= SWS_CPU_CAPS_MMX2;
- 	#endif 
+-	      flags |= SWS_CPU_CAPS_MMX2;
++	      // flags |= SWS_CPU_CAPS_MMX2;
+ 	#endif
  #elif defined(HAVE_3DNOW)
- 		  flags |= SWS_CPU_CAPS_3DNOW;
+ 	      flags |= SWS_CPU_CAPS_3DNOW;
+diff -urNad mmedia-r4345~/vic/render/color-swscale.cpp.rej mmedia-r4345/vic/render/color-swscale.cpp.rej
+--- mmedia-r4345~/vic/render/color-swscale.cpp.rej	1970-01-01 10:00:00.000000000 +1000
++++ mmedia-r4345/vic/render/color-swscale.cpp.rej	2009-01-13 16:41:18.991140708 +1000
+@@ -0,0 +1,29 @@
++***************
++*** 70,82 ****
++  
++  #ifdef RUNTIME_CPUDETECT	    
++  	      flags |= (available_cpu_flags & FF_CPU_MMX ? SWS_CPU_CAPS_MMX : 0);
++- 	      flags |= (available_cpu_flags & FF_CPU_MMXEXT ? SWS_CPU_CAPS_MMX2 : 0);
++  	      flags |= (available_cpu_flags & FF_CPU_3DNOW ? SWS_CPU_CAPS_3DNOW : 0);
++  	      flags |= (available_cpu_flags & FF_CPU_ALTIVEC ? SWS_CPU_CAPS_ALTIVEC : 0);
++  #elif defined(HAVE_MMX)
++  		  flags |= SWS_CPU_CAPS_MMX;
++  	#if defined(HAVE_MMX2)
++- 		  flags |= SWS_CPU_CAPS_MMX2;
++  	#endif 
++  #elif defined(HAVE_3DNOW)
++  		  flags |= SWS_CPU_CAPS_3DNOW;
++--- 70,82 ----
++  
++  #ifdef RUNTIME_CPUDETECT	    
++  	      flags |= (available_cpu_flags & FF_CPU_MMX ? SWS_CPU_CAPS_MMX : 0);
+++ 	      // flags |= (available_cpu_flags & FF_CPU_MMXEXT ? SWS_CPU_CAPS_MMX2 : 0);
++  	      flags |= (available_cpu_flags & FF_CPU_3DNOW ? SWS_CPU_CAPS_3DNOW : 0);
++  	      flags |= (available_cpu_flags & FF_CPU_ALTIVEC ? SWS_CPU_CAPS_ALTIVEC : 0);
++  #elif defined(HAVE_MMX)
++  		  flags |= SWS_CPU_CAPS_MMX;
++  	#if defined(HAVE_MMX2)
+++ 		  // flags |= SWS_CPU_CAPS_MMX2;
++  	#endif 
++  #elif defined(HAVE_3DNOW)
++  		  flags |= SWS_CPU_CAPS_3DNOW;

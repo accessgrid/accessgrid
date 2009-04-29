@@ -12,9 +12,9 @@ Architecture: all
 Depends: ${python:Depends}, python-feedparser, python-xml,
  python-zopeinterface, python-twisted-core, python-agzsi,
  python-bajjer (>= 0.2.5-4),
- agcommon, python-wxgtk2.6, python-dbus, python-avahi,
+ agcommon, python-wxgtk2.8, python-dbus, python-avahi,
  python-m2crypto (>= 0.17), tightvncserver, xtightvncviewer,
- ag-vic2.8ucl, ag-rat, wxmozilla, quickbridge,
+ ag-vic2.8ucl, ag-rat, python-webkit, quickbridge,
  vpcscreen, agvcrlauncher3.1
 Conflicts: accessgrid, accessgrid3, accessgrid3.1
 Replaces: accessgrid, accessgrid3, accessgrid3.1

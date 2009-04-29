@@ -22,7 +22,7 @@ PKGVERSION=r117
 [ -z ${workdir} ] && workdir=${PKGNAME}-${PKGVERSION}
 [ -z ${site0} ] && site0=http://www.vislab.uq.edu.au/ag3/distfiles
 [ -z ${srcpkg0} ] && srcpkg0=aghdvic-r117.tar.gz
-[ -z ${srcpkg1} ] && srcpkg1=hdvideoservices-0.24.1.tar.gz
+[ -z ${srcpkg1} ] && srcpkg1=hdvideoservices-0.25.1.tar.gz
 
 myid=`id |cut -d ' ' -f 1 |cut -d '=' -f2 |cut -d '(' -f 1`
 if [ ! "${myid}" = "0" ]; then

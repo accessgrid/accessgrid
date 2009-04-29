@@ -85,7 +85,7 @@ fi
 
 # This is the actual building using fakeroot and pbuilder
 #
-( cd ${workdir} && dpkg-buildpackage -S -rfakeroot -us -uc )
+( cd ${workdir} && dpkg-buildpackage -d -S -rfakeroot -us -uc )
 RET=`expr $RET + $?`
 ( cd ${workdir} && pbuilder build ../*.dsc 2>&1 |tee ../op )
 RET=`expr $RET + $?`

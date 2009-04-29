@@ -5,7 +5,7 @@ here=`pwd`
 
 # Set any particular variable needed
 #
-#WORKDIR=mmedia-r4229
+#WORKDIR=mmedia-r4345
 #SITE0=http://www.vislab.uq.edu.au/ag3/distfiles
 #SRCPKG0=
 

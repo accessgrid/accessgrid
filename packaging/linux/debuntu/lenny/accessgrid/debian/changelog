@@ -1,3 +1,40 @@
+accessgrid3.2 (3.2-0r67350) lenny; urgency=low
+
+  * New svn version (r6735) including dbus/avahi fix
+  * Re-enable H264 services
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 27 Mar 2009 14:57:30 +1000
+
+accessgrid3.2 (3.2-0r67232) lenny; urgency=low
+
+  * Try Webkit based browser
+  * Try wx-gtk2.8 as dependency (was 2.6)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 16 Mar 2009 10:18:54 +1000
+
+accessgrid3.2 (3.2-0r67231) lenny; urgency=low
+
+  * Include patch for correct output of multicast usage in preferences file
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 22 Oct 2008 11:44:43 +1000
+
+accessgrid3.2 (3.2-0r6723) lenny; urgency=low
+
+  * AG3.2 using svn release 6721
+  * Maintain /etc/AccessGrid3 for config files but install.sh ready for
+  *        move to /usr/share/AccessGrid3
+  * Remove prerm script, update postinst & postrm scripts
+  * Fix agversion patch
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 17 Sep 2008 21:51:44 +1000
+
+accessgrid3.2 (3.2-0r6722) lenny; urgency=low
+
+  * First beta of 3.2 using svn release 6721
+  * Move /etc/AccessGrid3 to /usr/share/AccessGrid3
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 08 Sep 2008 16:09:58 +1000
+
 accessgrid3.2 (3.2-0r6721) lenny; urgency=low
 
   * First beta of 3.2 using svb release 6721

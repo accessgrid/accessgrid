@@ -32,10 +32,8 @@ binary-indep:	build
 	dh_installdirs
 
 	install -d $(pkgpath)/DEBIAN $(docdir)
-	install -m 755 debian/postinst debian/prerm $(pkgpath)/DEBIAN
 
 	HERE=$(here) PKGDIR=$(pkgdir) PYTHONVERSION=${pythonversion} debian/installag.sh
-
 
 	dh_pysupport
 	dh_installdeb

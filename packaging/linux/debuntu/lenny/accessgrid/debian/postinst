@@ -1,9 +1,20 @@
 #!/bin/sh
 
-/usr/sbin/update-python-modules -f
 
-if [ -x /usr/bin/agpm3.py ]; then
-  echo "POSTINST: agpm3.py --post-install"
-  /usr/bin/agpm3.py --post-install
-fi
+set -e
+
+case "$1" in
+	configure)
+		/usr/sbin/update-python-modules -f
+		if [ -x /usr/bin/agpm3.py ]; then
+		  echo "POSTINST: agpm3.py --post-install" >&2
+		  su -c "/usr/bin/agpm3.py --post-install"
+		fi
+	;;
+	*)
+		echo "POSTINST called with argument: $1" >&2
+	;;
+esac
+
+exit 0
 

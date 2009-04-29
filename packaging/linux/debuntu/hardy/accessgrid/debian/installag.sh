@@ -1,12 +1,14 @@
 #!/bin/sh
 
-echo "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 prefix=${PREFIX:-/usr}
 name=${NAME:-accessgrid}
-version=${VERSION:-3.1}
+version=${VERSION:-3.2}
 pythonversion=${PYTHONVERSION}
-pkgdir=${PKGDIR:-${HERE}/debian/accessgrid3.1}
+pkgdir=${PKGDIR:-${HERE}/debian/accessgrid3.2}
+#AGTKDATABASE=/usr/share
+AGTKDATABASE=/etc
+SYSTEMCONFIGBASE=/etc
 
 echo " INSTALLING in ${HERE} (= `pwd` ?)"
 echo " PKGDIR = ${pkgdir}"
@@ -40,22 +42,29 @@ rm -rf ${pkgdir}/${prefix}/share/AccessGrid
 cp -R ${builddir}/AccessGrid/packaging/linux/ag-ellipse.png \
         ${pkgdir}/${prefix}/share/${name}${version}/
 
-install -d ${pkgdir}/etc
-cp -R etc/* ${pkgdir}/etc/
-cp -R SharedApplications ${pkgdir}/etc/AccessGrid3/
-cp -R NodeServices ${pkgdir}/etc/AccessGrid3/
+install -d ${pkgdir}/${SYSTEMCONFIGBASE}
+cp -R etc/AccessGrid3 ${pkgdir}/${SYSTEMCONFIGBASE}/
+install -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3
+install -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3/SharedApplications
+install -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3/Services
+install -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices
+install -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3/Plugins
+cp -R SharedApplications ${pkgdir}/${AGTKDATABASE}/AccessGrid3/
+cp -R Services ${pkgdir}/${AGTKDATABASE}/AccessGrid3/
+cp -R NodeServices ${pkgdir}/${AGTKDATABASE}/AccessGrid3/
+cp -R Plugins ${pkgdir}/${AGTKDATABASE}/AccessGrid3/
 
 # Gnome desktop menus
 #
-mkdir -p ${pkgdir}/etc/xdg/menus/applications-merged
+mkdir -p ${pkgdir}/${SYSTEMCONFIGBASE}/xdg/menus/applications-merged
 cp ${builddir}/AccessGrid/packaging/linux/xdg/AccessGrid3.menu \
-        ${pkgdir}/etc/xdg/menus/applications-merged/
+        ${pkgdir}/${SYSTEMCONFIGBASE}/xdg/menus/applications-merged/
 
 # KDE menus
 #
-mkdir -p ${pkgdir}/etc/xdg/menus/kde-applications-merged
+mkdir -p ${pkgdir}/${SYSTEMCONFIGBASE}/xdg/menus/kde-applications-merged
 cp ${builddir}/AccessGrid/packaging/linux/xdg/AccessGrid3.menu \
-        ${pkgdir}/etc/xdg/menus/kde-applications-merged/
+        ${pkgdir}/${SYSTEMCONFIGBASE}/xdg/menus/kde-applications-merged/
 
 mkdir -p ${pkgdir}/${prefix}/share/desktop-directories
 cp ${builddir}/AccessGrid/packaging/linux/xdg/*3*.directory \
@@ -70,9 +79,6 @@ for f in ${pkgdir}/${prefix}/share/applications/*3* ; do
   sed -i "/Icon/s/AccessGrid/${name}${version}/g" $f
 done
 
-mkdir -p ${pkgdir}/etc/AccessGrid3/Services
-mkdir -p ${pkgdir}/etc/AccessGrid3/PackageCache
-mkdir -p ${pkgdir}/etc/AccessGrid3/Logs
+#mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/PackageCache
 
-echo "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY"
 

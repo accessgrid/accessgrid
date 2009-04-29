@@ -1,3 +1,16 @@
+ag-rat (4.4.01-4) lenny; urgency=low
+
+  * Add oss-compat to installation dependencies
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 17 Feb 2009 11:51:09 +1000
+
+ag-rat (4.4.01-3) lenny; urgency=low
+
+  * New SVN revision 4345
+  * Add asound-dev to build-deps to enable ALSA
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 12 Feb 2009 12:57:33 +1000
+
 ag-rat (4.4.01-2) lenny; urgency=low
 
   * New SVN revision 4229

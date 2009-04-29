@@ -1,4 +1,13 @@
 #!/bin/sh
 
-echo " POSTINST: no post installation actions required"
+echo " POSTINST: updating network buffer sizes"
+
+PATH=/sbin:$PATH
+which sysctl > /dev/null || exit 0
+for file in /etc/sysctl.d/*.conf ; do
+    if [ -r $file ]; then
+        sysctl -e -p $file
+    fi
+done
+
 

@@ -1,4 +1,5 @@
 #!/bin/sh
 
-echo " POSTINST: no post installation actions required"
+echo " POSTINST: Resetting network buffers with sysctl"
+invoke-rc.d procps start
 

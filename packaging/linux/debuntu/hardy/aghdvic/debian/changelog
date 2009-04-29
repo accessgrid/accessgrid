@@ -1,3 +1,10 @@
+aghdvic (0r117-4) hardy; urgency=low
+
+  * Include /etc/sysctl.d/60-aghdvic.conf to set network buffer sizes
+  * New hdvideoservices (0.25.1) starts service in correct directory
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 26 Sep 2008 12:29:28 +1000
+
 aghdvic (0r117-2) hardy; urgency=low
 
   * New hdvideoservices (0.24.1) changes runDV to runDVslow

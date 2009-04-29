@@ -11,7 +11,7 @@ Package: accessgrid3.2
 Architecture: all
 Depends: ${python:Depends}, python-feedparser, python-xml,
  python-zopeinterface, python-twisted-core, python-agzsi, python-bajjer,
- agcommon, python-wxgtk2.8, python-dbus, python-avahi,
+ agcommon, python-wxgtk2.8, python-dbus, python-avahi, avahi-utils,
  python-m2crypto (>= 0.17), xtightvncviewer,
  ag-vic2.8ucl, ag-rat,
  wxmozilla (>= 0.5.7-0r20070620ubuntu2),

@@ -1,3 +1,9 @@
+ag-vic2.8ucl (1.4.0r4345) lenny; urgency=low
+
+  * New SVN version (4345) - fixes jpeg rendering problem
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 13 Jan 2009 16:51:43 +1000
+
 ag-vic2.8ucl (1.4.0r4215) lenny; urgency=low
 
   * New SVN version (4215)

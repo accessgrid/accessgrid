@@ -1,6 +1,7 @@
 packaging-BuildSnapshot.py
 packaging-agversion.py
 servicesNoBuild
-Platform-unix-Config.py
-SharedBrowser.py
+v32servicesH264
 ZSI-Server.py
+SharedBrowser.py
+datapath-Configs

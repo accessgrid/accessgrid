@@ -4,14 +4,14 @@ Priority: optional
 Maintainer: Chris Willing <c.willing@uq.edu.au>
 Build-Depends: dpatch, tk-dev,
  libx11-dev, libxt-dev, libssl-dev, libxext6,
- libalsaplayer-dev
+ libasound2-dev, libalsaplayer-dev
 Standards-Version: 3.7.2
 
 Package: ag-rat
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, alsa-oss, alsa-tools
+Depends: ${shlibs:Depends}, ${misc:Depends}, alsa-oss, alsa-tools, oss-compat
 Provides: rat, ag-rat
 Description: UCL version of rat
  This is the UCL version of rat for AccessGrid.
  .
- SVN revision 4126
+ SVN revision 4345
