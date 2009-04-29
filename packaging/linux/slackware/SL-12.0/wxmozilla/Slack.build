@@ -1,17 +1,18 @@
 name=wxmozilla
 version=20070620cvs
-release=3
+release=4
 prefix=${PREFIX:-/usr}
 arch=${ARCH:-`uname -m`}
 srcpkg=${name}-${version}.tar.gz
 releasedir=${RELEASEDIR:-/tmp}
-pyver=2.5
+pyver=${PYTHONVERSION:-2.5}
 tmp=${TMP:-/var/tmp}
 buildroot=${tmp}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 pkgname=${name}-${version}-${arch}-${release}.tgz
+functions=/scratch/PKG/functions
 
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
@@ -28,18 +29,34 @@ elif [ "${arch}" = "i686" ]; then
 elif [ "${arch}" = "s390" ]; then
   SLKCFLAGS="-O2"
   LIBDIR=/usr/lib
-elif [ "${arch}" = "x86_64" ]; then
+elif [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
   SLKCFLAGS="-O2"
   LIBDIR=/usr/lib64
 fi
 
+# Add space separated list of prerequsite packages here
+#
+prereqs="pkgtools swig1329 python xulrunner wxPythonGTK"
+swig_binary=swig-wxPython1.3.29
+
 here=`pwd`
-#swig_binary=${here}/swig-wxPython1.3.29
-swig_binary=/usr/bin/swig-wxPython1.3.29
+
 patch4=${here}/patches/patch-contrib-mozilla25-wxPython-mozilla.py
 
 PATH=/sbin:${PATH}
-. ../functions
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+
+# Another check for correct swig
+#
+if [ ${use_swig} -eq 1 ]; then
+  found_swig=`which ${swig_binary}`
+  if [ $? -ne 0 ]; then
+    echo "can't find ${swig_binary} - exiting now"
+    exit 1
+  fi
+fi
 
 get_srcpkg ${srcpkg}
 
@@ -98,6 +115,10 @@ mkdir -p ${docdir}
 cp -a doc/html/* AUTHORS BUILD.Unix.txt COPYING INSTALL NEWS README \
         ${docdir}/
 
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+
 
 # Package it 
 #
@@ -114,7 +135,10 @@ ${name}:       http://wxmozilla.sourceforge.net
 ${name}:
 ${name}:
 EOF
-chmod 0644 ${pkgdir}/install/slack-desc
+[ -f ${here}/slack-required ] && cp -p ${here}/slack-required ${pkgdir}/install/
+[ -f ${here}/slack-conflicts ] && cp -p ${here}/slack-conflicts ${pkgdir}/install/
+[ -f ${here}/slack-suggests ] && cp -p ${here}/slack-suggests ${pkgdir}/install/
+chmod 0644 ${pkgdir}/install/slack-*
 
 # This doinst.sh, which found the path to the correct libgtkembedmoz.so
 # and entered it in /etc/ld.so.conf, is now not needed; xulrunner (which
@@ -139,6 +163,10 @@ if [ $# -gt 0 -a "${1}" = "install" ]; then
 fi
 
 # Changelog
+#
+# CKW 20080416 - release 4
+#  - build against wxPythonGTK
+#  - add slack-* files for slapt-get
 #
 # CKW 20070813 - release 3
 #  - build against new wxPython  (unicode)

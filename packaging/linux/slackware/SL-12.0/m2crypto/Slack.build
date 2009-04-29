@@ -63,7 +63,7 @@ python setup.py install --root=${pkgdir}
 
 
 mkdir -p ${docdir}
-cp BUGS CHANGES INSTALL LICENCE README README.Developers \
+cp CHANGES INSTALL LICENCE README \
 	${docdir}
 
 # 

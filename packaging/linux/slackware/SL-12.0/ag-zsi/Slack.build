@@ -1,8 +1,8 @@
-name=ag-zsi
-version=r1385
-release=2
+name=agzsi
+version=2.0
+release=3
 arch=${ARCH:-`uname -m`}
-srcpkg=zsi-${version}.tar.gz
+srcpkg=ZSI-${version}.tar.gz
 buildroot=/var/tmp
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
@@ -24,7 +24,9 @@ elif [ "${arch}" = "x86_64" ]; then
 fi
 
 here=`pwd`
-patch0=${here}/patches/patch-ZSI-client.py
+#patch0=${here}/patches/patch-ZSI-client.py
+patch6=${here}/patches/ZSI_v2_0_0_SVN.patch
+patch7=${here}/patches/python-ZSI-2.0-socket-error.patch
 
 PATH=/sbin:${PATH}
 . ../functions
@@ -42,17 +44,21 @@ mkdir -p ${pkgdir}
 #
 cd ${buildroot}
 tar zxvf ${here}/${srcpkg}
-mv zsi-${version} ${name}-${version}
+mv ZSI-${version} ${name}-${version}
 cd ${builddir} || exit 1
 
-do_patch ${patch0}
+do_patch ${patch6}
+do_patch ${patch7}
+
+#
+sleep 5
 
 python setup.py install --root=${pkgdir}
 ( cd ${pkgdir}/usr/bin && ln wsdl2dispatch wsdl2dispatch.py && ln wsdl2py wsdl2py.py )
 
 
 mkdir -p ${docdir}
-cp CHANGES Copyright README RELEASE \
+cp CHANGES README \
 	${docdir}
 
 # 
@@ -83,7 +89,7 @@ cd ${here}
 #
 [ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
 [ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
-rm -f ${srcpkg}
+#rm -f ${srcpkg}
 
 # Install immediately?
 #
@@ -93,6 +99,9 @@ fi
 
 
 # Changelog
+#
+# 20090213 CKW - release 3
+#  - use Doug's version
 #
 # CKW 20070604 - release 2
 #   add Tom's self.h = None patch

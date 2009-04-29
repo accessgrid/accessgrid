@@ -1,6 +1,6 @@
 name=quickbridge
 version=3.0.2
-release=1
+release=2
 arch=${ARCH:-`uname -m`}
 srcpkg=AccessGrid-${version}.src.tar.gz
 TMP=${TMP:-/var/tmp}
@@ -81,19 +81,15 @@ mkdir -p ${docdir}
 # Package it 
 #
 mkdir -p ${pkgdir}/install
-cat <<EOF >${pkgdir}/install/slack-desc
-${name}: ${name}-${version}
-${name}:
-${name}: ${name} is intended to connect unicast mbone clients to
-${name}: multicast groups. You can supply an access control list to limit
-${name}: which clients can connect to the gateway.
-${name}:
-EOF
-chmod 0644 ${pkgdir}/install/slack-desc
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
 
 # Include build script
-cp ${here}/Slack.build ${pkgdir}/install/
-
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
 
 #
 #
@@ -116,6 +112,9 @@ fi
 
 
 # Changelog
+#
+# 20090225 CKW - release 2
+#  - tidy up packaging, add meta files for slapt-get
 #
 # 20070623 CKW first release
 #

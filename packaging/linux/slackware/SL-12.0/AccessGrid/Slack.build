@@ -1,18 +1,22 @@
 name=accessgrid3.2
 version=3.2
-svnversion=6721
+svnversion=6735
 release=0${svnversion}
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
-srcpkg=AccessGrid-${version}-${release}.tar.gz
+srcpkg0=AccessGrid-${version}-${release}.tar.gz
+srcpkg1=sharedwebkitbrowser-0.8.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
-pkgname=${name}-${version}-${arch}-${release}.tgz
+pkgname=${name}-${version}-${arch}-${release}0.tgz
 functions=/scratch/PKG/functions
 XDG_MERGEDIR=etc/xdg/menus/applications-merged
+#AGTKDATABASE=/usr/share
+AGTKDATABASE=/etc
+SYSTEMBASE=/etc
 
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/distfiles/
@@ -26,19 +30,24 @@ elif [ "${arch}" = "i686" ]; then
   SLKCFLAGS="-O2 -march=i686 -mcpu=i686"
 elif [ "${arch}" = "s390" ]; then
   SLKCFLAGS="-O2"
-elif [ "${arch}" = "x86_64" ]; then
+elif [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
   SLKCFLAGS="-O2"
 fi
 
 # Add space separated list of build prerequsites (pkg names) here
 #
-prereqs="pkgtools python agzsi pyxml"
+prereqs="pkgtools python agzsi pyxml setuptools"
 
 here=`pwd`
 
 patch0=${here}/patches/patch-packaging-BuildSnapshot.py
 patch1=${here}/patches/patch-AccessGrid-hosting-ZSI-Server.py
-patch2=${here}/patches/patch-sharedapps-SharedBrowser-SharedBrowser.py
+#patch2=${here}/patches/patch-sharedapps-SharedBrowser-SharedBrowser.py
+#patch3=${here}/patches/patch-AccessGrid_Platform_unix_Config.py
+patch4=${here}/patches/patch-add_datadir.diff
+patch5=${here}/patches/patch-temp_reversion_AGTkDataPath
+#patch6=${here}/patches/patch-mcast_output
+#patch7=${here}/patches/diff-trunk_AccessGrid_ServiceDiscovery.py-from-r6334-to-r6735.diff
 
 patch10=${here}/patches/patch-services-node-AudioService-AudioService.build.py
 patch11=${here}/patches/patch-services-node-VideoService-VideoService.build.py
@@ -59,7 +68,8 @@ PATH=/sbin:${PATH}
 
 check_prereqs ${prereqs} || exit
 
-get_srcpkg ${srcpkg}
+get_srcpkg ${srcpkg0}
+get_srcpkg ${srcpkg1}
 
 
 #
@@ -73,14 +83,23 @@ mkdir -p ${pkgdir}
 cd ${buildroot}
 mkdir -p ${builddir}
 cd ${builddir}
-tar zxvf ${here}/${srcpkg}
+tar zxvf ${here}/${srcpkg0}
+
+# Insert new (webkit) SharedBrowser
+#
+echo "Adding webkit based SharedBrowser"
+(cd ${buildroot} && tar zxvf ${here}/${srcpkg1})
+cp ${buildroot}/sharedwebkitbrowser-0.8/SharedBrowser.py AccessGrid/sharedapps/SharedBrowser/
 
 # Apply patches
 #
 cd ${builddir}/AccessGrid
 do_patch ${patch0}
 do_patch ${patch1}
-do_patch ${patch2}
+#do_patch ${patch2}
+#do_patch ${patch3}
+do_patch ${patch4}
+do_patch ${patch5}
 
 do_patch ${patch10}
 do_patch ${patch11}
@@ -115,9 +134,18 @@ fi
 rm -rf share/applnk share/gnome
 cp -R share/ ${pkgdir}/${prefix}/share
 mv ${pkgdir}/${prefix}/share/doc/AccessGrid ${pkgdir}/${prefix}/share/doc/${name}-${version}
-cp -R etc/ ${pkgdir}/etc
-cp -R SharedApplications ${pkgdir}/etc/AccessGrid3
-cp -R NodeServices ${pkgdir}/etc/AccessGrid3
+
+mkdir -p ${pkgdir}/${SYSTEMBASE}
+cp -R etc/AccessGrid3 ${pkgdir}/${SYSTEMBASE}/
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/SharedApplications
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/Services
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/Plugins
+cp -R SharedApplications ${pkgdir}/${AGTKDATABASE}/AccessGrid3
+cp -R Services ${pkgdir}/${AGTKDATABASE}/AccessGrid3
+cp -R NodeServices ${pkgdir}/${AGTKDATABASE}/AccessGrid3
+cp -R Plugins ${pkgdir}/${AGTKDATABASE}/AccessGrid3
 
 # Gnome main menu
 mkdir -p ${pkgdir}/${XDG_MERGEDIR}
@@ -139,10 +167,7 @@ mkdir -p ${pkgdir}/${prefix}/share/AccessGrid
 cp -R ${builddir}/AccessGrid/packaging/linux/ag-ellipse.png \
 	${pkgdir}/${prefix}/share/AccessGrid/
 
-mkdir -p ${pkgdir}/etc/AccessGrid3/Services
-mkdir -p ${pkgdir}/etc/AccessGrid3/PackageCache
-mkdir -p ${pkgdir}/etc/AccessGrid3/Logs
-
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/PackageCache
 
 # Package it 
 #
@@ -206,7 +231,8 @@ cd ${here}
 #
 [ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
 [ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
-rm -f ${srcpkg}
+#rm -f ${srcpkg0}
+#rm -f ${srcpkg1}
 
 # Install immediately?
 #
@@ -217,6 +243,24 @@ fi
 exit
 
 # Changelog
+#
+# CKW 20090326 beta release of 3.2 svn r6735 (067350)
+#  - updated to r6735
+#
+# 20090326 CKW - another beta release (067272)
+#  - add Doug's avahi patch from svn (r6735)
+#
+# 20090316 CKW - another beta release (067271)
+#  - add webkit based SharedBrowser
+#  - add pywebkitgtk to slack-required
+#  - remove avahi from slack-required
+#
+# CKW 20081022 beta release of 3.2 (svn version 6727)
+#  - patch to retrieve correct mcast status format for
+#    user's preferences file
+#  - add AGTKDATABASE and SYSTEMBASE in build to prepare
+#    to move some things under /etc/AccessGrid3 into
+#    /usr/share/AccessGrid3/
 #
 # CKW 20080717 beta release of 3.2 (svn version 6721)
 #

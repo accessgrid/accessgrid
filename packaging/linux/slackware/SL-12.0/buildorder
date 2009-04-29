@@ -1,4 +1,4 @@
-elementtree
+(elementtree)
 bajjer
 feedparser
 pyxml
@@ -19,5 +19,6 @@ wxPython
 xulrunner
 wxmozilla
 
+setuptools (gsb)
 AccessGrid
 

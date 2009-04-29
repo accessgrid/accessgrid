@@ -1,5 +1,5 @@
 name=xulrunner
-version=1.8.0.4
+version=1.8.1.14
 release=1
 arch=${ARCH:-`uname -m`}
 srcpkg=${name}-${version}-source.tar.bz2
@@ -8,40 +8,54 @@ buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
-pkgname=${name}-${version}-${arch}-${release}.tgz
+if [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
+  pkgname=${name}-${version}-${arch}_slamd64-${release}.tgz
+else
+  pkgname=${name}-${version}-${arch}-${release}.tgz
+fi
 
+_prefix=/usr
+functions=/scratch/PKG/functions
+
+master_sites=ftp://mirror.switch.ch/mirror/gentoo/distfiles/
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/linux/distfiles/
 releasedir=${RELEASEDIR:-/tmp}
 
 if [ "${arch}" = "i386" ]; then
-  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
-  LIBDIR="/usr/lib"
+  SLKCFLAGS="-O2 -march=i386 -mtune=i686"
+  LIBDIR="${_prefix}/lib"
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "i486" ]; then
-  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
-  LIBDIR="/usr/lib"
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIR="${_prefix}/lib"
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "i686" ]; then
-  SLKCFLAGS="-O2 -march=i686 -mcpu=i686"
-  LIBDIR="/usr/lib"
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIR="${_prefix}/lib"
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "s390" ]; then
   SLKCFLAGS="-O2"
-  LIBDIR="/usr/lib"
+  LIBDIR="${_prefix}/lib"
   ARCH_CONFIGURE=""
-elif [ "${arch}" = "x86_64" ]; then
+elif [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
   SLKCFLAGS="-O2 -fPIC"
-  LIBDIR="/usr/lib64"
+  LIBDIR="${_prefix}/lib64"
   ARCH_CONFIGURE="--libdir=$LIBDIR"
 fi
 
+# Add space separated list of prerequsite packages here
+#
+prereqs="pkgtools cairo"
+
 here=`pwd`
 patch0=${here}/patches/patch-epiphany.patch
-patch1=${here}/patches/patch-moz_plugin_path.diff
+patch1=${here}/patches/patch-moz_plugin_path.diff-${version}
 
 PATH=/sbin:${PATH}
-. ../functions
+. ${functions}
+
+check_prereqs ${prereqs} || exit
 
 get_srcpkg ${srcpkg}
 
@@ -62,37 +76,41 @@ cd ${builddir}
 # Apply patches
 # like this: do_patch ${patch0}
 #
-do_patch ${patch0}
-do_patch ${patch1}
+#do_patch ${patch0}
+#do_patch ${patch1}
 
-# Support for pragma is broken on GCC 4.1.x and x86_64.  
-if [ x"${arch}" == x"x86_64" ]; then
-  export ac_cv_visibility_pragma=no
-  echo "Disabling pragma support!"
-fi
-echo "Post patch sleep ...."
+
+echo -n "Post patch sleep ... "
 sleep 5
+echo
+## Support for pragma is broken on GCC 4.1.x and x86_64.  
+#if [ x"${arch}" == x"x86_64" ]; then
+#  echo "Disabling pragma support!"
+#  export ac_cv_visibility_pragma=no
+#fi
 
+echo "Post patch sleep ...."
+sleep 3
 
 # Build & install
 #
 CFLAGS=${SLKCFLAGS} \
 CXXFLAGS=${SLKCFLAGS} \
 ./configure \
-    --prefix=/usr \
+    --prefix=${_prefix} \
     --sysconfdir=/etc \
-    --mandir=/usr/man \
+    --mandir=${_prefix}/man \
     --localstatedir=/var \
     --libdir=${LIBDIR} \
     --disable-static \
     --enable-shared \
-    --with-default-mozilla-five-home=/usr/lib/${name}-${version} \
+    --with-default-mozilla-five-home=/${LIBDIR}/${name}-${version} \
     --enable-application=xulrunner \
     --enable-svg \
     --enable-svg-renderer=cairo \
     --enable-canvas \
     --enable-default-toolkit=gtk2 \
-    --enable-system=cairo \
+    --enable-system-cairo \
     --enable-xft \
     --enable-extensions=default,cookie,permissions \
     --enable-strip \
@@ -116,7 +134,7 @@ CXXFLAGS=${SLKCFLAGS} \
     --without-system-nspr \
     --with-x \
     --x-includes=/usr/include/X11 \
-    --x-libraries=/usr/lib/X11 \
+    --x-libraries=/${LIBDIR}/X11 \
     --disable-javaxpcom \
 && make	-j5 \
 && make install DESTDIR=${pkgdir}
@@ -129,9 +147,13 @@ mkdir -p ${docdir}
 cp LEGAL LICEN*E README* \
 	${docdir}
 
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+
 
 # Create plugin-path.
-mkdir -p ${pkgdir}/usr/lib/mozilla/plugins
+mkdir -p ${pkgdir}/${LIBDIR}/mozilla/plugins
 
 # Install nss headers.
 mkdir -p ${pkgdir}/usr/include/${name}-${version}/nss
@@ -139,10 +161,10 @@ find security/nss/lib -name "*.h" -type f -exec cp -a {} ${pkgdir}/usr/include/$
 chown -R root:root ${pkgdir}/usr/include/${name}-${version}/nss
 chmod 644 ${pkgdir}/usr/include/${name}-${version}/nss/*
 
-( mkdir -p ${pkgdir}/usr/lib;
-  cd ${pkgdir}/usr/lib;
+( mkdir -p ${pkgdir}/${LIBDIR};
+  cd ${pkgdir}/${LIBDIR};
   for LIBRARY in libmozjs.so libnspr4.so libnss3.so libplc4.so libplds4.so libsmime3.so libsoftokn3.so libssl3.so ; do
-    rm -f "${LIBRARY}"; ln -sf /usr/lib/${name}-${version}/$LIBRARY .
+    rm -f "${LIBRARY}"; ln -sf /${LIBDIR}/${name}-${version}/$LIBRARY .
   done
 )
 
@@ -177,12 +199,12 @@ if [ -d ${pkgdir}/usr/man ]; then
 fi
 
 # gzip man-pages (if available)
-if [ -f ${pkgdir}/usr/info/dir ]; then
-  rm ${pkgdir}/usr/info/dir
+if [ -f ${pkgdir}${_prefix}/info/dir ]; then
+  rm ${pkgdir}${_prefix}/info/dir
 fi
-for a in ${pkgdir}/usr/info \
-         ${pkgdir}/usr/man \
-         ${pkgdir}/usr/share/man ; do
+for a in ${pkgdir}${_prefix}/info \
+         ${pkgdir}${_prefix}/man \
+         ${pkgdir}${_prefix}/share/man ; do
   if [ -d "$a" ]; then
     find "$a/" -type f -name "*[[:digit:]]" -exec gzip -9 {} \;
   fi
@@ -204,10 +226,11 @@ ${name}: a solution which allows the embedding of
 ${name}: Mozilla technologies in other projects and products.
 ${name}:
 EOF
-chmod 0644 ${pkgdir}/install/slack-desc
+[ -f ${here}/slack-required ] && cp -p ${here}/slack-required ${pkgdir}/install/
+[ -f ${here}/slack-conflicts ] && cp -p ${here}/slack-conflicts ${pkgdir}/install/
+[ -f ${here}/slack-suggests ] && cp -p ${here}/slack-suggests ${pkgdir}/install/
+chmod 0644 ${pkgdir}/install/slack-*
 
-# Include build script
-cp ${here}/Slack.build ${docdir}/
 
 # Make libraries visible
 #
@@ -233,11 +256,13 @@ cd ${pkgdir}
 /sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
 cd ${here}
 
+# Clean up
 #
-#
+echo -n "Cleaning up ... "
 [ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
 [ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
 rm -f ${srcpkg}
+echo
 
 
 # Install immediately?
@@ -248,6 +273,9 @@ fi
 
 
 # Changelog
+#
+# CKW 20080416 - release 2
+#  - add slack_* files for slapt-get
 #
 # CKW 20070628 - first release modelled after xulrunner.slackpack
 #

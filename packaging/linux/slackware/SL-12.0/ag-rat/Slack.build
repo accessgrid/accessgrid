@@ -1,7 +1,7 @@
 name=agrat
 version=4.4.01
-svn_revision=r4229
-release=3
+svn_revision=r4393
+release=4
 arch=${ARCH:-`uname -m`}
 srcpkg=mmedia-${svn_revision}.tar.gz
 TMP=${TMP:-/var/tmp}
@@ -9,7 +9,15 @@ buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
-pkgname=${name}-${version}-${arch}-${release}.tgz
+if [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
+  pkgname=${name}-${version}-${arch}_slamd64-${release}.tgz
+  distro=slamd64
+else
+  pkgname=${name}-${version}-${arch}-${release}.tgz
+  distro=slackware
+fi
+
+_prefix=/usr
 functions=/scratch/PKG/functions
 
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
@@ -17,24 +25,24 @@ distdir=/nfs/distfiles/
 releasedir=${RELEASEDIR:-/tmp}
 
 if [ "${arch}" = "i386" ]; then
-  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
-  LIBDIR="/usr/lib"
+  SLKCFLAGS="-O2 -march=i386 -mtune=i686"
+  LIBDIR="${_prefix}/lib"
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "i486" ]; then
-  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
-  LIBDIR="/usr/lib"
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIR="${_prefix}/lib"
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "i686" ]; then
-  SLKCFLAGS="-O2 -march=i686 -mcpu=i686"
-  LIBDIR="/usr/lib"
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIR="${_prefix}/lib"
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "s390" ]; then
   SLKCFLAGS="-O2"
-  LIBDIR="/usr/lib"
+  LIBDIR="${_prefix}/lib"
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
   SLKCFLAGS="-O2"
-  LIBDIR="/usr/lib64"
+  LIBDIR="${_prefix}/lib64"
   ARCH_CONFIGURE="--libdir=$LIBDIR"
 fi
 
@@ -77,23 +85,28 @@ sleep 3
 && autoconf -v -f \
 && ./configure \
 	--enable-ipv6 \
-&& make) || exit 1
+	--prefix=${_prefix} \
+	--mandir=${_prefix}/man \
+	${ARCH_CONFIGURE} \
+&& make ) || exit 1
 
 # Install
 cd ${builddir}
-install -d ${pkgdir}/usr/bin
-install -d ${pkgdir}/usr/share/man/man1
+install -d ${pkgdir}${_prefix}/bin
+install -d ${pkgdir}${_prefix}/share/man/man1
 install -m 755 \
     rat/rat \
     rat/rat-4.4.01 \
     rat/rat-4.4.01-ui \
     rat/rat-4.4.01-media \
     rat/rat-4.4.01-kill \
-    ${pkgdir}/usr/bin/
-(cd ${pkgdir}/usr/bin/ && cp -p rat-4.4.01-kill rat-kill)
-install -m 644 rat/man/man1/rat.1 ${pkgdir}/usr/share/man/man1/
+    ${pkgdir}${_prefix}/bin/
+(cd ${pkgdir}${_prefix}/bin/ && cp -p rat-4.4.01-kill rat-kill)
+#install -m 644 rat/man/man1/rat.1 ${pkgdir}${_prefix}/man/man1/
+cat rat/man/man1/rat.1 | gzip -c - >${pkgdir}${_prefix}/man/man1/rat.1.gz
 
 
+exit
 # Docs
 #
 cd ${builddir}/rat
@@ -114,10 +127,11 @@ cp ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
 #
 mkdir -p ${pkgdir}/install
 cat <<EOF >${pkgdir}/install/slack-desc
-${name}: ${name}-${version}
+${name}: ${name}-${version} (RTP Audio Tool)
 ${name}:
-${name}: AccessGrid version of rat audio tool
-${name}: using ucl svn revision ${svn_revision} versions of
+${name}: The rat audio tool uses Real-time Transport Protocol (RTP)
+${name}: for transmitting & receiving media streams. This version
+${name}: uses the UCL svn revision ${svn_revision} versions of
 ${name}: rat and common, but system tcl & tk libraries
 ${name}:
 EOF
@@ -147,6 +161,9 @@ fi
 
 
 # Changelog
+#
+# 20090219 CKW release 4
+#  - use updated svn version r4393
 #
 # 20080726 CKW release 3
 #  - use updated svn version r4229

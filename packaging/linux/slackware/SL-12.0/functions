@@ -22,12 +22,12 @@ do_patch () {
 
 echo "Patching with ${1}"
 
-cat ${1} |patch -p0 --dry-run
+cat ${1} |patch -p0 -l --dry-run
 if [ $? -ne 0 ]; then
   echo "Can't patch ${1}. Exiting now ..."
   exit 1
 fi
-cat ${1} |patch -p0
+cat ${1} |patch -p0 -l
 if [ $? -ne 0 ]; then
   echo "Couldn't patch ${1}. Exiting now ..."
   exit 2
@@ -35,4 +35,38 @@ fi
 
 }
 
+
+
+
+pkg() {
+  echo -n "Need \"$1\", found: "
+  ls /var/log/packages | grep -v grep |grep ^${1}-
+  ret=$?
+#  echo $ret
+  if [ $ret -ne 0 ]; then
+    echo
+    PREREQS_OK=1
+    echo "----------> \"$1\" NOT FOUND"
+  fi
+  return $ret
+}
+
+check_prereqs() {
+
+PREREQS_OK=0
+
+echo "Checking prerequisites ..."
+for p in ${prereqs} ; do
+  pkg $p
+  pkg_ret=$?
+done
+
+if [ $PREREQS_OK -ne 0 ]; then
+  echo "Check of prerequisite packages failed. See \"NOT FOUND\" packages above"
+else
+  echo "Found all requested prerequisite packages"
+fi
+
+return $PREREQS_OK
+}
 

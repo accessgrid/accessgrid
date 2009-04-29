@@ -11,40 +11,37 @@ elif [ "${arch}" = "i486" ]; then
   LIBDIR=/usr/lib
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "i686" ]; then
-  SLKCFLAGS="-O2 -march=i686 -mcpu=i686 -fno-const-strings"
+  SLKCFLAGS="-O2 -fno-const-strings"
   LIBDIR=/usr/lib
   ARCH_CONFIGURE=""
 elif [ "${arch}" = "s390" ]; then
   SLKCFLAGS="-O2"
   LIBDIR=/usr/lib
   ARCH_CONFIGURE=""
-elif [ "${arch}" = "x86_64" ]; then
+elif [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
   SLKCFLAGS="-O2"
   LIBDIR=/usr/lib64
   ARCH_CONFIGURE="--libdir=${LIBDIR}"
 fi
 
+# Add space separated list of prerequsite packages here
+#
+#prereqs="pkgtools gcc swig1329"
+prereqs="pkgtools gcc swigwx"
+
 here=`pwd`
 _prefix=/usr
 _datadir=${_prefix}/share
-pyver=2.5
+pyver=${PYTHONVERSION:-2.5}
 releasedir=${RELEASEDIR:-/tmp}
 tmp=${TMP:-/var/tmp}
-swig_binary=/usr/bin/swig-wxPython1.3.29
-#swig_binary=${here}/swig-wxPython1.3.29-${arch}
+#swig_binary=swig-wxPython1.3.29
+swig_binary=swig1.3
 use_swig=1
-
-# Check whether swig is needed and available
-#
-if [ ${use_swig} -eq 1 ]; then
-  if [ ! -x ${swig_binary} ]; then
-    echo "can't find ${swig_binary} - exiting now"
-    exit 1
-  fi
-fi
+functions=/scratch/PKG/functions
 
 port=gtk2
-unicode=1
+unicode=1; USE_UNICODE=--enable-unicode
 
 # Should the builtin image and etc. libs be used, or system libs?
 # Distro specific RPMs should probably set this to 0, generic ones
@@ -55,7 +52,7 @@ builtin_libs=0
 # defines __WXDEBUG__ and gives us runtime diagnostics that are turned
 # into Python exceptions starting with 2.3.4.  (So turning it on is a
 # very helpful thing IMO and is recommended.)
-debug_flag=1
+debug_flag=1; USE_DEBUG_FLAG="--enable-debug_flag"
 
 fullver=${fullver:-0}
 
@@ -69,32 +66,48 @@ mediactrl=${mediactrl:-1}
 pref=${_prefix}
 python=/usr/bin/python${pyver}
 tarname=wxPython-src
-#version=2.6.3.2
-#ver2=2.6
-version=2.8.4.0
+version=2.8.9.2
 ver2=2.8
+ver3=28
 
 chartype=$(if [ "${unicode}" = "1" ]; then echo unicode; else echo ansi; fi)
 gtktype=""; if [ "${port}" = "gtk2" ]; then gtktype=2; fi
 wxprefbase=${LIBDIR}/wxPython
-wxpref=${wxprefbase}-${version}-${port}-${chartype}
-release=4
-name=wxPython-${ver2}-${port}-${chartype}-py${pyver}
+#wxpref=${wxprefbase}-${version}-${port}-${chartype}
+wxpref=${_prefix}
+release=2
+name=wxPythonGTK
 buildroot=${tmp}
 builddir=${buildroot}/wxPython-${version}
 pkgdir=${buildroot}/wxPython-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 
-pkgname=${name}-${version}-${arch}-${release}.tgz
+if [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
+  pkgname=${name}-${version}-${arch}_slamd64-${release}.tgz
+else
+  pkgname=${name}-${version}-${arch}-${release}.tgz
+fi
 
 srcpkg=${tarname}-${version}.tar.bz2
-master_sites=http://heanet.dl.sourceforge.net/sourceforge/wxpython/wxPython-src-2.8.4.0.tar.bz2
+master_sites=http://transact.dl.sourceforge.net/sourceforge/wxpython/wxPython-src-2.8.9.2.tar.bz2
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/usr/ports/distfiles
 
 
 PATH=/sbin:${PATH}
-. ../functions
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+
+# Another check for correct swig
+#
+if [ ${use_swig} -eq 1 ]; then
+  found_swig=`which ${swig_binary}`
+  if [ $? -ne 0 ]; then
+    echo "can't find ${swig_binary} - exiting now"
+    exit 1
+  fi
+fi
 
 get_srcpkg ${srcpkg}
 
@@ -121,29 +134,34 @@ mv ${tarname}-${version} wxPython-${version}
 cd ${builddir} 
 do_patch ${patch0}
 do_patch ${patch1}
-sleep 2
+
+echo -n "Post patch sleep 5 ..."
+sleep 5
 
 WXDIR=${builddir}
 mkdir -p bld
 cd bld
 
 # Configure, trying to reduce external dependencies
-CFLAGS="${SLKCFLAGS}" \
+#CFLAGS="${SLKCFLAGS}" \
 ../configure	\
-	--with-gtk=2	\
+	--with-gtk	\
 	--disable-gtktest \
 	--prefix=${wxpref} \
+	--disable-monolithic \
 	--disable-rpath \
-	--enable-soname \
-	--enable-shared \
 	--with-opengl \
-	--enable-sound --with-sdl \
 	--with-gnomeprint \
 	--enable-geometry \
+	--enable-graphics_ctx \
 	--enable-richtext \
 	--enable-optimise \
+	--enable-sound --with-sdl \
 	--enable-display \
-	--enable-debug_flag
+	${USE_UNICODE} \
+	${USE_DEBUG_FLAG} \
+	--enable-soname \
+	--enable-shared \
 
 if [ ! $? -eq 0 ]; then
   echo "Couldn't configure package: wxWxindows"
@@ -266,8 +284,8 @@ install -m 644 wx/tools/XRCed/XRCed_32.png ${pkgdir}/${_datadir}/pixmaps/XRCed.p
 ## Correct the prefix path in wxgtk2d-config
 ##
 #sed -i 's/^prefix=.*.$/prefix=\/usr/' ${pkgdir}/usr/bin/wxgtk2d-${pyver}-config
-(cd ${pkgdir}/${wxpref}/bin; rm -f wx-config; ln -s ${wxpref}/lib/wx/config/gtk2-ansi-debug-${ver2} wx-config)
-(cd ${pkgdir}/${pref}/bin; rm -f wx-config; ln -s ${wxpref}/bin/wx-config wx-config)
+(cd ${pkgdir}/${wxpref}/bin; rm -f wx-config; ln -s ${wxpref}/lib/wx/config/gtk2-${chartype}-debug-${ver2} wx-config)
+#(cd ${pkgdir}/${pref}/bin; rm -f wx-config; ln -s ${wxpref}/bin/wx-config wx-config)
 
 # Manual fix till I work out what's making it go into inlude, rather than usr/include
 # (from previous version 2.6.2.1 - I think its not needed here)
@@ -299,51 +317,56 @@ cp -a gtk publicity changes.txt gpl.txt lgpl.txt licence.txt licendoc.txt \
     ${docdir}/
 
 # Include build script
-mkdir -p ${pkgdir}/usr/src/slackbuilds
-cp ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
 
-# Make libraries visible
-#
-mkdir -p ${pkgdir}/etc/ld.so.conf.d
-echo "${LIBDIR}/wxPython-${version}-${port}-${chartype}/lib" >${pkgdir}/etc/ld.so.conf.d/wxPython-${version}.conf
+## Make libraries visible
+##
+#mkdir -p ${pkgdir}/etc/ld.so.conf.d
+#echo "${LIBDIR}/wxPython-${version}-${port}-${chartype}/lib" >${pkgdir}/etc/ld.so.conf.d/wxPython-${version}.conf
 
 mkdir -p ${pkgdir}/install
-cat <<EOF >${pkgdir}/install/doinst.sh
-#!/bin/sh
-LDSOCONF=/etc/ld.so.conf
-PATHFOUND=\`grep "^include[ ]*/etc/ld.so.conf.d/\*.conf" \${LDSOCONF}\` >/dev/null
-if [ \$? -eq 1 ]; then
-  echo "include /etc/ld.so.conf.d/*.conf" >>\${LDSOCONF}
-fi
-/sbin/ldconfig
-
-EOF
-chmod 0755 ${pkgdir}/install/doinst.sh
-cp -p ${pkgdir}/install/doinst.sh ${docdir}/
+#cat <<EOF >${pkgdir}/install/doinst.sh
+##!/bin/sh
+#LDSOCONF=/etc/ld.so.conf
+#PATHFOUND=\`grep "^include[ ]*/etc/ld.so.conf.d/\*.conf" \${LDSOCONF}\` >/dev/null
+#if [ \$? -eq 1 ]; then
+#  echo "include /etc/ld.so.conf.d/*.conf" >>\${LDSOCONF}
+#fi
+#/sbin/ldconfig
+#
+#EOF
+#chmod 0755 ${pkgdir}/install/doinst.sh
+#cp -p ${pkgdir}/install/doinst.sh ${docdir}/
 
 cd ${pkgdir}
 mkdir -p install
 cat <<EOF >${pkgdir}/install/slack-desc
-               |-----handy-ruler------------------------------------------------------|
-wxPython${port}: wxPython-${version}
-wxPython${port}: 
-wxPython${port}: wxPython is a GUI toolkit for Python that is a wrapper around
-wxPython${port}: the wxWindows C++ GUI library.  wxPython provides a large variety
-wxPython${port}: of window types and controls, all implemented with a native look and
-wxPython${port}: feel (and native runtime speed) on the platforms it is supported on.
-wxPython${port}: 
-wxPython${port}: This package is implemented using the ${port} port of wxWindows, and
-wxPython${port}: includes the wx${port} shared libs and etc.
-wxPython${port}: 
-wxPython${port}: 
+${name}: ${name}-${version}
+${name}: 
+${name}: wxPython is a GUI toolkit for Python that is a wrapper around
+${name}: the wxWindows C++ GUI library.  wxPython provides a large variety
+${name}: of window types and controls, all implemented with a native look and
+${name}: feel (and native runtime speed) on the platforms it is supported on.
+${name}: 
+${name}: This package is implemented using the ${port} port of wxWindows, and
+${name}: includes the wx${port} shared libs and etc.
+${name}: 
+${name}: 
 EOF
-chmod 0644 ${pkgdir}/install/slack-desc
+[ -f ${here}/slack-required ] && cp -p ${here}/slack-required ${pkgdir}/install/
+[ -f ${here}/slack-conflicts ] && cp -p ${here}/slack-conflicts ${pkgdir}/install/
+[ -f ${here}/slack-suggests ] && cp -p ${here}/slack-suggests ${pkgdir}/install/
+chmod 0644 ${pkgdir}/install/slack-*
 
 
+# Generate the package
+#
 /sbin/makepkg -c n -l y ${releasedir}/${pkgname}
 cd ${here}
 
 
+exit 0
 # Clean up
 #
 [ -d ${pkgdir} -a "${pkgdir}" != "/" ] && rm -rf ${pkgdir}
@@ -359,6 +382,31 @@ fi
 exit 0
 
 # Changelog
+#
+# 20090317 CKW - release 2 of 2.8.9.2
+#  - trying new swig version
+#
+# 20090317 CKW - release 1 of 2.8.9.2
+#
+# 20090317 CKW - release 5 of 2.8.9.1
+#  - Normalise installation directories
+#
+# 20090317 CKW - release 4 of 2.8.9.1
+#  - restore --enable--mediactrl
+#  - explicitly set --enable-unicode
+#
+# 20090315 CKW - release 3 of 2.8.9.1
+#  - add --enable-graphics_ctx (for webkit)
+#
+# 20090205 CKW - release 2 of 2.8.9.1
+#  - try enabling webkit
+#
+#  - fix location of slackbuilds
+#
+# CKW 20080416, release 5
+#  - rename pkg for better slapt-get support
+#  - added slack-* files for slaptget
+#  - added wxGTK to slack-conflicts
 #
 # CKW 20070926, release 4
 #  - explicitly create ${pkgdir}/install directory

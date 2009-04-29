@@ -1,7 +1,8 @@
 name=bajjer
 version=0.2.5
-release=3
+release=5
 arch=${ARCH:-`uname -m`}
+[ "${arch}" = "x86_64" ] && arch=${arch}_slamd64
 srcpkg=Bajjer-${version}.tar.gz
 buildroot=/var/tmp
 builddir=${buildroot}/${name}-${version}
@@ -9,6 +10,8 @@ pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 pkgname=${name}-${version}-${arch}-${release}.tgz
 releasedir=${RELEASEDIR:-/tmp}
+pythonversion=${PYTHONVERSION:-2.5}
+functions=/scratch/PKG/functions
 
 master_sites=https://codeforge.lbl.gov/projects/pccejt/
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
@@ -20,16 +23,25 @@ elif [ "${arch}" = "i486" ]; then
   SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
 elif [ "${arch}" = "s390" ]; then
   SLKCFLAGS="-O2"
-elif [ "${arch}" = "x86_64" ]; then
-  SLKCFLAGS="-O2"
+fi
+
+# Add space separated list of prerequsite packages here
+#
+if [ "${pythonversion}" = "2.4" ]; then
+  prereqs="elementtree"
+else
+  prereqs=""
 fi
 
 here=`pwd`
 patch0=${here}/patches/patch-gov-lbl-dsd-bajjer-io.py
 patch1=${here}/patches/patch-gov-lbl-dsd-bajjer-stream.py
+patch2=${here}/patches/elemettree-python25.patch
 
 PATH=/sbin:${PATH}
-. ../functions
+. ${functions}
+
+check_prereqs ${prereqs} || exit
 
 get_srcpkg ${srcpkg}
 
@@ -48,9 +60,12 @@ cd ${builddir}
 
 do_patch ${patch0}
 do_patch ${patch1}
+if [ "${pythonversion}" = "2.5" ]; then
+  do_patch ${patch2}
+fi
 
 echo -n "Post patch sleep ..."
-sleep 5
+sleep 3
 
 # Build/install
 #
@@ -60,6 +75,11 @@ python setup.py install --root=${pkgdir}
 mkdir -p ${docdir}
 cp CHANGELOG LICENSE PKG-INFO README \
 	${docdir}
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp ${here}/Slack.build ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+
 
 # 
 #
@@ -77,9 +97,11 @@ ${name}: From:
 ${name}:      https://codeforge.lbl.gov/projects/pccejt/
 ${name}:
 EOF
-chmod 0644 ${pkgdir}/install/slack-desc
+[ -f ${here}/slack-required ] && cp -p ${here}/slack-required ${pkgdir}/install/
+[ -f ${here}/slack-conflicts ] && cp -p ${here}/slack-conflicts ${pkgdir}/install/
+[ -f ${here}/slack-suggests ] && cp -p ${here}/slack-suggests ${pkgdir}/install/
+chmod 0644 ${pkgdir}/install/slack-*
 
-cp ${here}/Slack.build ${pkgdir}/install/
 
 #
 #
@@ -101,6 +123,14 @@ fi
 
 
 # Changelog
+#
+# CKW 20080520 - release 5
+#  - make python2.5 patch conditional on pythonversion
+#  - add elementtree prereq if pyton 2.4
+#
+# CKW 20080415 - release 4
+#  - correct elementtree patches for python2.5
+#  - include slack-* files for slapt-get
 #
 # CKW 20071215 - release 3
 #  - added patch to fully close stream
