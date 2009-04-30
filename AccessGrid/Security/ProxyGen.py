@@ -16,7 +16,6 @@ __revision__ = "$Id: ProxyGen.py,v 1.27 2007-10-01 16:49:40 turam Exp $"
 import sys
 import os
 import os.path
-import popen2
 import re
 import time
 
