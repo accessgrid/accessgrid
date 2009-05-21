@@ -1,6 +1,6 @@
 name=accessgrid3.2
 version=3.2
-svnversion=6735
+svnversion=6747
 release=0${svnversion}
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
@@ -243,6 +243,13 @@ fi
 exit
 
 # Changelog
+#
+#  - added wxPython to slack-required 
+#    (wxPython supersedes wxPythonGTK)
+#  - fixed slack-conficts file (doesn't use version numbers)
+#
+# CKW 20090430 beta release of 3.2 svn r6743 (067430)
+#  - updated to r6743
 #
 # CKW 20090326 beta release of 3.2 svn r6735 (067350)
 #  - updated to r6735

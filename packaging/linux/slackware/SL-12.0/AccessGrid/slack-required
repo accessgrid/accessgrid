@@ -1,6 +1,6 @@
 wxmozilla
 xulrunner
-wxPythonGTK
+wxPython >= 2.8.10.1 | wxPythonGTK
 agrat
 agvic
 quickbridge
