@@ -40,9 +40,11 @@ TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${RELEASEDIR:-/tmp}
 
-srcpkg=$CWD/$PRGNAM-src-$VERSION.tar.bz2
+here=$CWD
+srcpkg=$PRGNAM-src-$VERSION.tar.bz2
 builddir=$TMP/$PRGNAM-src-$VERSION
-master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+master_sites=http://downloads.sourceforge.net/wxpython
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles
 
 PATH=/sbin:${PATH}
 functions=/usr/src/slackbuilds/functions
@@ -82,7 +84,7 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf ${builddir}
-tar jxvf ${srcpkg}
+tar jxvf $CWD/${srcpkg}
 cd ${builddir}
 chown -R root:root .
 chmod -R u+w,go+r-w,a-s .
