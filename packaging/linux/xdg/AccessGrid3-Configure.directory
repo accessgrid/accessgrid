@@ -2,6 +2,6 @@
 Name=Configure
 Comment=Access Grid3 Configure menu
 Type=Directory
-Icon=/usr/share/AccessGrid/ag-ellipse.png
+Icon=ag-ellipse
 Encoding=UTF-8
 
