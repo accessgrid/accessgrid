@@ -601,6 +601,7 @@ class WXGUIApplication(Application):
 
         return AppBase.instance()
       
+    os.environ['LANG'] = "C"
     instance = staticmethod(instance)
     
     def __init__(self):
