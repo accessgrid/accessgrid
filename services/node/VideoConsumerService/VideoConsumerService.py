@@ -53,7 +53,7 @@ class VideoConsumerService( AGService ):
 
         # Set configuration parameters
         self.tiles = OptionSetParameter( "Thumbnail Columns", "4", VideoConsumerService.tileOptions )
-        self.positionWindow = OptionSetParameter( 'Position Window', 'On', ['Off','On'])
+        self.positionWindow = OptionSetParameter( 'Position Window', 'Justify Left', ['Off', 'Justify Left', 'Justify Right'])
         
         self.configuration.append( self.tiles )
         self.configuration.append( self.positionWindow)
@@ -181,7 +181,7 @@ class VideoConsumerService( AGService ):
             # - set drop time to something reasonable
             options.append('-XsiteDropTime=5')
 
-            if self.positionWindow.value == 'On':
+            if not self.positionWindow.value == 'Off':
                 # - set vic window geometry
                 try:
                     
@@ -202,7 +202,10 @@ class VideoConsumerService( AGService ):
                             window_width -= 4*border_w
                             window_x += 2*border_w
                         self.windowGeometry = (window_width,window_height,window_x,window_y)
-                    options.append('-Xgeometry=%dx%d+%d+%d' % self.windowGeometry)
+                    if self.positionWindow.value == 'Justify Left':
+                        options.append('-Xgeometry=%dx%d+%d+%d' % self.windowGeometry)
+                    else:
+                        options.append('-Xgeometry=%dx%d-%d+%d' % self.windowGeometry)
                 except:
                     self.log.exception('Error calculating window placement')
 

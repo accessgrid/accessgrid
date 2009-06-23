@@ -90,7 +90,7 @@ class AudioService( AGService ):
             self.outputGain = RangeParameter( "Output Gain", 50, 0, 100 )
         self.silenceSuppression = OptionSetParameter( "Silence Suppression", "Off", ["Off","Automatic","Manual"] )
 
-        self.positionWindow = OptionSetParameter( 'Position Window', 'Off', ['Off','On'])
+        self.positionWindow = OptionSetParameter( 'Position Window', 'Off', ['Off', 'Justify Left', 'Justify Right'])
 
         self.configuration.append(self.talk)
         self.configuration.append(self.inputGain)
@@ -262,13 +262,15 @@ class AudioService( AGService ):
                 options.append("-S")
                 options.append(self.profile.publicId)
     
-            if self.positionWindow.value == 'On':
+            if not self.positionWindow.value == 'Off':
                 try:
                     if not self.windowGeometry:
                         h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
                         self.windowGeometry = (h-375)
-                    options.append( "-X" )
-                    options.append( "geometry=300x300+0+%d" % self.windowGeometry )
+                    if self.positionWindow.value == 'Justify Left':
+                        options.append( "-Xgeometry=300x300+400+%d" % self.windowGeometry )
+                    else:
+                        options.append( "-Xgeometry=300x300-400+%d" % self.windowGeometry )
                 except:
                     self.log.exception('Error calculating window placement')
                 

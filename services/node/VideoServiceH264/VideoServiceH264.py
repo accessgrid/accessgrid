@@ -141,7 +141,7 @@ class VideoServiceH264( AGService ):
         self.transmitOnStart = OptionSetParameter( "Transmit on Startup", "On", VideoServiceH264.onOffOptions )
         self.muteSources = OptionSetParameter( "Mute Sources", "Off", VideoServiceH264.onOffOptions )
         self.inputsize = OptionSetParameter( "Capture Size", "Large", VideoServiceH264.inputsizes  )
-        self.positionWindow = OptionSetParameter( 'Position Window', 'On', ['Off','On'])
+        self.positionWindow = OptionSetParameter( 'Position Window', 'Justify Left', ['Off', 'Justify Left', 'Justify Right'])
         self.configuration.append( self.streamname )
         self.configuration.append( self.port )
         self.configuration.append( self.encoding )
@@ -375,7 +375,7 @@ class VideoServiceH264( AGService ):
                 options.append("-X")
                 options.append("site=%s" % self.profile.publicId)
             
-            if self.positionWindow.value == 'On':
+            if not self.positionWindow.value == 'Off':
                 # - set vic window geometry
                 try:
                     
@@ -396,7 +396,10 @@ class VideoServiceH264( AGService ):
                             window_width -= 4*border_w
                             window_x += 2*border_w
                         self.windowGeometry = (window_width,window_height,window_x,window_y)
-                    options.append('-Xgeometry=%dx%d+%d+%d' % self.windowGeometry)
+                    if self.positionWindow.value == 'Justify Left':
+                        options.append('-Xgeometry=%dx%d+%d+%d' % self.windowGeometry)
+                    else:
+                        options.append('-Xgeometry=%dx%d-%d+%d' % self.windowGeometry)
                 except:
                     self.log.exception('Error calculating window placement')
 
