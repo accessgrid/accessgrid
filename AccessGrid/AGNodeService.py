@@ -499,9 +499,19 @@ class AGNodeService:
                     if configParser.has_option(serviceSection,'serviceConfig'):
                         serviceConfigSection = configParser.get( serviceSection, "serviceConfig" )
                         for parameter in configParser.options( serviceConfigSection ):
-                            parameters.append( ValueParameter( parameter, 
+                            # Special case - to be removed after some reasonable time
+                            if not parameter == 'Position Window':
+                                parameters.append( ValueParameter( parameter, 
                                                                configParser.get( serviceConfigSection,
                                                                            parameter ) ) )
+                            else:
+                                value = configParser.get( serviceConfigSection, parameter )
+                                if value == 'On':
+                                    log.debug("Correcting an old value for \'Position Window\' parameter")
+                                    log.debug("Please Store this configuration again")
+                                    parameters.append( ValueParameter( parameter, 'Justify Left'))
+                                else:
+                                    parameters.append( ValueParameter( parameter, value))
 
                     #
                     # Add Service to List
