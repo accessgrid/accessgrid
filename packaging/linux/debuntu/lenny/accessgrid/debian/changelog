@@ -1,3 +1,16 @@
+accessgrid3.2 (3.2-0r67520) lenny; urgency=low
+
+  * Update to svn r6752
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 25 Jun 2009 13:45:10 +1000
+
+accessgrid3.2 (3.2-0r67431) lenny; urgency=low
+
+  * Update to svn r6743
+  * Include patch to set LANG="C"
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 16 Jun 2009 09:00:19 +1000
+
 accessgrid3.2 (3.2-0r67350) lenny; urgency=low
 
   * New svn version (r6735) including dbus/avahi fix

@@ -1,3 +1,22 @@
+accessgrid3.2 (3.2-0r67520) jaunty; urgency=low
+
+  * Use updated svn r6752
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 25 Jun 2009 13:45:10 +1000
+
+accessgrid3.2 (3.2-0r67431) jaunty; urgency=low
+
+  * Use update svn r6735
+  * Patches to fix some language related problems
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 16 Jun 2009 09:04:19 +1000
+
+accessgrid3.2 (3.2-0r67430) jaunty; urgency=low
+
+  * Patches to wrap md5 hash generation to use hashlib module where possible
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 29 Apr 2009 22:33:31 +1000
+
 accessgrid3.2 (3.2-0r67351) jaunty; urgency=low
 
   * Rebuild for Jaunty Jackalope

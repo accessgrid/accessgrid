@@ -1,189 +1,232 @@
-#!/bin/sh
-
-# Slackware build script for wxPython
-
-# Copyright 2007-2009 Heinz Wiesinger <pprkut@liwjatan.at>
-# All rights reserved.
-#
-# Redistribution and use of this script, with or without modification, is
-# permitted provided that the following conditions are met:
-#
-# 1. Redistributions of this script must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-#
-# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
-# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-# Copyright 2009 Christoph Willing <chris at uq.edu.au>
-# All rights reserved. No additional restrictions.
-# Add wxPython & enclosed i_files directories to installed includes
-# Add slack-* files for slapt-get compatibility
-# Add some 64bit support
-
-PRGNAM=wxPython
-VERSION=2.8.10.1
-SHORT_VERSION=2.8
-ARCH=${ARCH:-`uname -m`}
-BUILD=${BUILD:-1}
-TAG=${TAG:-_uqv}
-
-CWD=$(pwd)
-TMP=${TMP:-/tmp/SBo}
-PKG=$TMP/package-$PRGNAM
-OUTPUT=${RELEASEDIR:-/tmp}
-
-here=$CWD
-srcpkg=$PRGNAM-src-$VERSION.tar.bz2
-builddir=$TMP/$PRGNAM-src-$VERSION
-master_sites=http://downloads.sourceforge.net/wxpython
-master_sites=http://www.vislab.uq.edu.au/ag3/distfiles
-
-PATH=/sbin:${PATH}
-functions=/usr/src/slackbuilds/functions
-. ${functions}
-
-# Gnomeprint support
-GNOMEPRINT=${GNOMEPRINT:-no}
-
-if [ "$GNOMEPRINT" = "no" ]; then
-    do_gp="without"
-else
-    do_gp="with"
-fi
-
+name=wxPythonGTK
+version=2.8.10.1
+ver2=2.8
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=wxPython-src-${version}.tar.bz2
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+tag=${TAG:-_uqv}
+pkgname=${name}-${version}-${arch}-${release}${tag}.tgz
 distro=slackware
-pkgname=$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.tgz
-DISTLIB=/usr/lib
-if [ "$ARCH" = "i486" ]; then
+releasedir=${RELEASEDIR:-/tmp}
+prefix=${PREFIX:-/usr}
+
+pyver=${PYTHONVERSION:-`python -c "import sys; print sys.version[:3]"`}
+python=python${pyver}
+port=gtk2
+unicode=1
+chartype=$(if [ "${unicode}" = "1" ]; then echo unicode; else echo ansi; fi)
+use_swig=0
+swig_binary=swigwx1.3.29
+
+functions=/usr/lib/slackbuilds/functions
+
+master_sites=http://downloads.sourceforge.net/wxpython/wxPython-src-2.8.10.1.tar.bz2
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/linux/distfiles/
+
+LIBDIR="${prefix}/lib"
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mtune=i686"
+elif [ "${arch}" = "i486" ]; then
   SLKCFLAGS="-O2 -march=i486 -mtune=i686"
-elif [ "$ARCH" = "i686" ]; then
+elif [ "${arch}" = "i686" ]; then
   SLKCFLAGS="-O2 -march=i686 -mtune=i686"
-elif [ "$ARCH" = "x86_64" -o "$ARCH" = "x86_64_slamd64" ]; then
-  SLKCFLAGS="-O2 -fPIC"
-  distro=slamd64
-  DISTLIB=/usr/lib64
-  pkgname=$PRGNAM-$VERSION-x86_64_slamd64-$BUILD$TAG.tgz
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="${prefix}/lib64"
 fi
+ARCH_CONFIGURE="--libdir=$LIBDIR"
 
-prereqs="python"
-check_prereqs ${prereqs} || exit
+wxprefbase=${LIBDIR}/wx
+wxpref=${wxprefbase}-${version}-${port}-${chartype}
 
+# Add space separated list here 
+# of prerequsite packages _for building_
+#
+prereqs="slackbuilds"
+
+here=`pwd`
+#patch0=${here}/patches/patch-something.c
 
 set -e
 
+PATH=/sbin:${PATH}
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+
 get_srcpkg ${srcpkg}
-rm -rf $PKG
-mkdir -p $TMP $PKG $OUTPUT
-cd $TMP
-rm -rf ${builddir}
-tar jxvf $CWD/${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar jxvf ${here}/${srcpkg}
+mv wxPython-src-${version} ${builddir}
 cd ${builddir}
-chown -R root:root .
-chmod -R u+w,go+r-w,a-s .
+WXDIR=`pwd`
 
+# Apply patches
+# like this: do_patch ${patch0}
+#
+
+#echo -n "Post patch sleep 5 ..."
+#sleep 5
+
+# Build & install
+#
+mkdir -p bld
+cd bld
 CFLAGS="$SLKCFLAGS" \
-CXXFLAGS="$SLKCFLAGS" \
-./configure \
-  --prefix=/usr \
-  --sysconfdir=/etc \
-  --localstatedir=/var \
-  --disable-static \
-  --with-sdl \
-  --with-opengl \
-  --$do_gp-gnomeprint \
-  --enable-unicode \
-  --enable-graphics_ctx \
-  --build=$ARCH-${distro}-linux \
-  --host=$ARCH-${distro}-linux
+../configure     \
+    --prefix=${wxpref} \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --disable-static \
+    --enable-sound \
+    --with-sdl \
+    --with-opengl \
+    --without-gnomeprint \
+    --enable-unicode \
+    --enable-graphics_ctx \
+    --build=${arch}-${distro}-linux 
 
-make
+make \
+    && make -C contrib/src/gizmos \
+    && make -C contrib/src/stc
 
-#Additional stuff needed by wxPython
-make -C contrib/src/gizmos
-make -C contrib/src/stc
+make install prefix=${wxpref} DESTDIR=${pkgdir} \
+    && make -C contrib/src/gizmos prefix=${wxpref} install DESTDIR=${pkgdir} \
+    && make -C contrib/src/stc prefix=${wxpref} install DESTDIR=${pkgdir}
 
-make install DESTDIR=$PKG
-make -C contrib/src/gizmos install DESTDIR=$PKG
-make -C contrib/src/stc install DESTDIR=$PKG
-
-cd wxPython
-  python setup.py \
-    WXPORT=gtk2 \
-    UNICODE=1 \
+# Now build wxPython
+cd $WXDIR/wxPython
+${python} setup.py \
+    USE_SWIG=${use_swig} \
+    SWIG=${swig_binary} \
+    WXPORT=${port} \
+    UNICODE=${unicode} \
     EP_ADD_OPTS=1 \
     EP_FULL_VER=0 \
     NO_SCRIPTS=1 \
-    WX_CONFIG="$TMP/$PRGNAM-src-$VERSION/wx-config --no_rpath" \
-    build_ext --rpath=${DISTLIB} \
+    WX_CONFIG="$WXDIR/bld/wx-config --no_rpath" \
+    build_ext --rpath=${wxpref}/lib \
     build
 
-  python setup.py \
-    WXPORT=gtk2 \
-    UNICODE=1 \
+# Install wxPython
+${python} setup.py \
+    USE_SWIG=${use_swig} \
+    SWIG=${swig_binary} \
+    WXPORT=${port} \
+    UNICODE=${unicode} \
     EP_ADD_OPTS=1 \
     EP_FULL_VER=0 \
     NO_SCRIPTS=1 \
-    WX_CONFIG="$TMP/$PRGNAM-src-$VERSION/wx-config --prefix=$PKG/usr/bin/ --no_rpath" \
-    SYS_WX_CONFIG="wx-config --enable-unicode" \
-    build_ext --rpath=${DISTLIB} \
-    install --root=$PKG
-cd -
+    WX_CONFIG="${pkgdir}/${wxpref}/bin/wx-config --prefix=${pkgdir}/${wxpref} --no_rpath" \
+    build_ext --rpath=${wxpref}/lib \
+    install \
+    --root=${pkgdir}
 
-# wxPython include files
-cp -a include/wx-$SHORT_VERSION/wx/wxPython $PKG/usr/include/wx-$SHORT_VERSION/wx/
 
-[ "${distro}" = "slamd64" ] && {
-  mv $PKG/usr/lib/* $PKG/usr/lib64/
-  rmdir $PKG/usr/lib
-}
+strip ${pkgdir}/${prefix}/lib*/python${pyver}/*-packages/wx-${ver2}*-${port}-${chartype}/wx/*.so
 
-find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
-  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
-
-mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION/wxPython
-cp -a README.1st.txt docs* $PKG/usr/doc/$PRGNAM-$VERSION
-cp -a wxPython/docs/* $PKG/usr/doc/$PRGNAM-$VERSION/wxPython
-cat $CWD/Slack.build > $PKG/usr/doc/$PRGNAM-$VERSION/Slack.build
-# Remove unnecessary docs
-cd $PKG/usr/doc/$PRGNAM-$VERSION/docs
-  rm -rf cocoa latex mac metrowerks microwin msw palmos word
-cd -
-
-# Copy the slack-desc (and a custom doinst.sh if necessary) into ./install
-mkdir -p $PKG/install
-mkdir -p $PKG/usr/src/slackbuilds/$PRGNAM-$VERSION
-cat $CWD/Slack.build >$PKG/usr/src/slackbuilds/$PRGNAM-$VERSION/Slack.build
-for pkgfile in `ls $CWD/slack-* $CWD/doinst.sh 2>/dev/null`
-do
-  [ -r ${pkgfile} ] && {
-      cat ${pkgfile} >> $PKG/install/`basename ${pkgfile}`
-      cat ${pkgfile} >> $PKG/usr/src/slackbuilds/$PRGNAM-$VERSION/`basename ${pkgfile}`
-  }
+# Install GNOME menu items
+mkdir -p ${pkgdir}/usr/share/applications
+for d in distrib/*.desktop; do
+    install -m 644 $d ${pkgdir}/usr/share/applications/
 done
 
+# Install icons
+mkdir -p ${pkgdir}/usr/share/icons/hicolor/{16x16,32x32}/apps
+mkdir -p ${pkgdir}/usr/share/pixmaps
+install -m 644 wx/py/PyCrust_16.png ${pkgdir}/usr/share/icons/hicolor/16x16/apps/PyCrust.png
+install -m 644 wx/py/PyCrust_32.png ${pkgdir}/usr/share/icons/hicolor/32x32/apps/PyCrust.png
+install -m 644 wx/py/PyCrust_32.png ${pkgdir}/usr/share/pixmaps/PyCrust.png
+install -m 644 wx/tools/XRCed/XRCed_16.png ${pkgdir}/usr/share/icons/hicolor/16x16/apps/XRCed.png
+install -m 644 wx/tools/XRCed/XRCed_32.png ${pkgdir}/usr/share/icons/hicolor/32x32/apps/XRCed.png
+install -m 644 wx/tools/XRCed/XRCed_32.png ${pkgdir}/usr/share/pixmaps/XRCed.png
 
-cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.tgz
+# Juggle some build product locations
+mv ${pkgdir}/${wxpref}/share/* ${pkgdir}/usr/share/ && rmdir ${pkgdir}/${wxpref}/share
+mv ${pkgdir}/${wxpref}/bin ${pkgdir}/usr/
+mkdir ${pkgdir}/usr/include
+(cd ${pkgdir}/usr/include && ln -s ${wxpref}/include/wx-${ver2})
+
+# For some reason, these wxPython include files are in thr wrong place
+[ -d ${pkgdir}/include ] && {
+    mv ${pkgdir}/include/wx-${ver2}/wx/wxPython ${pkgdir}/${wxpref}/include/wx-${ver2}/wx/
+    rm -rf ${pkgdir}/include
+}
+#(cd ${pkgdir}/usr/include/ && ln -s wx-${ver2}/wx )
+
+# Make libraries visible - doinst.sh should ensure this directory is included
+mkdir -p ${pkgdir}/etc/ld.so.conf.d
+echo "${wxpref}/lib" >${pkgdir}/etc/ld.so.conf.d/wx-${version}-${port}-${chartype}.conf
+
+# Docs
+#
+mkdir -p ${docdir}
+cp -a ${builddir}/wxPython/samples	\
+	${docdir}/
+cd ${builddir}/docs
+cp -a gtk html publicity changes.txt gpl.txt lgpl.txt licence.txt licendoc.txt \
+    preamble.txt readme.txt toback24.txt todo.txt todo30.txt \
+	${docdir}/
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+( cd ${here}
+    for bfd in Slack.build slack-* doinst.sh patches
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
+)
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+autogen_slack_required
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
 
 # Clean up
 #
-rm -f ${srcpkg}
-rm -rf ${builddir}
-rm -rf $PKG
+echo -n "Cleaning up ... "
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+#rm -f ${srcpkg}
+echo
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
 
 
 # Changelog
 #
-# 20090521 CKW - release 1 of 2.8.10.1
-#  - new upstream release
-#  - new build script based on SBo
-#  - include wxPython include files (esp. i_files directory)
+# 20090524 CKW - release 1 of 2.8.10.1
 #

@@ -7,7 +7,7 @@ DOCLEANUP=1
 USEEXISTING=0
 
 PKGNAME=ag-vic2.8ucl
-PKGVERSION=1.4.0r4345
+PKGVERSION=1.4.0r4449
 
 # Ensure some basics are set
 [ -z ${PKGNAME} ] && { echo "PKGNAME needs to be set. Exiting now!"
@@ -21,12 +21,14 @@ PKGVERSION=1.4.0r4345
 
 # Set as many of these as are needed
 #
-workdir=mmedia-r4345
+workdir=mmedia-r4449
 site0=http://www.vislab.uq.edu.au/ag3/distfiles
 srcpkg0=x264-r650.tar.gz
 srcpkg1=${workdir}.tar.gz
-srcpkg2=libswscale-r27137.tar.gz
-srcpkg3=ffmpeg-r13987.tar.gz
+#srcpkg2=libswscale-r27137.tar.gz
+srcpkg2=libswscale-20090522.tar.gz
+#srcpkg3=ffmpeg-r13987.tar.gz
+srcpkg3=ffmpeg-20090522.tar.gz
 
 myid=`id |cut -d ' ' -f 1 |cut -d '=' -f2 |cut -d '(' -f 1`
 if [ ! "${myid}" = "0" ]; then
@@ -93,11 +95,14 @@ if [ $USEEXISTING -eq 0 ]; then
   generate
 fi
 
+echo "DIST=$DIST"
+echo "ARCH=$ARCH"
 # This is the actual building using fakeroot and pbuilder
 #
-( cd ${workdir} && dpkg-buildpackage -S -rfakeroot -us -uc )
-RET=`expr $RET + $?`
-( cd ${workdir} && pbuilder build ../*.dsc 2>&1 |tee ../op )
+#( cd ${workdir} && dpkg-buildpackage -S -rfakeroot -us -uc )
+#RET=`expr $RET + $?`
+#( cd ${workdir} && pbuilder build ../*.dsc 2>&1 |tee ../op )
+( cd ${workdir} && DIST=$DIST ARCH=$ARCH pdebuild 2>&1 |tee ../op.$ARCH )
 RET=`expr $RET + $?`
 if [ $RET -gt 0 ]; then
   echo "ERROR building. Exiting now!"

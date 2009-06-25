@@ -1,8 +1,7 @@
-wxmozilla
-xulrunner
-wxPython >= 2.8.10.1 | wxPythonGTK
+wxPythonGTK
 agrat
 agvic
+aghdvic
 quickbridge
 common
 twistedcore

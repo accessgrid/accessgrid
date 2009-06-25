@@ -89,10 +89,12 @@ if [ $USEEXISTING -eq 0 ]; then
   generate
 fi
 
+echo "DIST=$DIST"
+echo "ARCH=$ARCH"
 # This is the actual building using fakeroot and pbuilder
 #
 #( cd ${workdir} && pbuilder build ../*.dsc 2>&1 |tee ../op )
-( cd ${workdir} && pdebuild 2>&1 |tee ../op )
+( cd ${workdir} && DIST=$DIST ARCH=$ARCH pdebuild 2>&1 |tee ../op )
 RET=`expr $RET + $?`
 if [ $RET -gt 0 ]; then
   echo "ERROR building. Exiting now!"

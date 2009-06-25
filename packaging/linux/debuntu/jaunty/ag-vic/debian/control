@@ -3,7 +3,8 @@ Section: AccessGrid
 Priority: optional
 Maintainer: Chris Willing <c.willing@uq.edu.au>
 Build-Depends: automake, dpatch, libx11-dev, libxt-dev, libxext-dev,
- libssl-dev, tk-dev, libdv4-dev, subversion, yasm
+ libssl-dev, tk-dev, libdv4-dev, libv4l-dev, subversion, yasm,
+ curl
 Standards-Version: 3.7.2
 
 Package: ag-vic2.8ucl

@@ -5,6 +5,8 @@ here=`pwd`
 
 # Set any particular variable needed
 #
+DIST=${DIST:-intrepid}
+ARCH=${ARCH:-i386}
 #workdir=bajjer-0.2.5
 #site0=http://www.vislab.uq.edu.au/ag3/distfiles
 srcpkg0=Bajjer-0.2.5.tar.gz

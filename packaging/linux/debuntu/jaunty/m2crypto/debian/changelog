@@ -1,3 +1,9 @@
+m2crypto (0.18.2-3ag2) jaunty; urgency=low
+
+  * Patch for FTP_TLS under Python 2.6
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 05 Jun 2009 23:29:34 +1000
+
 m2crypto (0.18.2-3ag1) jaunty; urgency=low
 
   * Change swig build dependency to swigwx
