@@ -1,6 +1,6 @@
 name=accessgrid3.2
 version=3.2
-svnversion=6752
+svnversion=6754
 release=0${svnversion}
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
@@ -219,7 +219,7 @@ exit
 
 # Changelog
 #
-# 20090625 CKW - release of 3.2 svn r6752 (067520)
+# 20090625 CKW - release of 3.2 svn r6754 (067540)
 #  - Use latest svn
 #
 # 20090602 CKW - release of 3.2 svn r6748 (067480)

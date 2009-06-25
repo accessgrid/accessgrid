@@ -1,6 +1,6 @@
-accessgrid3.2 (3.2-0r67520) jaunty; urgency=low
+accessgrid3.2 (3.2-0r67540) jaunty; urgency=low
 
-  * Use updated svn r6752
+  * Use updated svn r6754
 
  -- Chris Willing <c.willing@uq.edu.au>  Thu, 25 Jun 2009 13:45:10 +1000
 
