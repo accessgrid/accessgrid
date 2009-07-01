@@ -35,6 +35,8 @@ initFileFd = open(initFile, "w")
 initFileFd.write("""
 # Setup the xml reader.
 
+import traceback
+
 def SetupParser():
     from ZSI.parse import ParsedSoap
     from xml.dom import expatbuilder
