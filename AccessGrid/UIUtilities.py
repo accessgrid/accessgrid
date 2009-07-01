@@ -1136,13 +1136,13 @@ def SetIcon(app):
 dimensions = {  600:  800 , 
                 768:  1024,
                1024:  1280, 
-               1200:  1600,
+               1200:  1920,
                
                # rotated screen sizes
-               800 : 600,
-               1024 : 768,
-               1280 : 1024,
-               1600:  1200 }
+                800:  600,
+               1280:  1024,
+               1600:  1200,
+               1920:  1200 }
 def GetScreenWidth(w,h):
     """
     For a given screen width and height, calculate a related nominal width;
