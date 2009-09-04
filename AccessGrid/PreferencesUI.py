@@ -26,8 +26,9 @@ class PreferencesDialog(wx.Dialog):
         Initialize ui components and events.
         '''
         wx.Dialog.__init__(self, parent, id, title,
-                          style = wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE,
-                          size = wx.Size(720, 576))
+                          style = wx.RESIZE_BORDER | wx.DEFAULT_DIALOG_STYLE |
+                          wx.MAXIMIZE_BOX | wx.MINIMIZE_BOX,
+                          size = wx.Size(880, 770))
         self.Centre()
        
       
