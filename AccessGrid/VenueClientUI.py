@@ -849,16 +849,17 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         self.myVenuesMenuIds = {}
         self.myVenuesDict = self.controller.GetMyVenues()
                    
-        # Create menu items
+        # Create menu items in alphabetical order
         for name in self.myVenuesDict.keys():
+            insertPosition = self.__FindMyVenuesMenuInsertPosition(name)
             ID = wx.NewId()
             self.myVenuesMenuIds[name] = ID
             url = self.myVenuesDict[name]
             text = "Go to: " + url
-            self.navigation.Insert(self.myVenuesPos,ID, name, text)
+            self.navigation.Insert(insertPosition, ID, name, text)
             wx.EVT_MENU(self, ID, self.GoToMenuAddressCB)
-                        
-    
+
+
     # Code for displaying the list of configurations in the Configurations menu
     
     def __LoadMyConfigurations(self):
@@ -2696,10 +2697,24 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
             MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nTry to connect again.", 
                           "Lost Connection")
 
+    def __FindMyVenuesMenuInsertPosition(self, name):
+        myVenuesKeyList = []
+        for venueName in self.myVenuesMenuIds.keys():
+            myVenuesKeyList.append(venueName)
+        myVenuesKeyList.sort(lambda x, y: cmp(x.lower(), y.lower()))
+        position = self.myVenuesPos
+        for keyname in myVenuesKeyList:
+            if cmp(name.lower(), keyname.lower()) > 0:
+                position += 1
+            else:
+                break
+        return position
+
     def AddToMyVenues(self,name,url):
+        insertPosition = self.__FindMyVenuesMenuInsertPosition(name)
         ID = wx.NewId()
         text = "Go to: " + url
-        self.navigation.Insert(self.myVenuesPos,ID, name, text)
+        self.navigation.Insert(insertPosition, ID, name, text)
         self.myVenuesMenuIds[name] = ID
         self.myVenuesDict[name] = url
         wx.EVT_MENU(self, ID, self.GoToMenuAddressCB)
