@@ -518,6 +518,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         # Retrieve the cert mgr GUI from the application.
         #
         self.cmui = None
+        mgr = None
         try:
             mgr = app.GetCertificateManager()
         except Exception,e:
