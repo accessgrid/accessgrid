@@ -4135,7 +4135,6 @@ class ContentListPanel(wx.Panel):
             self.dataDict[dataDescription.id] = dataId
             self.tree.SortChildren(self.data)
             self.tree.Refresh()
-            self.tree.Expand(self.data)
             
     #Added by NA2-HPCE
     def AddDir(self, dataDescription):
@@ -4162,7 +4161,6 @@ class ContentListPanel(wx.Panel):
         self.dataDict[dataDescription.id] = dataId
         self.tree.SortChildren(self.selectedTwig)
         self.tree.Refresh()
-        self.tree.Expand(self.data)     
             
        
     def UpdateData(self, dataDescription):
