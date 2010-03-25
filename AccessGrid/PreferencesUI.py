@@ -1409,10 +1409,13 @@ class BridgingPanel(wx.Panel):
             self.menu.Check(self.enableId, 0)
         
         # Disable moving up for top item and down for bottom item
-        if self.selected == 0:
-            self.menu.Enable(self.moveupId, 0)
-        if self.selected == (len(self.bridges) - 1):
-            self.menu.Enable(self.movedownId, 0)
+        try:
+            if self.selected == 0:
+                self.menu.Enable(self.moveupId, 0)
+            if self.selected == (len(self.bridges) - 1):
+                self.menu.Enable(self.movedownId, 0)
+        except:
+            log.exception("Exception disabling up/down buttons")
 
         self.list.PopupMenu(self.menu, wx.Point(self.x, self.y))
         self.menu.Destroy()
