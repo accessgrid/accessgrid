@@ -175,14 +175,15 @@ def main():
                     except:
                     	log.exception("Error loading configuration")    
                         
+        """
         # If user has no venue cache, build one
         venues = vc.venueCache.GetVenues()
         if not venues:
             progressDialog.UpdateGauge('Caching Venues',increment=20)
             vc.venueCache.Update()
             vc.venueCache.Store()
+        """
        
-            
         # If user has no stored bridges, initialize the bridge cache
         bridges = app.preferences.GetBridges()
         if not bridges:

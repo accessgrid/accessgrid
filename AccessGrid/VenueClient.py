@@ -233,8 +233,12 @@ class VenueClient:
         venuesFile = self.app.GetUserConfig().GetVenuesCache()
         self.venueCache = VenueCache(venuesFile,venueServerUrls)
         self.venueCache.Load()
-        
-        self.houseKeeper.AddTask(self.venueCache.Update, 300, 300)
+      
+        # if no venues cache exists, update sooner by using smaller initial delay
+        if not self.venueCache.GetVenues(): 
+            self.houseKeeper.AddTask(self.venueCache.Update, 300, 30)
+        else:
+            self.houseKeeper.AddTask(self.venueCache.Update, 300, 300)
         self.houseKeeper.StartAllTasks()
 
        
