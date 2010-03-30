@@ -30,6 +30,7 @@ import urlparse
 from twisted.internet import reactor
 import threading
 import urlparse
+import errno
 
 from time import localtime , strftime
 from AccessGrid import Log
@@ -1688,9 +1689,14 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
                 try:
                     wx.BeginBusyCursor()
                     nodeService.StoreConfiguration( config )
-                except:
+                except Exception,e:
                     log.exception("Error storing node configuration %s" % (configName,))
-                    self.Error("Error storing node configuration %s" % (configName,))
+
+                    if isinstance(e,IOError) and e.args[0] == errno.EACCES:
+                        msg = "Error storing node configuration %s: \n\nYou do not have sufficient permissions to create the file.\n\nDetails:\n%s" % (configName,e)
+                    else:
+                        msg = "Error storing node configuration %s: \n\nDetails:\n%s" % (configName,e)
+                    self.Error(msg)
 
                 try:
                     # Set the default configuration
