@@ -16,6 +16,7 @@ import os
 import sys
 import string
 import ConfigParser
+import errno
 
 from AccessGrid import Log
 from AccessGrid import Version
@@ -64,7 +65,7 @@ def WriteNodeConfig(configName,config):
        (not os.access(userNodeConfigDir,os.W_OK)) or
        (os.path.exists(fileName) and not os.access(fileName, os.W_OK) )):
         log.exception("Can't write config file %s" % (fileName))
-        raise Exception("Can't write config file %s" % (fileName))
+        raise IOError(errno.EACCES,"Can't write config file %s" % (fileName))
 
 
 
@@ -602,7 +603,7 @@ class AGNodeService:
                (not os.access(self.userNodeConfigDir,os.W_OK)) or
                (os.path.exists(fileName) and not os.access(fileName, os.W_OK) )):
                 log.exception("Can't write config file %s" % (fileName))
-                raise Exception("Can't write config file %s" % (fileName))
+                raise IOError(errno.EACCES,"Can't write config file %s" % (fileName))
 
             numServiceManagers = 0
             numServices = 0
@@ -695,7 +696,7 @@ class AGNodeService:
 
         except:
             log.exception("Exception in AGNodeService.StoreConfiguration.")
-            raise Exception("Error while saving configuration")
+            raise 
     
     def GetConfigurations( self ):
         """Get list of available configurations"""
