@@ -2815,6 +2815,10 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
 
         for pluginName in pluginList:
 
+          # third-party plugin code is dynamically imported and executed here.
+          # be sure to catch any exceptions that arise to protect the VenueClient
+          # from being taken down by rogue plugin code.
+          try:
             log.debug("Setting up plugin: %s." % pluginName)
 
             plugin = self.controller.GetInstalledPlugin(pluginName)
@@ -2831,6 +2835,8 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
                     log.exception("Menu item for plugin %s must be a wx.MenuItem." % pluginName)
 
             plugin.CreateToolbar(self, self.toolbar, VenueClientUI.TOOLSIZE)
+          except:
+            log.exception("Error loading plugin: %s", pluginName )
             
         if menuItemCount > 0:
             return menu
