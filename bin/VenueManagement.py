@@ -447,7 +447,10 @@ class VenueManagementClient(wx.App):
             vp.venueProfilePanel.ClearAllFields()
             
             # Get default venue
-            defaultVenueUrl = self.server.GetDefaultVenue()
+            try:
+                defaultVenueUrl = self.server.GetDefaultVenue()
+            except:
+                defaultVenueUrl = None
             
             # Fill in venues
             
@@ -2410,7 +2413,7 @@ class DigitValidator(wx.PyValidator):
         return True # Prevent wx.Dialog from complaining.
 
     def OnChar(self, event):
-        key = event.KeyCode()
+        key = event.GetKeyCode()
 
         if key < wx.WXK_SPACE or key == wx.WXK_DELETE or key > 255:
             event.Skip()
