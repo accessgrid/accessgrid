@@ -14,6 +14,9 @@ def BuildLinux():
     return ret
 
 def BuildWindows():
+
+    opensslinstalldir = opensslinstalldir.replace('\\','\\\\')
+    
     ret = os.system("perl Configure VC-WIN32 --prefix=%s" % opensslinstalldir)
     if ret:
         return ret
