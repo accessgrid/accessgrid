@@ -16,6 +16,7 @@ import sys
 from optparse import OptionParser, Option
 import time
 import socket
+import locale
 
 from M2Crypto import SSL
 
@@ -602,6 +603,7 @@ class WXGUIApplication(Application):
         return AppBase.instance()
       
     os.environ['LANG'] = "C"
+    locale.setlocale(locale.LC_ALL, 'C')
     instance = staticmethod(instance)
     
     def __init__(self):
