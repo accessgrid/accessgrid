@@ -1,0 +1,33 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## gov-lbl-dsd-bajjer-io.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad bajjer-0.2.5~/gov/lbl/dsd/bajjer/io.py bajjer-0.2.5/gov/lbl/dsd/bajjer/io.py
+--- bajjer-0.2.5~/gov/lbl/dsd/bajjer/io.py	2007-01-18 07:23:14.000000000 +1000
++++ bajjer-0.2.5/gov/lbl/dsd/bajjer/io.py	2008-03-19 22:12:09.953125611 +1000
+@@ -50,10 +50,12 @@
+         messages.  
+         """ 
+         while True: 
++            gotData = 0
+             for conn, cbq in self._cb_queue_dict.items(): 
+                 for stanza_type, func_tuple in cbq.cb_dict.items(): 
+                     stanza_obj = conn.read(expected=stanza_type, blocking=False)
+                     if stanza_obj is not None:
++                        gotData = 1
+                         func = func_tuple[0] 
+                         arg_tuple  = func_tuple[1]
+                         if arg_tuple is None:
+@@ -64,7 +66,8 @@
+                             for obj in arg_tuple:
+                                 arg_list.append(obj)
+                             func(*arg_list) 
+-            time.sleep(0.1)
++            if not gotData:
++                time.sleep(0.1)
+ 
+ class CallbackQueue:
+     """

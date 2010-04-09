@@ -1,0 +1,147 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## Bajjer-0.2.5-python25.dpatch by  <douglask@itee>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -up Bajjer-0.2.5/gov/lbl/dsd/bajjer/serialize.py.python25 Bajjer-0.2.5/gov/lbl/dsd/bajjer/serialize.py
+--- Bajjer-0.2.5/gov/lbl/dsd/bajjer/serialize.py.python25	2007-01-18 07:23:14.000000000 +1000
++++ Bajjer-0.2.5/gov/lbl/dsd/bajjer/serialize.py	2007-11-05 16:20:42.000000000 +1000
+@@ -31,9 +31,57 @@ class InvalidElement(Exception):
+     def __init__(self, s='?'):
+         Exception.__init__(self,"Invalid element: %s" % s)
+ 
++## Local FancyTreeBuilder
++
++class FancyTreeBuilder(XMLTreeBuilder):
++
++    def __init__(self, html=0):
++        XMLTreeBuilder.__init__(self, html)
++        self._parser.StartNamespaceDeclHandler = self._start_ns
++        self._parser.EndNamespaceDeclHandler = self._end_ns
++        self.namespaces = []
++
++    def _start(self, tag, attrib_in):
++        elem = XMLTreeBuilder._start(self, tag, attrib_in)
++        self.start(elem)
++
++    def _start_list(self, tag, attrib_in):
++        elem = XMLTreeBuilder._start_list(self, tag, attrib_in)
++        self.start(elem)
++
++    def _end(self, tag):
++        elem = XMLTreeBuilder._end(self, tag)
++        self.end(elem)
++
++    def _start_ns(self, prefix, value):
++        self.namespaces.insert(0, (prefix, value))
++
++    def _end_ns(self, prefix):
++        assert self.namespaces.pop(0)[0] == prefix, "implementation confused"
++
++    ##
++    # Hook method that's called when a new element has been opened.
++    # May access the <b>namespaces</b> attribute.
++    #
++    # @param element The new element.  The tag name and attributes are,
++    #     set, but it has no children, and the text and tail attributes
++    #     are still empty.
++
++    def start(self, element):
++        pass
++
++    ##
++    # Hook method that's called when a new element has been closed.
++    # May access the <b>namespaces</b> attribute.
++    #
++    # @param element The new element.
++
++    def end(self, element):
++        pass
++
+ ## Serialization / deserialization
+ 
+-class FeedParser(XMLTreeBuilder.FancyTreeBuilder):
++class FeedParser(FancyTreeBuilder):
+     """Streaming XML parser (returns as iterator)
+ 
+     Implements the Python iterator protocol on the input XML file.
+@@ -51,7 +99,7 @@ class FeedParser(XMLTreeBuilder.FancyTre
+         must match 'default_ns' and the root_tag of the
+         document must match 'root_tag'.
+         """
+-        XMLTreeBuilder.FancyTreeBuilder.__init__(self)
++        FancyTreeBuilder.__init__(self)
+         # parameters
+         self._iter_level = level
+         self._rtag = root_tag
+diff -up Bajjer-0.2.5/gov/lbl/dsd/bajjer/xutil.py.python25 Bajjer-0.2.5/gov/lbl/dsd/bajjer/xutil.py
+--- Bajjer-0.2.5/gov/lbl/dsd/bajjer/xutil.py.python25	2007-01-18 07:23:14.000000000 +1000
++++ Bajjer-0.2.5/gov/lbl/dsd/bajjer/xutil.py	2007-11-05 15:20:52.000000000 +1000
+@@ -7,7 +7,7 @@ XML utility functions
+ # standard
+ import types
+ # local
+-from elementtree import ElementTree
++from xml.etree import ElementTree
+ 
+ ## Functions
+ 
+diff -up Bajjer-0.2.5/gov/lbl/dsd/bajjer/etreeadapter.py.python25 Bajjer-0.2.5/gov/lbl/dsd/bajjer/etreeadapter.py
+--- Bajjer-0.2.5/gov/lbl/dsd/bajjer/etreeadapter.py.python25	2007-01-18 07:23:14.000000000 +1000
++++ Bajjer-0.2.5/gov/lbl/dsd/bajjer/etreeadapter.py	2007-11-05 15:20:52.000000000 +1000
+@@ -11,20 +11,20 @@ __author__ = "Matt Rodriguez, MKRodrigue
+ __created__ = "30 Oct 2006"
+ __rcsid__ = "$Id: etreeadapter.py,v 1.1.1.1 2007-01-03 01:16:21 mateo Exp $"
+ 
+-try:
+-    import elementtree
+-except ImportError:
+-    print "You must have elementtree installed"
+-    raise 
+-
+-from elementtree.ElementTree import SubElement, Element, tostring
+-from elementtree import ElementTree
+-from elementtree.ElementTree import *
+-from elementtree import XMLTreeBuilder 
+-from elementtree.ElementTree import _encode, _escape_attrib, _namespace_map, _escape_cdata, _raise_serialization_error
+-import elementtree.ElementTree
++#try:
++#    import elementtree
++#except ImportError:
++#    print "You must have elementtree installed"
++#    raise 
++
++from xml.etree.ElementTree import SubElement, Element, tostring
++from xml.etree import ElementTree
++from xml.etree.ElementTree import *
++from xml.etree.ElementTree import XMLTreeBuilder 
++from xml.etree.ElementTree import _encode, _escape_attrib, _namespace_map, _escape_cdata, _raise_serialization_error
++import xml.etree.ElementTree
+ import string
+-etree_fixtag = elementtree.ElementTree.fixtag
++etree_fixtag = xml.etree.ElementTree.fixtag
+ 
+ 
+ def noprefix_fixtag(tag, namespaces):
+@@ -117,5 +117,5 @@ def noprefix__write(self, file, node, en
+         file.write(_escape_cdata(node.tail, encoding))
+ 
+ 
+-elementtree.ElementTree.fixtag = noprefix_fixtag 
+-elementtree.ElementTree.ElementTree._write = noprefix__write
++xml.etree.ElementTree.fixtag = noprefix_fixtag 
++xml.etree.ElementTree.ElementTree._write = noprefix__write
+diff -up Bajjer-0.2.5/gov/lbl/dsd/bajjer/x/delay.py.python25 Bajjer-0.2.5/gov/lbl/dsd/bajjer/x/delay.py
+--- Bajjer-0.2.5/gov/lbl/dsd/bajjer/x/delay.py.python25	2007-01-18 07:23:12.000000000 +1000
++++ Bajjer-0.2.5/gov/lbl/dsd/bajjer/x/delay.py	2007-11-05 15:20:52.000000000 +1000
+@@ -11,7 +11,7 @@ __created__ = "30 Oct 2006"
+ __rcsid__ = "$Id: delay.py,v 1.1.1.1 2007-01-03 01:16:21 mateo Exp $"
+ 
+ from gov.lbl.dsd.bajjer.x.external import External 
+-from elementtree.ElementTree import SubElement
++from xml.etree.ElementTree import SubElement
+ 
+ 
+ class Delay(External):

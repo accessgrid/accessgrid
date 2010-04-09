@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## use_localuclmmbase.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad mmedia-r4651~/vic/Makefile.in mmedia-r4651/vic/Makefile.in
+--- mmedia-r4651~/vic/Makefile.in	2010-02-26 21:52:06.000000000 +1000
++++ mmedia-r4651/vic/Makefile.in	2010-03-14 22:53:31.675252446 +1000
+@@ -93,7 +93,7 @@
+ CODEC_LIB = @V_CODEC_LIB@ codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
+ 
+ LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
+-	-luclmmbase -lm -lz -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
++	-L../common/src -luclmmbase -lm -lz -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
+ 
+ 
+ INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \

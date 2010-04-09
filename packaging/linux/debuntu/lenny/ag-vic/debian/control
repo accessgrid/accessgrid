@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Chris Willing <c.willing@uq.edu.au>
 Build-Depends: automake, dpatch, libx11-dev, libxt-dev,
  libssl-dev, libxext-dev, tk-dev, libdv4-dev, yasm,
- subversion
+ subversion, file
 Standards-Version: 3.7.2
 
 Package: ag-vic2.8ucl

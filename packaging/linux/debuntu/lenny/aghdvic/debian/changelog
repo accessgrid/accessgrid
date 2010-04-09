@@ -1,3 +1,10 @@
+aghdvic (0r119-1) lenny; urgency=low
+
+  * New upstream version r119
+  * Use 0.36 for service packages (positionWindow & interlaceType options)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 30 Jun 2009 09:05:46 +1000
+
 aghdvic (0r117-4) lenny; urgency=low
 
   * Include /etc/sysctl.d/60-aghdvic.conf to set network buffer sizes

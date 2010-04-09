@@ -1,0 +1,38 @@
+agcommon (0.2-0cvs20070615) lucid; urgency=low
+
+  * Rebuild for Lucid Lynx
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 03 Apr 2010 19:47:39 +1000
+
+agcommon (0.2-0cvs20070615) karmic; urgency=low
+
+  * Rebuild for Karmic Koala
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 01 Sep 2009 11:14:15 +1000
+
+agcommon (0.2-0cvs20070615) jaunty; urgency=low
+
+  * Rebuild for Jaunty Jackalope
+  * Change swig dependency to swigwx
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 24 Apr 2009 11:01:27 +1000
+
+agcommon (0.2-0cvs20070615) intrepid; urgency=low
+
+  * Rebuild for Intrepid Ibex
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 15 Sep 2008 23:01:54 +1000
+
+agcommon (0.2cvs20070615) lenny; urgency=low
+
+  * Rebuild for lenny using common-20070615cvs
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 22 Mar 2008 08:28:47 +1000
+
+agcommon (0.1) feisty; urgency=low
+
+  * Initial release for feisty-64
+  * Rebuild with support for both python 2.4 & 2.5
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 11 May 2007 12:04:23 +1000
+

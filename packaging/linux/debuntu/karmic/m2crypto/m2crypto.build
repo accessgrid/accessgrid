@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+here=`pwd`
+
+# Set any particular variable needed
+#
+#workdir=m2crupto-0.18.2
+#site0=http://www.vislab.uq.edu.au/ag3/distfiles
+srcpkg0=M2Crypto-0.19.1.tar.gz
+
+
+# Load up the default build script
+. ../../m2crypto.build
+
+

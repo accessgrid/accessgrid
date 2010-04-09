@@ -1,0 +1,19 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## nolibv4l.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad mmedia-r4533~/debian/control mmedia-r4533/debian/control
+--- mmedia-r4533~/debian/control	2009-06-01 22:38:05.000000000 +1000
++++ mmedia-r4533/debian/control	2009-12-04 14:27:18.749099674 +1000
+@@ -3,7 +3,7 @@
+ Priority: optional
+ Maintainer: Chris Willing <c.willing@uq.edu.au>
+ Build-Depends: automake, dpatch, libx11-dev, libxt-dev, libxext-dev,
+- libssl-dev, tk-dev, libdv4-dev, libv4l-dev, subversion, yasm,
++ libssl-dev, tk-dev, libdv4-dev, subversion, yasm,
+  curl
+ Standards-Version: 3.7.2
+ 

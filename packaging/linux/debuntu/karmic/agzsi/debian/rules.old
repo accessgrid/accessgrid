@@ -1,0 +1,67 @@
+#!/usr/bin/make -f
+
+SHELL = /bin/bash
+export DH_PYCENTRAL=nomove
+
+# all versions
+PYVERS  := $(shell pyversions -vs)
+VER     := $(shell /usr/bin/python -c 'import sys; print sys.version[:3]')
+
+package = agzsi
+docdir = debian/tmp/usr/share/doc/$(package)
+
+
+patched:	patched-stamp
+patched-stamp:
+	debian/do_patch debian/patches/patch-ZSI-client.py
+	touch $@
+	
+build:	patched-stamp build-stamp
+build-stamp: $(PYVERS:%=build-python%)
+	touch $@
+build-python%:
+	$(checkdir)
+	python$* setup.py build
+	touch build
+
+clean:
+	$(checkdir)
+	python setup.py clean
+
+
+install: build-stamp $(PYVERS:%=install-python%)
+
+install-python%:
+	$(checkdir)
+	install -d debian/tmp/DEBIAN $(docdir)
+	install -m 755 debian/postinst debian/prerm debian/tmp/DEBIAN
+	python$* setup.py install --root=debian/tmp
+
+binary-indep:	checkroot build
+	$(checkdir)
+
+
+binary-arch:	checkroot build install
+	$(checkdir)
+	debian/install.sh
+	cp -p debian/tmp/usr/bin/wsdl2dispatch debian/tmp/usr/bin/wsdl2dispatch.py
+	cp -p debian/tmp/usr/bin/wsdl2py debian/tmp/usr/bin/wsdl2py.py
+	cp -a CHANGES Copyright README RELEASE debian/copyright $(docdir)
+	cp -a debian/changelog $(docdir)/changelog.Debian
+	dpkg-gencontrol -isp
+	chown -R root:root debian/tmp
+	chmod -R u+w,go=rX debian/tmp
+	dpkg --build debian/tmp ..
+
+
+define checkdir
+	test ZSI/wstools/XMLname.py -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

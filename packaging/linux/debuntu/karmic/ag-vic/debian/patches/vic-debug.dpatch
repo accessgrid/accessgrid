@@ -1,0 +1,32 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## vic-debug.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad mmedia-r4533~/vic/video/grabber-v4l2.cpp mmedia-r4533/vic/video/grabber-v4l2.cpp
+--- mmedia-r4533~/vic/video/grabber-v4l2.cpp	2009-12-01 14:08:57.000000000 +1000
++++ mmedia-r4533/vic/video/grabber-v4l2.cpp	2009-12-04 13:43:53.729724189 +1000
+@@ -79,6 +79,9 @@
+     NULL
+ };
+ 
++#undef debug_msg
++#define debug_msg(args...) fprintf(stderr, args)
++
+ #define PAL_BT601_WIDTH   720
+ #define PAL_BT601_HEIGHT  576
+ #define NTSC_BT601_WIDTH  720
+diff -urNad mmedia-r4533~/vic/video/grabber-video4linux.cpp mmedia-r4533/vic/video/grabber-video4linux.cpp
+--- mmedia-r4533~/vic/video/grabber-video4linux.cpp	2009-12-01 14:08:57.000000000 +1000
++++ mmedia-r4533/vic/video/grabber-video4linux.cpp	2009-12-04 13:44:49.329099447 +1000
+@@ -63,6 +63,8 @@
+ };
+ 
+ //#define DEBUG(x)
++#undef debug_msg
++#define debug_msg(args...) fprintf(stderr, args)
+ 
+ #define D1_WIDTH    720
+ #define D1_HEIGHT   480

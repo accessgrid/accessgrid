@@ -1,0 +1,27 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## gov-lbl-dsd-bajjer-etreeadapter.dpatch by  <chris@v1>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad bajjer-0.2.5~/gov/lbl/dsd/bajjer/etreeadapter.py bajjer-0.2.5/gov/lbl/dsd/bajjer/etreeadapter.py
+--- bajjer-0.2.5~/gov/lbl/dsd/bajjer/etreeadapter.py	2007-01-18 07:23:14.000000000 +1000
++++ bajjer-0.2.5/gov/lbl/dsd/bajjer/etreeadapter.py	2008-03-31 23:08:52.021401983 +1000
+@@ -11,11 +11,14 @@
+ __created__ = "30 Oct 2006"
+ __rcsid__ = "$Id: etreeadapter.py,v 1.1.1.1 2007-01-03 01:16:21 mateo Exp $"
+ 
++# Hack to make elementtree from python-elementtree visible in Ubuntu Gutsy Gibbon
+ try:
+     import elementtree
+ except ImportError:
+-    print "You must have elementtree installed"
+-    raise 
++    # this must be python2.5- so point python-elementtree in python2.4
++    import sys
++    sys.path.append("/usr/share/python-support/python-elementtree")
++    import elementtree
+ 
+ from elementtree.ElementTree import SubElement, Element, tostring
+ from elementtree import ElementTree

@@ -1,0 +1,75 @@
+aghdvic (0r119-2) lucid; urgency=low
+
+  * Rebuild for Lucid Lynx
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 03 Apr 2010 20:54:09 +1000
+
+aghdvic (0r119-1) jaunty; urgency=low
+
+  * New upstream version
+  * Use 0.36 for service packages (positionWindow & interlaceType options)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 29 Jun 2009 22:39:16 +1000
+
+aghdvic (0r117-5) jaunty; urgency=low
+
+  * Add udev rule file for usable raw1394 device permission
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 28 Apr 2009 15:13:49 +1000
+
+aghdvic (0r117-4) jaunty; urgency=low
+
+  * Rebuild for Jaunty Jackalope
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 02 Apr 2009 14:03:33 +1000
+
+aghdvic (0r117-4) hardy; urgency=low
+
+  * New hdvideoservices (0.25.1) starts service in correct directory
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 25 Sep 2008 13:33:46 +1000
+
+aghdvic (0r117-3) hardy; urgency=low
+
+  * Include /etc/sysctl.d/60-aghdvic.conf to set network buffer sizes
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 24 Sep 2008 10:03:26 +1000
+
+aghdvic (0r117-2) hardy; urgency=low
+
+  * New version for  Intrepid Ibex
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 19 Sep 2008 13:23:05 +1000
+
+aghdvic (0r117-2) hardy; urgency=low
+
+  * New hdvideoservices (0.24.1) changes runDV to runDVslow
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 18 Jul 2008 14:41:10 +1000
+
+aghdvic (0r117-1) hardy; urgency=low
+
+  * Renamed
+  * Use new svn version 117
+  * Distribute as AG service packages
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 04 Jan 2008 14:55:19 +1000
+
+ag-hdvic (0r115-1) gutsy; urgency=low
+
+  * Patch for x86_64 - lower optimisation level
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 04 Jan 2008 14:55:19 +1000
+
+ag-hdvic (0r115) gutsy; urgency=low
+
+  * New upstream svn revision
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 13 Nov 2007 10:40:18 +1000
+
+ag-hdvic (0r109) gutsy; urgency=low
+
+  * Rebuild for gutsy
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 26 Oct 2007 12:21:23 +1000
+

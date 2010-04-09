@@ -1,0 +1,79 @@
+ag-rat (4.4.01-1ubuntuag6) lucid; urgency=low
+
+  * New build for Lucid Lynx
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 03 Apr 2010 20:47:13 +1000
+
+ag-rat (4.4.01-1ubuntu6) karmic; urgency=low
+
+  * New build for Karmic Koala
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 02 Sep 2009 12:48:27 +1000
+
+ag-rat (4.4.01-1ubuntu6) jaunty; urgency=low
+
+  * New build for Jaunty Jackalope
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 01 Apr 2009 13:50:23 +1000
+
+ag-rat (4.4.01-1ubuntu6) intrepid; urgency=low
+
+  * New svn version 4395 (ALSA + PulseAudio fixes)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 21 Feb 2009 06:59:04 +1000
+
+ag-rat (4.4.01-1ubuntu5) intrepid; urgency=low
+
+  * New svn version 4393 (device switching fix)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 19 Feb 2009 06:41:49 +1000
+
+ag-rat (4.4.01-1ubuntu4) intrepid; urgency=low
+
+  * New svn version 4391
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 17 Feb 2009 22:12:52 +1000
+
+ag-rat (4.4.01-1ubuntu3) intrepid; urgency=low
+
+  * New svn version 4345
+  * Add asound-dev for building (to enable alsa)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 12 Feb 2009 10:59:21 +1000
+
+ag-rat (4.4.01-1ubuntu2) intrepid; urgency=low
+
+  * New build for Intrepid Ibex
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 16 Sep 2008 21:35:32 +1000
+
+ag-rat (4.4.01-1ubuntu2) hardy; urgency=low
+
+  * New svn version 4229
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 28 Jul 2008 14:43:47 +1000
+
+ag-rat (4.4.01-1ubuntu1) hardy; urgency=low
+
+  * Rebuild for hardy
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 29 Mar 2008 17:08:12 +1000
+
+ag-rat (4.4.01-1) lenny; urgency=low
+
+  * SVN revision 4126
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 22 Mar 2008 21:38:36 +1000
+
+ag-rat (4.4.00-r4109) etch; urgency=low
+
+  * SVN revision 4109
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 06 Nov 2007 21:18:14 +1000
+
+ag-rat (4.4.00) etch; urgency=low
+
+  * First etch version
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 01 Jul 2007 12:48:05 +1000
+

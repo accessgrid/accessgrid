@@ -1,0 +1,115 @@
+ag-vic2.8ucl (1.4-0ubuntuag7) lucid; urgency=low
+
+  * New build for Lucid Lynx
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 03 Apr 2010 20:16:25 +1000
+
+ag-vic2.8ucl (1.4-0ubuntu7) karmic; urgency=low
+
+  * New upstream code (svn r4694)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 14 Mar 2010 13:56:58 +1000
+
+ag-vic2.8ucl (1.4-0ubuntu6) karmic; urgency=low
+
+  * Include patch for uvcvideo webcams quirk
+  * Revert to r4449 version of net/net-ip.cpp
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 08 Dec 2009 21:29:26 +1000
+
+ag-vic2.8ucl (1.4-0ubuntu5) karmic; urgency=low
+
+  * New upstream code (svn r4533)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 01 Dec 2009 15:39:16 +1000
+
+ag-vic2.8ucl (1.4-0ubuntu4) karmic; urgency=low
+
+  * Rebuild for Karmic Koala
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 02 Sep 2009 12:23:22 +1000
+
+ag-vic2.8ucl (1.4-0ubuntu4) jaunty; urgency=low
+
+  * New upstream realease (SVN r4449)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 01 Jun 2009 20:41:28 +1000
+
+ag-vic2.8ucl (1.4-0ubuntu3) jaunty; urgency=low
+
+  * Add libv4l dependency
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 29 May 2009 10:05:57 +1000
+
+ag-vic2.8ucl (1.4-0ubuntu2) jaunty; urgency=low
+
+  * New build for Jaunty Jackalope
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 14 Jan 2009 09:12:14 +1000
+
+ag-vic2.8ucl (1.4-0ubuntu2) intrepid; urgency=low
+
+  * New upstream realease (SVN r4345) - fixes jpeg render issue
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 14 Jan 2009 09:12:14 +1000
+
+ag-vic2.8ucl (1.4-0ubuntu1) intrepid; urgency=low
+
+  * New realease for Intrepid Ibex (SVN r4215)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 16 Sep 2008 08:32:24 +1000
+
+ag-vic2.8ucl (1.4-0ubuntu1) hardy; urgency=low
+
+  * New upstream realease (SVN r4215)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 15 Jul 2008 11:40:32 +1000
+
+ag-vic2.8ucl (1.3.1-1ubuntu1) hardy; urgency=low
+
+  * New build for hardy (still using SVN r4126)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 29 Mar 2008 15:11:34 +1000
+
+ag-vic2.8ucl (1.3.1-0r4126) lenny; urgency=low
+
+  * New build for lenny
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 22 Mar 2008 14:25:37 +1000
+
+ag-vic2.8ucl (1.3.1-0r4126) etch; urgency=low
+
+  * New SVN version (4126)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 18 Mar 2008 09:58:45 +1000
+
+ag-vic2.8ucl (1.3.0-0ubuntu-r4109) gutsy; urgency=low
+
+  * New SVN version (4109)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 01 Nov 2007 13:31:23 +1000
+
+ag-vic2.8ucl (1.3.0-0ubuntu-r4086) gutsy; urgency=low
+
+  * Rebuild for gutsy
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 24 Oct 2007 09:38:37 +1000
+
+ag-vic2.8ucl (1.3.0-0ubuntu-r4086) feisty; urgency=low
+
+  * Feisty version of UCL svn version 4086
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 09 Aug 2007 09:34:15 +1000
+
+ag-vic2.8ucl (1.3.0-0ubuntu-r4080) etch; urgency=low
+
+  * Feisty version of UCL svn version 4080
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 20 Jul 2007 10:43:52 +1000
+
+ag-vic2.8ucl (1.3.0-r4080) etch; urgency=low
+
+  * Etch version of UCL svn version 4080
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 19 Jul 2007 09:12:01 +1000
+

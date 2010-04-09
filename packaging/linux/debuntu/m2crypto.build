@@ -5,7 +5,7 @@ DOCLEANUP=1
 USEEXISTING=0
 
 PKGNAME=m2crypto
-PKGVERSION=0.18.2
+PKGVERSION=0.19.1
 
 # Ensure some basics are set
 [ -z ${PKGNAME} ] && { echo "PKGNAME needs to be set. Exiting now!"
@@ -70,6 +70,7 @@ generate() {
   #
   # NORMALLY the tarball creates the build directory, so just do
   tar zxvf ${here}/${srcpkg0}
+  mv `basename ${srcpkg0} .tar.gz` ${workdir}
 
   # But others need a directory created first, like:
   # mkdir ${workdir}

@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+here=`pwd`
+
+# Set any particular variable needed
+#
+#workdir=common-20070615cvs
+#site0=http://www.vislab.uq.edu.au/ag3/distfiles
+srcpkg0=common-20070615cvs.tar.gz
+
+
+# Load up the default build script
+. ../../agcommon.build
+
+

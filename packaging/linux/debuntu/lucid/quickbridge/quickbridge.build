@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+here=`pwd`
+
+# Set any particular variable needed
+#
+#workdir=quickbridge-3.1
+#site0=http://www.vislab.uq.edu.au/ag3/distfiles
+srcpkg0=quickbridge-3.1.src.tar.gz
+
+
+# Load up the default build script
+. ../../quickbridge.build
+
+

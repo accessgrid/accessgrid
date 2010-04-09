@@ -1,0 +1,9 @@
+#!/bin/sh
+
+echo "Performing post installation tasks"
+#( cd /usr/bin && ln -f wsdl2dispatch wsdl2dispatch.py && ln -f wsdl2py wsdl2py.py )
+ls -l /usr/bin/wsdl2*
+
+/usr/sbin/update-python-modules -f
+echo "Done post installation tasks"
+

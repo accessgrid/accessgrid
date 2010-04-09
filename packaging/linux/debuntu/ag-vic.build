@@ -7,7 +7,15 @@ DOCLEANUP=1
 USEEXISTING=0
 
 PKGNAME=ag-vic2.8ucl
-PKGVERSION=1.4.0r4449
+#PKGVERSION=1.4.0r4449
+#PKGVERSION=1.4.0r4533
+#PKGVERSION=1.4.0r4651
+PKGVERSION=1.4.0r4694
+
+arch=${ARCH:-`uname -m`}
+if [ ! "$arch" = "x86_64" ]; then
+  arch=i386
+fi
 
 # Ensure some basics are set
 [ -z ${PKGNAME} ] && { echo "PKGNAME needs to be set. Exiting now!"
@@ -21,14 +29,23 @@ PKGVERSION=1.4.0r4449
 
 # Set as many of these as are needed
 #
-workdir=mmedia-r4449
 site0=http://www.vislab.uq.edu.au/ag3/distfiles
-srcpkg0=x264-r650.tar.gz
-srcpkg1=${workdir}.tar.gz
+#
+svn_revision=r4694
+ffmegversion=r20462
+libswscaleversion=r29824
+x264version=snapshot-20090708-2245
+#
+#workdir=mmedia-r4449
+#workdir=mmedia-r4533
+#srcpkg0=x264-r650.tar.gz
 #srcpkg2=libswscale-r27137.tar.gz
-srcpkg2=libswscale-20090522.tar.gz
 #srcpkg3=ffmpeg-r13987.tar.gz
-srcpkg3=ffmpeg-20090522.tar.gz
+workdir=mmedia-${svn_revision}
+srcpkg0=x264-${x264version=snapshot-20090708-2245}.tar.bz2
+srcpkg1=${workdir}.tar.bz2
+srcpkg2=libswscale-${libswscaleversion}.tar.bz2
+srcpkg3=ffmpeg-${ffmegversion}.tar.bz2
 
 myid=`id |cut -d ' ' -f 1 |cut -d '=' -f2 |cut -d '(' -f 1`
 if [ ! "${myid}" = "0" ]; then
@@ -77,12 +94,16 @@ generate() {
   
   
   # Generate the source environment
-  tar zxvf ${srcpkg1}
-  ( cd ${workdir}/vic && tar zxvf ${here}/${srcpkg3} )
-  ( cd ${workdir}/vic/ffmpeg && tar zxvf ${here}/${srcpkg2} )
-  ( cd ${workdir}/vic && tar zxvf ${here}/${srcpkg0} )
+  tar xvf ${srcpkg1}
+  ( cd ${workdir}/vic && tar xvf ${here}/${srcpkg3} )
+  ( cd ${workdir}/vic/ffmpeg && tar xvf ${here}/${srcpkg2} )
+  ( cd ${workdir}/vic && tar xvf ${here}/${srcpkg0} )
+
+  ( cd ${workdir}/vic && ln -s x264-${x264version} x264 )
   
   cp -a debian ${workdir}/
+  # Decklink stuff
+  cp -a decklink ${workdir}/vic/
 }
 
 if [ $CLEANONLY -ne 0 ]; then
@@ -95,8 +116,9 @@ if [ $USEEXISTING -eq 0 ]; then
   generate
 fi
 
+exit
 echo "DIST=$DIST"
-echo "ARCH=$ARCH"
+ARCH=${arch}; echo "ARCH=$ARCH"
 # This is the actual building using fakeroot and pbuilder
 #
 #( cd ${workdir} && dpkg-buildpackage -S -rfakeroot -us -uc )

@@ -1,0 +1,72 @@
+m2crypto (0.20.2-1ubuntuag1) karmic; urgency=low
+
+  * Build for lucid with 0.20.2
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 02 Apr 2010 23:17:13 +1000
+
+m2crypto (0.18.2-3ag1) jaunty; urgency=low
+
+  * Change swig build dependency to swigwx
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 24 Apr 2009 09:53:16 +1000
+
+m2crypto (0.18.2-3ag) jaunty; urgency=low
+
+  * Rebuild for jaunty (bumping version No to keep ahead of distro version)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 01 Apr 2009 10:54:14 +1000
+
+m2crypto (0.18.2-2ag) intrepid; urgency=low
+
+  * Added Tom's timeout speedup
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 15 Sep 2008 16:29:00 +1000
+
+m2crypto (0.18.2-2) unstable; urgency=low
+
+  * Added "import inspect" to M2Crypto/m2urllib2.py 
+    (Closes: #493314, #484364, 477799) 
+
+ -- Dima Barsky <dima@debian.org>  Fri, 15 Aug 2008 22:04:14 +0100
+
+m2crypto (0.18.2-1) unstable; urgency=low
+
+  * New upstream release (Closes: #440837)
+
+ -- Dima Barsky <dima@debian.org>  Sat, 13 Oct 2007 02:21:26 +0100
+
+m2crypto (0.17-2) unstable; urgency=low
+
+  * Added "Build-Depends: python-setuptools" to avoid build inconsistencies.
+
+ -- Dima Barsky <dima@debian.org>  Thu, 19 Jul 2007 09:51:13 +0100
+
+m2crypto (0.17-1) unstable; urgency=low
+
+  * New upstream release
+  * Acknowledge NMU (Closes: #380861)
+  * Changed section to python (Closes: #425875)
+
+ -- Dima Barsky <dima@debian.org>  Thu, 24 May 2007 21:14:36 +0100
+
+m2crypto (0.16-1.1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Update package to the last python policy (Closes: #380861),
+    this includes renaming from m2crypto to python-m2crypto.
+  * Bumped compat to 5.
+
+ -- Ana Beatriz Guerrero Lopez <ana@ekaia.org>  Sat, 12 Aug 2006 16:07:49 +0200
+
+m2crypto (0.16-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Dima Barsky <dima@debian.org>  Sat, 22 Jul 2006 11:11:40 +0100
+
+m2crypto (0.13-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Dima Barsky <dima@debian.org>  Tue, 30 Mar 2004 21:54:28 +0100
+

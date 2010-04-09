@@ -1,0 +1,18 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## toolkit-language.dpatch by Christoph Willing <c.willing@uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad accessgrid3.2-3.2~/AccessGrid/AccessGrid/Toolkit.py accessgrid3.2-3.2/AccessGrid/AccessGrid/Toolkit.py
+--- accessgrid3.2-3.2~/AccessGrid/AccessGrid/Toolkit.py	2009-04-29 05:32:06.000000000 +1000
++++ accessgrid3.2-3.2/AccessGrid/AccessGrid/Toolkit.py	2009-06-15 23:24:02.759280305 +1000
+@@ -601,6 +601,7 @@
+ 
+         return AppBase.instance()
+       
++    os.environ['LANG'] = "C"
+     instance = staticmethod(instance)
+     
+     def __init__(self):

@@ -1,0 +1,22 @@
+This package was debianized by Chris Willing <c.willing@uq.edu.au> on
+Fri, 27 Apr 2007 09:06:50 +1000
+
+It was downloaded from <fill in http/ftp site>
+
+Upstream Author: <put author(s) name and email here>
+
+Copyright: <put the year(s) of the copyright, and the names of the
+            copyright holder(s) here>
+
+License:
+
+<Put the license of the package here>
+
+
+The Debian packaging is (C) 2007, Chris Willing <c.willing@uq.edu.au> and
+is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
+
+
+# Please also look if there are files or directories which have a
+# different copyright/license attached and list them here.
+

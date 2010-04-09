@@ -15,7 +15,7 @@ build-stamp: build-pkg
 build-pkg:
 	$(checkdir)
 	(cd common && autoconf -f && ./configure && make)
-	(cd vic && autoconf -f && ./configure --prefix=/usr --enable-ipv6 --enable-dvdecode --enable-gpl)
+	(cd vic && autoconf -f && LDFLAGS=-L../common/src ./configure --prefix=/usr --enable-ipv6 --enable-dvdecode --enable-gpl)
 	(cd vic/ffmpeg && make)
 	(cd vic && make)
 	touch build $@

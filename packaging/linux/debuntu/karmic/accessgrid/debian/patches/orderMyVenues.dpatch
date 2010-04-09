@@ -1,0 +1,56 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## orderMyVenues.dpatch by  <chris@v1>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad accessgrid3.2-3.2~/AccessGrid/AccessGrid/VenueClientUI.py accessgrid3.2-3.2/AccessGrid/AccessGrid/VenueClientUI.py
+--- accessgrid3.2-3.2~/AccessGrid/AccessGrid/VenueClientUI.py	2009-04-29 05:32:05.000000000 +1000
++++ accessgrid3.2-3.2/AccessGrid/AccessGrid/VenueClientUI.py	2009-09-04 12:14:56.551588288 +1000
+@@ -849,15 +849,16 @@
+         self.myVenuesMenuIds = {}
+         self.myVenuesDict = self.controller.GetMyVenues()
+                    
+-        # Create menu items
++        # Create menu items in alphabetical order
+         for name in self.myVenuesDict.keys():
++            insertPosition = self.__FindMenuInsertPosition(name)
+             ID = wx.NewId()
+             self.myVenuesMenuIds[name] = ID
+             url = self.myVenuesDict[name]
+             text = "Go to: " + url
+-            self.navigation.Insert(self.myVenuesPos,ID, name, text)
++            self.navigation.Insert(insertPosition, ID, name, text)
+             wx.EVT_MENU(self, ID, self.GoToMenuAddressCB)
+-                        
++
+     
+     # Code for displaying the list of configurations in the Configurations menu
+     
+@@ -2696,10 +2697,24 @@
+             MessageDialog(None, "Your connection to the venue is interrupted and you will be removed from the venue.  \nTry to connect again.", 
+                           "Lost Connection")
+ 
++    def __FindMenuInsertPosition(self, name):
++        myVenuesKeyList = []
++        for venueName in self.myVenuesMenuIds.keys():
++            myVenuesKeyList.append(venueName)
++        myVenuesKeyList.sort(lambda x, y: cmp(x.lower(), y.lower()))
++        position = self.myVenuesPos
++        for keyname in myVenuesKeyList:
++            if cmp(name.lower(), keyname.lower()) > 0:
++                position += 1
++            else:
++                break
++        return position
++
+     def AddToMyVenues(self,name,url):
++        insertPosition = self.__FindMenuInsertPosition(name)
+         ID = wx.NewId()
+         text = "Go to: " + url
+-        self.navigation.Insert(self.myVenuesPos,ID, name, text)
++        self.navigation.Insert(insertPosition, ID, name, text)
+         self.myVenuesMenuIds[name] = ID
+         self.myVenuesDict[name] = url
+         wx.EVT_MENU(self, ID, self.GoToMenuAddressCB)

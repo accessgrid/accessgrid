@@ -1,0 +1,42 @@
+quickbridge (3.1-2) lucid; urgency=low
+
+  * Rebuilt for Lucid Lynx
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 03 Apr 2010 20:06:41 +1000
+
+quickbridge (3.1-1) karmic; urgency=low
+
+  * Rebuilt for Karmic Koala
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 01 Sep 2009 11:35:23 +1000
+
+quickbridge (3.1-1) jaunty; urgency=low
+
+  * Rebuilt for Jaunty Jackalope
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 01 Apr 2009 13:04:32 +1000
+
+quickbridge (3.1-1) intrepid; urgency=low
+
+  * Rebuilt for intrepid
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 15 Sep 2008 23:21:39 +1000
+
+quickbridge (3.1-1) lenny; urgency=low
+
+  * Rebuilt for lenny
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 22 Mar 2008 14:19:34 +1000
+
+quickbridge (3.1-1) etch; urgency=low
+
+  * Remove spurious "Provides" statement in debian/control
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 07 Nov 2007 10:16:29 +1000
+
+quickbridge (3.1) etch; urgency=low
+
+  * Initial release of quickbridge separated from AccessGrid
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 01 Jul 2007 22:35:03 +1000
+

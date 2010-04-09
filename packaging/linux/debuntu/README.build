@@ -22,22 +22,21 @@ packages in the same order, namely:
     quickbridge
     ag-vic
     ag-rat
-    wxmozilla
+    vpcscreen
+    python-webkit (previously wxmozilla)
     accessgrid
 
 Related packages also available here:
     aghdvic
-    vpcscreen
 
 
 BUILD ENVIRONMENT
 
 A suitable build environment must exist in order for the build
 scripts to run to completetion. Therefore the following packages
-must already have been installed:
+(and their dependencies) must already have been installed:
     build-essential
     debhelper
-    fakeroot
     pbuilder
     cdbs
     dpatch

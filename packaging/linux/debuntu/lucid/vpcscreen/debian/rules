@@ -1,0 +1,69 @@
+#!/usr/bin/make -f
+
+package = vpcscreen
+version = 0.2
+docdir = debian/tmp/usr/share/doc/$(package)
+pkgdir = debian/tmp
+here=`pwd`
+AGTKDATABASE=/usr/share
+
+
+patched:
+	$(checkdir)
+	cat debian/patches/VPCScreen-0.2-scons.patch |patch -p0
+	cat debian/patches/VPCScreen-0.2-filepaths.patch |patch -p0
+	cat debian/patches/VPCScreen-0.2-64bit.patch |patch -p0
+	cat debian/patches/VPCScreen-0.2-debug.patch |patch -p0
+	cat debian/patches/patch-VPCScreen-0.2-VPCScreenProducerService.py |patch -p0
+	cat debian/patches/u_char-jpegdct_h.patch |patch -p0
+	cat debian/patches/patch-VPMedia-types |patch -p0
+	cat debian/patches/vpmedia-string.patch |patch -p0
+	cat debian/patches/vpmedia-ttlhack.patch |patch -p0
+	cat debian/patches/VPC-open_mode.patch |patch -p0
+	cat debian/patches/VPC-X_ShmGetImage.patch |patch -p0
+	touch $@
+
+build: patched
+	topdir=$(here) version=$(version) sh debian/buildag.sh
+	touch $@
+
+clean:
+	$(checkdir)
+	rm -f build patched
+	rm -rf *~ debian/tmp debian/*~ debian/files* debian/substvars
+
+binary-indep:   checkroot build
+	$(checkdir)
+
+binary-arch:    checkroot build
+	$(checkdir)
+	rm -rf debian/tmp
+	install -d debian/tmp/DEBIAN $(docdir)
+	install -d ${pkgdir}/usr/bin
+	install -d ${pkgdir}/usr/share/VPCScreen
+	install -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices
+	install -m 0755 -s VPCScreen-${version}/VPCScreenCapture ${pkgdir}/usr/bin/
+	install -m 0644 VPCScreen-${version}/VPCScreenCapture.xrc ${pkgdir}/usr/share/VPCScreen/
+	install -m 0644 VPCScreen-${version}/vpc-help.html ${pkgdir}/usr/share/VPCScreen/
+	install -m 0644 VPCScreen-${version}/vpc-about.html ${pkgdir}/usr/share/VPCScreen/
+	install -m 0644 VPCScreen-${version}/VPCScreenProducerService.zip ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/
+
+	cp -p debian/copyright $(docdir)
+	cp -a debian/changelog $(docdir)/changelog.Debian
+	dpkg-shlibdeps debian/tmp/usr/bin/VPCScreenCapture
+	dpkg-gencontrol -isp
+	chown -R root:root debian/tmp
+	chmod -R u+w,go=rX debian/tmp
+	dpkg --build debian/tmp ..
+
+define checkdir
+	test -f common/SConstruct -a -f debian/rules
+endef
+
+binary: binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

@@ -1,0 +1,12 @@
+--- VPMedia/include/VPMedia/video/mjpeg/jpeg/jpegdct.h.orig	2008-09-16 22:09:30.000000000 +1000
++++ VPMedia/include/VPMedia/video/mjpeg/jpeg/jpegdct.h	2008-09-17 08:38:41.318515000 +1000
+@@ -57,6 +57,9 @@
+ typedef unsigned short u_short;
+ typedef unsigned int u_int;
+ #endif /* WIN32 */
++typedef unsigned char u_char;
++typedef unsigned short u_short;
++typedef unsigned int u_int;
+ 
+ void jpeg_fdct(const u_char* in, int stride, short* out, const float* qt);
+ void jpeg_bv_rdct1(int dc, short* blk, int ac0, u_char* out, int stride);

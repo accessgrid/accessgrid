@@ -5,7 +5,7 @@ DOCLEANUP=1
 USEEXISTING=0
 
 PKGNAME=twisted
-PKGVERSION=8.2.0
+PKGVERSION=10.0.0
 
 # Ensure some basics are set
 [ -z ${PKGNAME} ] && { echo "PKGNAME needs to be set. Exiting now!"
@@ -69,8 +69,7 @@ generate() {
   # Generate the source environment
   #
   # NORMALLY the tarball creates the build directory, so just do
-  tar jxvf ${here}/${srcpkg0}
-  mv Twisted-${PKGVERSION} ${workdir}
+  tar xvf ${here}/${srcpkg0}
 
   # But others need a directory created first, like:
   # mkdir ${workdir}

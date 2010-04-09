@@ -1,0 +1,81 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+include /usr/share/dpatch/dpatch.make
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+versions :=  $(shell pyversions -vr)
+
+CFLAGS = -Wall -g
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+	INSTALL_PROGRAM += -s
+endif
+
+configure: patch-stamp configure-stamp
+configure-stamp:
+	dh_testdir
+	# Add here commands to configure the package.
+
+	touch configure-stamp
+
+
+build: build-stamp
+
+build-stamp: patch-stamp configure-stamp
+	dh_testdir
+	for version in $(versions); \
+	        do python$$version setup.py build; \
+	done
+
+	touch build-stamp
+
+clean:	unpatch
+	dh_testdir
+	for version in $(versions); \
+		do python$$version setup.py clean -a; \
+	done
+	rm -f build-stamp configure-stamp SWIG/_m2crypto.py SWIG/_m2crypto.c SWIG/_m2crypto_wrap.c
+	dh_clean 
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+
+	for version in $(versions); \
+		do python$$version setup.py install --root=debian/python-m2crypto --no-compile; \
+	done
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs CHANGES
+	dh_installdocs doc/[A-HK-Za-z]*   # Everything but INSTALL.html
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_pysupport
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

@@ -5,7 +5,7 @@ DOCLEANUP=1
 USEEXISTING=0
 
 PKGNAME=agzsi
-PKGVERSION=2.0
+PKGVERSION=2.0.r1385
 
 # Ensure some basics are set
 [ -z ${PKGNAME} ] && { echo "PKGNAME needs to be set. Exiting now!"
