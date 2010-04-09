@@ -155,7 +155,7 @@ BuildDir = os.path.join(SourceDir,BuildDirName)
 
 if not options.nocheckout:
     # Either we check out a copy
-    svnroot = "https://www.ci.uchicago.edu/svn/accessgrid/trunk"
+    svnroot = "https://svn.ci.uchicago.edu/svn/accessgrid/trunk"
 
     if not options.tag:
         tagString = ""
@@ -169,7 +169,10 @@ if not options.nocheckout:
     if options.verbose:
         print "BUILD: Checking out code with command: ", checkout_cmd
 
-    os.system(checkout_cmd)
+    ret = os.system(checkout_cmd)
+    if ret:
+        print '%s failed with %d; exiting' % (checkout_cmd,ret)
+        sys.exit(1)
 
 #
 # Get the version via popen
