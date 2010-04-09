@@ -1,6 +1,6 @@
 name=accessgrid3.2
 version=3.2
-svnversion=6754
+svnversion=6771
 release=0${svnversion}
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
@@ -12,7 +12,7 @@ builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 tag=${TAG:-_uqv}
-pkgname=${name}-${version}-${arch}-${release}1${tag}.txz
+pkgname=${name}-${version}-${arch}-${release}0${tag}.txz
 functions=/usr/lib/slackbuilds/functions
 XDG_MERGEDIR=etc/xdg/menus/applications-merged
 #AGTKDATABASE=/usr/share
@@ -40,26 +40,6 @@ fi
 prereqs="slackbuilds pkgtools python agzsi python-setuptools"
 
 here=`pwd`
-
-patch0=${here}/patches/patch-packaging-BuildSnapshot.py
-patch1=${here}/patches/patch-AccessGrid-hosting-ZSI-Server.py
-#patch2=${here}/patches/patch-sharedapps-SharedBrowser-SharedBrowser.py
-#patch3=${here}/patches/patch-AccessGrid_Platform_unix_Config.py
-patch4=${here}/patches/patch-add_datadir.diff
-patch5=${here}/patches/patch-temp_reversion_AGTkDataPath
-#patch6=${here}/patches/patch-mcast_output
-#patch7=${here}/patches/diff-trunk_AccessGrid_ServiceDiscovery.py-from-r6334-to-r6735.diff
-
-patch10=${here}/patches/patch-services-node-AudioService-AudioService.build.py
-patch11=${here}/patches/patch-services-node-VideoService-VideoService.build.py
-patch12=${here}/patches/patch-services-node-VideoProducerService-VideoProducerService.build.py
-patch13=${here}/patches/patch-services-node-VideoConsumerService-VideoConsumerService.build.py
-patch14=${here}/patches/patch-services-node-VideoProducerServiceH264-VideoProducerServiceH264.py
-patch15=${here}/patches/patch-services-node-VideoServiceH264-VideoServiceH264.build.py
-
-
-patch19=${here}/patches/patch-packaging-servicesToShip
-
 
 patch20=${here}/patches/patch-xfce46-desktop-menu.xml
 
@@ -97,22 +77,6 @@ cp ${buildroot}/sharedwebkitbrowser-0.8/SharedBrowser.py AccessGrid/sharedapps/S
 # Apply patches
 #
 cd ${builddir}/AccessGrid
-do_patch ${patch0}
-do_patch ${patch1}
-#do_patch ${patch2}
-#do_patch ${patch3}
-do_patch ${patch4}
-do_patch ${patch5}
-
-do_patch ${patch10}
-do_patch ${patch11}
-do_patch ${patch12}
-do_patch ${patch13}
-do_patch ${patch14}
-do_patch ${patch15}
-do_patch ${patch19}
-
-# Gradually migrate all patches to this method:
 do_patches
 
 echo -n "Post-patch sleep ..."
@@ -221,6 +185,9 @@ fi
 exit
 
 # Changelog
+#
+# 20100409 CKW - release of 3.2 svn r6771 (067710)
+#  - use latest svn
 #
 # 20090904 CKW - release of 3.2 svn r6754 (067541)
 #  - add pre-svn patch to order MyVenues menu items
