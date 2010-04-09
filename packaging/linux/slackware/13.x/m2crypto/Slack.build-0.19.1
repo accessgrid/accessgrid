@@ -1,0 +1,132 @@
+name=m2crypto
+version=0.19.1
+release=2
+arch=${ARCH:-`uname -m`}
+srcpkg=M2Crypto-${version}.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+tag=${TAG:-_uqv}
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+releasedir=${RELEASEDIR:-/tmp}
+functions=/usr/lib/slackbuilds/functions
+
+master_sites=http://wiki.osafoundation.org/pub/Projects/MeTooCrypto/
+master_sites=http://vislab.uq.edu.au/ag3//distfiles/
+distdir=/nfs/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mtune=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+prereqs="slackbuilds python swig"
+
+here=`pwd`
+
+patch0=${here}/patches/patch-m2crypto-0.17-Py_ssize_t
+patch1=${here}/patches/patch-m2crypto-0.17-timeouts
+patch2=${here}/patches/patch-m2crypto-0.17-xmlrpc
+patch3=${here}/patches/patch-m2crypto-0.19.1-timeouts
+patch4=${here}/patches/patch-m2crypto-FTP_TLS_init
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+
+get_srcpkg ${srcpkg}
+
+exit
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv M2Crypto-${version} ${builddir}
+cd ${builddir}
+
+# Apply patches
+#
+#do_patch ${patch0}
+#do_patch ${patch1}
+#do_patch ${patch2}
+do_patch ${patch3}
+do_patch ${patch4}
+echo "Post patch sleep ..."
+sleep 3
+
+# Build & install
+#
+python setup.py build	
+python setup.py install --root=${pkgdir}	
+
+
+mkdir -p ${docdir}
+cp CHANGES INSTALL LICENCE README \
+	${docdir}
+
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp -a ${here}/Slack.build ${here}/slack-* ${here}/doinst.sh ${here}/patches \
+${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+cd ${pkgdir}
+/sbin/makepkg -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# 20090605 - release 2
+#  - patch to properly initialise FTP_TLS in ftpslib.py
+#
+# 20090527 - release 1 of 0.19.1
+#  - new upstream release
+#
+# 20090522 - release 3
+#  - use .txz oackage format
+#  - include slack-* files for slapt-get
+#
+# CKW 20070328 - release 2
+#  - rebuild with new ag-zsi version (r1365)
+#
+# CKW 20061230 - release 1 of version 0.17
+#
+
+

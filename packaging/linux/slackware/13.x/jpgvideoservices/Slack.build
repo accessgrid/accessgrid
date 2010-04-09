@@ -1,0 +1,126 @@
+name=jpgvideoservices3
+version=2.7
+release=1
+#arch=${ARCH:-`uname -m`}
+arch=${ARCH:-noarch}
+srcpkg=${name}-${version}.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+tag=${TAG:-_uqv}
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+_prefix=/usr
+functions=/usr/lib/slackbuilds/functions
+#AGTKDATABASE=/usr/share
+AGTKDATABASE=/etc
+SYSTEMBASE=/etc
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/linux/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+
+# Add space separated list of prerequsite packages here
+#
+prereqs=""
+
+here=`pwd`
+#patch0=${here}/patches/patch-something.c
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+
+get_srcpkg ${srcpkg}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+cd ${builddir}
+
+# Apply patches
+# like this: do_patch ${patch0}
+#
+
+#echo -n "Post patch sleep 5 ..."
+#sleep 5
+
+# Build service packages
+#
+install -m 755 -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/
+( cd JPGVideoService \
+&& zip -0 ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/JPGVideoService.zip *
+)
+( cd JPGVideoProducerService \
+&& zip -0 ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/JPGVideoProducerService.zip *
+)
+( cd JPGVideoConsumerService \
+&& zip -0 ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/JPGVideoConsumerService.zip *
+)
+
+
+# Docs
+#
+mkdir -p ${docdir}
+#cp README \
+#	${docdir}/
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+( cd ${here}
+    for bfd in Slack.build slack-* doinst.sh patches
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
+)
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+autogen_slack_required
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+# Clean up
+#
+echo -n "Cleaning up ... "
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+echo
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# 20090626 CKW -release 1 of version 2.7
+#  - new upstream release
+#
+# 20090112 CKW first build for AG3
+#
+

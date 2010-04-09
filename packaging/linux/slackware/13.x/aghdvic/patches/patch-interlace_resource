@@ -1,0 +1,22 @@
+--- vic/tcl/ui-resource.tcl.orig	2008-04-10 15:39:54.000000000 +1000
++++ vic/tcl/ui-resource.tcl	2009-06-29 13:58:23.642954000 +1000
+@@ -223,6 +223,7 @@
+ 	option add Vic.useHardwareComp false startupFile
+ 	option add Vic.stillGrabber false startupFile
+ 	option add Vic.siteDropTime "300" startupFile
++	option add Vic.interlaceType "1" startupFile
+ 	option add Vic.quality "0" startupFile
+ 	option add Vic.inputType "ntsc" startupFile
+ 
+--- vic/tcl/ui-main.tcl.orig	2008-04-10 15:39:54.000000000 +1000
++++ vic/tcl/ui-main.tcl	2009-06-29 13:58:09.443540000 +1000
+@@ -665,7 +665,8 @@
+ 	$m add radiobutton -label "interlaced even/odd" -command "\[$src handler\] interlaced 2" -font $f -variable $v 
+ 	$m add radiobutton -label "de-interlaced even" -command "\[$src handler\] interlaced 3" -font $f -variable $v 
+ 	$m add radiobutton -label "de-interlaced odd" -command "\[$src handler\] interlaced 4" -font $f -variable $v
+-	$m invoke 0
++#	$m invoke 0
++	$m invoke [resource interlaceType]
+ 
+ 	set m $w.r.ctrl.info.menu$src
+ 	menubutton $w.r.ctrl.info -text info... -borderwidth 2 \

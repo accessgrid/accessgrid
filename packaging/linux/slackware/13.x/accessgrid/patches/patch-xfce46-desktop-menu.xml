@@ -1,0 +1,37 @@
+--- etc/xfce/xdg/menus/xfce-applications.menu.orig	2009-05-01 20:45:37.000000000 +1000
++++ etc/xfce/xdg/menus/xfce-applications.menu	2009-05-25 14:06:10.940651166 +1000
+@@ -137,4 +137,34 @@
+         </Include>
+     </Menu>
+     
++    <Menu>
++        <!-- AccessGridMarker - no not remove -->
++        <Name>Access Grid 3</Name>
++        <Directory>AccessGrid3-Base.directory</Directory>
++        <Include>
++            <Category>X-Access-Grid3-Base</Category>
++        </Include>
++        <Menu>
++            <Name>Configure</Name>
++            <Directory>AccessGrid3-Configure.directory</Directory>
++            <Include>
++                <Category>X-Access-Grid3-Configure</Category>
++            </Include>
++        </Menu>
++        <Menu>
++            <Name>Documentation</Name>
++            <Directory>AccessGrid3-Documentation.directory</Directory>
++            <Include>
++                <Category>X-Access-Grid3-Documentation</Category>
++            </Include>
++        </Menu>
++        <Menu>
++            <Name>Services</Name>
++            <Directory>AccessGrid3-Services.directory</Directory>
++            <Include>
++                <Category>X-Access-Grid3-Services</Category>
++            </Include>
++        </Menu>
++    </Menu>
++    
+ </Menu>

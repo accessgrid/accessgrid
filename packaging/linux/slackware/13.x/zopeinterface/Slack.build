@@ -1,0 +1,108 @@
+name=zopeinterface
+version=3.3.0
+release=2
+arch=${ARCH:-`uname -m`}
+srcpkg=zope.interface-${version}.tar.gz
+buildroot=/var/tmp
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.txz
+releasedir=${RELEASEDIR:-/tmp}
+functions=/usr/lib/slackbuilds/functions
+
+master_sites=http://www.zope.org/Products/ZopeInterface/3.3.0/
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/usr/ports/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+prereqs="slackbuilds python"
+
+here=`pwd`
+#patch0=${here}/patches/
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv zope.interface-${version} ${builddir}
+cd ${builddir}
+
+#Build
+#
+python setup.py build
+
+# Install
+#
+python setup.py install --root=${pkgdir}
+
+
+mkdir -p ${docdir}
+cp README.txt \
+	${docdir}
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp -a ${here}/Slack.build ${here}/slack-* ${here}/doinst.sh ${here}/patches \
+    ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+
+cd ${pkgdir}
+/sbin/makepkg -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# 20090522 CKW - release 2
+#  - use .txz package format
+#  - add slack-* files for slapt-get
+#
+# CKW 20070629 - initial release of 3.3.0
+#
+

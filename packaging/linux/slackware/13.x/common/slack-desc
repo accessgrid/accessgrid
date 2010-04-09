@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+      |-----handy-ruler------------------------------------------------------|
+common:
+common: common (rtp tools)
+common:
+common: UCL Common Code Library
+common:
+common: Routines common to a number of multimedia tools.  The library
+common: originates from work on the RAT project: these are portions that are
+common: not directly related to an audio tool and potentially useful
+common: elsewhere. 
+common:
+common:

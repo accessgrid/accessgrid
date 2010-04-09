@@ -1,0 +1,10 @@
+--- AccessGrid/Toolkit.py.orig	2009-04-29 05:32:06.000000000 +1000
++++ AccessGrid/Toolkit.py	2009-06-15 21:38:22.412930000 +1000
+@@ -601,6 +601,7 @@
+ 
+         return AppBase.instance()
+       
++    os.environ['LANG'] = "C"
+     instance = staticmethod(instance)
+     
+     def __init__(self):

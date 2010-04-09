@@ -1,0 +1,143 @@
+name=m2crypto
+version=0.20.2
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=M2Crypto-${version}.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+tag=${TAG:-_uqv}
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+distro=slackware
+
+functions=/usr/lib/slackbuilds/functions
+
+master_sites=http://pypi.python.org/packages/source/M/M2Crypto
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/linux/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+prefix=${PREFIX:-/usr}
+
+LIBDIR="${prefix}/lib"
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mtune=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="${prefix}/lib64"
+fi
+ARCH_CONFIGURE="--libdir=$LIBDIR"
+
+# Add space separated list here 
+# of prerequsite packages _for building_
+#
+prereqs="slackbuilds swig python openssl"
+
+here=`pwd`
+#patch0=${here}/patches/patch-something.c
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+check_names
+
+check_prereqs ${prereqs} || exit
+
+get_srcpkg ${srcpkg}
+check_md5sum	# or add md5sum filename as an argument
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv M2Crypto-${version} ${builddir}
+cd ${builddir}
+
+# Apply patches in 00list:
+#       do_patches
+# individually:
+#       do_patch ${patch0}
+#
+
+#echo -n "Post patch sleep 5 ..."
+#sleep 5
+#echo
+
+# Build & install
+#
+python setup.py build
+python setup.py install --root=${pkgdir}
+
+# Compress and fix manpage links.
+#
+[ -e ${pkgdir}/usr/man ] && {
+  find ${pkgdir}/usr/man -type f -name \*.? -exec gzip -9f {} \;
+  find ${pkgdir}/usr/man -type l -name \*.? -printf \
+    "( cd '%h'; [ -e '%l.gz' ] &&
+     { rm -f '%f'; ln -sf '%l.gz' '%f.gz'; } );\n" | bash
+}
+
+# Docs
+#
+mkdir -p ${docdir}
+cp CHANGES INSTALL LICENCE README \
+	${docdir}/
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+( cd ${here}
+    for bfd in Slack.build slack-* doinst.sh patches
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
+)
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+autogen_slack_required
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+# Clean up
+#
+echo -n "Cleaning up ... "
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+#rm -f ${srcpkg}
+echo
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# 20100130 CKW - release 1 of 0.20.2
+#

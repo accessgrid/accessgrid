@@ -1,0 +1,98 @@
+name=feedparser
+version=4.1
+release=2
+arch=${ARCH:-`uname -m`}
+srcpkg=${name}-${version}.zip
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.txz
+releasedir=${RELEASEDIR:-/tmp}
+functions=/usr/lib/slackbuilds/functions
+
+master_sites=http://optusnet.dl.sourceforge.net/sourceforge/feedparser/
+master_sites=http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
+distdir=/usr/ports/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+here=`pwd`
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+mkdir -p ${builddir}
+cd ${builddir}
+unzip ${here}/${srcpkg}
+
+# Apply patches
+#
+
+
+python setup.py install --root=${pkgdir}
+
+mkdir -p ${docdir}
+cp LICENSE README \
+	${docdir}
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp -a ${here}/Slack.build ${here}/slack-* ${here}/doinst.sh ${here}/patches \
+    ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+cd ${pkgdir}
+    /sbin/makepkg -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+
+# Clean up
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+# Changelog
+#
+# 20090522 CKW - release 2 of 4.1
+#  - use .txz package format
+#  - include slack-* files for slapt-get
+#  - include build directory
+#
+

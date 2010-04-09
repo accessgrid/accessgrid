@@ -1,0 +1,276 @@
+--- vic/net/net-ip.cpp	2010-03-15 14:36:28.000000000 +1000
++++ vic/net/net-ip.cpp.4449	2009-06-01 11:52:19.000000000 +1000
+@@ -36,9 +36,6 @@
+ #ifdef WIN32
+ #include <io.h>
+ #define close closesocket
+-extern "C" {
+-char *find_win32_interface(const char *addr, int ttl);
+-}
+ #else
+ #include <sys/param.h>
+ #include <sys/socket.h>
+@@ -96,7 +93,7 @@
+ 
+ class IPNetwork : public Network {
+     public:
+-		IPNetwork() : Network(*(new IPAddress), *(new IPAddress), *(new IPAddress)), local_preset(0) {;}
++		IPNetwork() : Network(*(new IPAddress), *(new IPAddress), *(new IPAddress)) {;}
+ 	virtual int command(int argc, const char*const* argv);
+ 	virtual void reset();
+ 	virtual Address* alloc(const char* name) { 
+@@ -116,9 +113,7 @@
+ 	int open(const char * host, int port, int ttl);
+ 	int close();
+ 	int localname(sockaddr_in*);
+-	int local_preset;  // Indicates if local_ has been set on cmd line
+ 	int openssock(Address & addr, u_short port, int ttl);
+-	int disconnect_sock(int fd);
+ 	int openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local);
+ 	void dosend(u_char* buf, int len, int fd);
+ 	time_t last_reset_;
+@@ -208,10 +203,8 @@
+ 		if (strcmp(argv[1], "open") == 0) {
+ 			int port = htons(atoi(argv[3]));
+ 			int ttl = atoi(argv[4]);
+-			if (strlen(tcl.attr("ifAddr"))>1) {
++			if (strlen(tcl.attr("ifAddr"))>1)
+ 				(IPAddress&)local_ = tcl.attr("ifAddr");
+-				local_preset=1;
+-                        }
+ 			if (open(argv[2], port, ttl) < 0)
+ 				tcl.result("0");
+ 			else
+@@ -254,18 +247,9 @@
+ 	 */
+ 	sockaddr_in local;
+ 	if (localname(&local) < 0) {
+-#ifdef WIN32
+-		(IPAddress&)local_ = find_win32_interface(g_addr_, ttl);
+-		debug_msg("find_win32_interface localname:%s\n",(const char*)local_);
+-#endif
+-	        if (local.sin_addr.s_addr == 0) {
+-                  (IPAddress&)local_ = "127.0.0.1";
+-                  printf("Can NOT determine local IP address - using loopback address. If you want to be able to receive packets from other machines add this command line option: -i local_ip_addr \n");
+-                }
+-          } else
+-                (IPAddress&)local_ = local.sin_addr;
+-
+-	disconnect_sock(ssock_);
++		return (-1);
++	}
++	(IPAddress&)local_ = local.sin_addr;
+ 	rsock_ = openrsock(g_addr_, s_addr_ssm_, port, local_);
+ 	if (rsock_ < 0) {
+ 		rsock_ = ssock_;
+@@ -296,23 +280,18 @@
+ 	int len = sizeof(*p), result =0;
+ #endif
+ 
+-	// Use Local interface name if already set via command line
+-	if (local_preset) {
+-		p->sin_addr.s_addr=(IPAddress&)local_;
+-		debug_msg("Setting localname from cmd line:%s\n",(const char*)local_);
+-		return (0);
+-	}
+-
+ 	if ((result = getsockname(ssock_, (struct sockaddr *)p, &len)) < 0) {
+-	        debug_msg("getsockname failed, perror following:");
+ 		perror("getsockname");
+ 		p->sin_addr.s_addr = 0;
+ 		p->sin_port = 0;
+-	} else 
+-	        debug_msg("getsockname succeeded sin_addr.s_addr:%x(%s)\n",p->sin_addr.s_addr,inet_ntoa(p->sin_addr));
++	}
++	// Use Local interface name if already set via command line
++	if (local_.is_set()) {
++		p->sin_addr.s_addr=(IPAddress&)local_;
++		return (0);
++	}
+ 
+ 	if (p->sin_addr.s_addr == 0) {
+-		debug_msg("getsockname returned 0 so resorting to gethostname()\n");
+ 		p->sin_addr.s_addr = LookupLocalAddr();
+ 		result = ((p->sin_addr.s_addr != 0) ? (0) : (-1));
+ 	}
+@@ -328,13 +307,13 @@
+ 		last_reset_ = t;
+ 		(void)::close(ssock_);
+ 		ssock_ = openssock(g_addr_, port_, ttl_);
+-		disconnect_sock(ssock_);
+ 	}
+ }
+ 
+ int IPNetwork::openrsock(Address & g_addr, Address & s_addr_ssm, u_short port, Address & local)
+ {
+ 	int fd;
++	struct sockaddr_in sin;
+ 
+ 	u_int32_t g_addri = (IPAddress&)g_addr;
+ 	u_int32_t g_addri_ssm = (IPAddress&)s_addr_ssm;
+@@ -409,36 +388,27 @@
+                         exit (1);
+                 }
+         } else
++                        
+ #endif /* IP_ADD_SOURCE_MEMBERSHIP */
+ 		{
+-		/* 
+-		* XXX This is bogus multicast setup that really
+-		* shouldn't have to be done (group membership should be
+-		* implicit in the IP class D address, route should contain
+-		* ttl & no loopback flag, etc.).  Steve Deering has promised
+-		* to fix this for the 4.4bsd release.  We're all waiting
+-		* with bated breath.
+-		*/
+-		struct ip_mreq mr;
+-
+-		mr.imr_multiaddr.s_addr = g_addri;
+-		if (local_preset) {
+-		    mr.imr_interface.s_addr = locali;
+-		    if (setsockopt(fd, IPPROTO_IP,IP_ADD_MEMBERSHIP, 
+-				    (char *)&mr, sizeof(mr)) < 0) {
+-			perror("IP_ADD_MEMBERSHIP");
+-			debug_msg("Failed to join multicast group using preset local addr?\n");
+-		    }
+-		} else {
+-		    mr.imr_interface.s_addr = INADDR_ANY;
+-		    if (setsockopt(fd, IPPROTO_IP,IP_ADD_MEMBERSHIP, 
+-				    (char *)&mr, sizeof(mr)) < 0) {
+-			    perror("IP_ADD_MEMBERSHIP");
+-			    debug_msg("Failed to join multicast group- exiting\n");
+-			    exit(1);
+-		    }
++				/* 
++				* XXX This is bogus multicast setup that really
++				* shouldn't have to be done (group membership should be
++				* implicit in the IP class D address, route should contain
++				* ttl & no loopback flag, etc.).  Steve Deering has promised
++				* to fix this for the 4.4bsd release.  We're all waiting
++				* with bated breath.
++				*/
++				struct ip_mreq mr;
++
++				mr.imr_multiaddr.s_addr = g_addri;
++				mr.imr_interface.s_addr = INADDR_ANY;
++				if (setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, 
++						(char *)&mr, sizeof(mr)) < 0) {
++					perror("IP_ADD_MEMBERSHIP");
++					exit(1);
++				}
+ 		}
+- 	}
+ 	} else
+ #endif /* IP_ADD_MEMBERSHIP */
+ 	{
+@@ -470,19 +440,18 @@
+ 		sin.sin_port = 0;
+ 		sin.sin_addr.s_addr = g_addri;
+ 		connect(fd, (struct sockaddr *)&sin, sizeof(sin));
+-		
+-		
+ #endif
+ 	}
+ 	/*
+ 	 * XXX don't need this for the session socket.
+-	 */
+-	for (int bufsize = 1024 * 1024; bufsize >= 32 * 1024; bufsize /= 2) {
++	 */	
++	int bufsize = 80 * 1024;
++	if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
++			sizeof(bufsize)) < 0) {
++		bufsize = 32 * 1024;
+ 		if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
+-			       sizeof(bufsize)) >= 0)
+-		{
+-			break;
+-		}
++				sizeof(bufsize)) < 0)
++			perror("SO_RCVBUF");
+ 	}
+ 	return (fd);
+ }
+@@ -490,6 +459,7 @@
+ int IPNetwork::openssock(Address & addr, u_short port, int ttl)
+ {
+ 	int fd;
++//	struct sockaddr_in sin;
+ 
+ 	u_int32_t addri = (IPAddress&)addr;
+ 
+@@ -521,11 +491,11 @@
+ 	sin.sin_port = port;
+ 	sin.sin_addr.s_addr = INADDR_ANY;
+ 	if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+-	  sin.sin_port = 0;
+-	  if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+-	      perror("bind");
+-	      exit(1);
+-	  }
++        sin.sin_port = 0;
++        if (bind(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
++            perror("bind");
++            exit(1);
++        }
+ 	}
+ 
+ 	memset((char *)&sin, 0, sizeof(sin));
+@@ -533,14 +503,13 @@
+ 	sin.sin_port = port;
+ 	sin.sin_addr.s_addr = addri;
+ 
+-	/* Connect() is useful for localname() call to find the iface addr being used
+-	 * Because of a problem with OSX we disconnect this socket once localname() has 
+-	 * found out the ip address of the interface */
+- 	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
++/*	Got rid of connect and vic then uses sin in the sendto() function in
++ *	the dosend() method
++ *
++ *	if (connect(fd, (struct sockaddr *)&sin, sizeof(sin)) < 0) {
+ 		perror("connect");
+ 		exit(1);
+-	}
+-
++	}*/
+ 	if (IN_CLASSD(ntohl(addri))) {
+ #ifdef IP_ADD_MEMBERSHIP
+ 		char c;
+@@ -572,7 +541,7 @@
+ 		/* Slightly nasty one here - set Mcast iface if local inteface
+ 		 * is specified on command line
+ 		 */
+-		if (local_preset) {
++		if (((const char*)local_)[0]!='\0') {
+ 			u_int32_t locali = (IPAddress&)local_;
+ 			if (setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF,
+ 						   (char*)&locali, sizeof(locali)) < 0) {
+@@ -591,22 +560,17 @@
+ 	/*
+ 	 * XXX don't need this for the session socket.
+ 	 */
+-	for (int bufsize = 1024 * 1024; bufsize >= 32 * 1024; bufsize /= 2) {
+-		if (setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&bufsize,
+-			       sizeof(bufsize)) >= 0)
+-		{
+-			break;
+-		}
++	int bufsize = 80 * 1024;
++	if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&bufsize,
++		       sizeof(bufsize)) < 0) {
++		bufsize = 48 * 1024;
++		if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&bufsize,
++			       sizeof(bufsize)) < 0)
++			perror("SO_SNDBUF");
+ 	}
+ 	return (fd);
+ }
+ 
+-int IPNetwork::disconnect_sock(int fd)
+-{
+-	memset((char *)&sin, 0, sizeof(sin));
+-	sin.sin_family = AF_UNSPEC;
+-	return connect(fd, (struct sockaddr *)&sin, sizeof(sin));
+-}
+ 
+ 
+ int IPNetwork::dorecv(u_char* buf, int len, Address & from, int fd)

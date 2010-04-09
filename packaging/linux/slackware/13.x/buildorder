@@ -1,0 +1,34 @@
+#(elementtree)
+bajjer
+feedparser
+#pyxml
+zopeinterface
+ag-zsi
+#swig
+m2crypto
+twisted
+#(mDNSResponder)
+#(bonjour-py)
+avahi (elsewhere) needs:
+	libdaemon
+common
+quickbridge
+
+ag-rat
+ag-vic - needs:
+	yasm, libdv
+
+wxPythonGTK
+
+#xulrunner
+#wxmozilla
+# These are old now
+# - now using pywebkitgtk - needs:
+		webkit - needs:
+		libicu, libsoup
+vpcscreen - needs:
+	scons
+
+setuptools
+AccessGrid
+

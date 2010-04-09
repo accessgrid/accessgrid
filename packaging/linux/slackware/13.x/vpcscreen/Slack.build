@@ -1,0 +1,202 @@
+name=vpcscreen
+version=0.2
+release=7
+arch=${ARCH:-`uname -m`}
+srcpkg0=VPCScreen-0.2.tar.gz
+srcpkg1=VPMedia-0.1-r5.tar.gz
+srcpkg2=VPC-0.1-r5.tar.gz
+srcpkg3=common-1.1.16-r5.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/VPCScreen-${version}
+tag=${TAG:-_uqv}
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+functions=/usr/lib/slackbuilds/functions
+slackwareversion=${SLVERSION:-`cat /etc/slackware-version |cut -d' ' -f2`}
+slversion=${slackwareversion:0:4}
+echo "slversion = $slversion ...."
+sleep 5
+
+#AGTKDATABASE=/usr/share
+AGTKDATABASE=/etc
+SYSTEMBASE=/etc
+
+master_sites=http://sheriff.anu.edu.au/~rhys/VPCScreen/
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/linux/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+LIBDIR="/usr/lib"
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mtune=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="/usr/lib64"
+fi
+ARCH_CONFIGURE="--libdir=$LIBDIR"
+
+# Add space separated list of prerequsite packages here
+#
+prereqs="pkgtools scons wxPythonGTK libdv"
+
+here=`pwd`
+patch0=${here}/patches/VPCScreen-0.2-scons.patch
+patch1=${here}/patches/VPCScreen-0.2-filepaths.patch
+patch2=${here}/patches/VPCScreen-0.2-64bit.patch
+patch3=${here}/patches/VPCScreen-0.2-debug.patch
+patch4=${here}/patches/patch-VPCScreen-0.2-VPCScreenProducerService.py
+patch5=${here}/patches/patch-VPMedia-types
+patch6=${here}/patches/patch-VPC-131fixes.patch
+patch7=${here}/patches/patch-VLPMedia-extradebugging.patch
+patch8=${here}/patches/vpmedia-ttlhack.patch
+
+set -e
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+
+get_srcpkg ${srcpkg0}
+get_srcpkg ${srcpkg1}
+get_srcpkg ${srcpkg2}
+get_srcpkg ${srcpkg3}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+mkdir -p ${builddir}
+
+#
+#
+cd ${builddir}
+tar zxvf ${here}/${srcpkg0}
+tar zxvf ${here}/${srcpkg1}
+tar zxvf ${here}/${srcpkg2}
+tar zxvf ${here}/${srcpkg3}
+
+# Apply patches
+# like this: do_patch ${patch0}
+#
+do_patch ${patch0}
+do_patch ${patch1}
+do_patch ${patch2}
+do_patch ${patch3}
+do_patch ${patch4}
+do_patch ${patch5}
+if [ ! "$slversion" = "13.0" ]; then
+  # only for (and, presumably greater than) 13.1 #
+  do_patch ${patch6}
+fi
+do_patch ${patch7}
+do_patch ${patch8}
+
+echo "Post patch sleep ..."
+sleep 5
+
+# Build & install
+#
+( cd common && \
+scons configure && \
+scons
+)
+( cd VPMedia && \
+scons TOP_DIR=${builddir} configure && \
+scons TOP_DIR=${builddir}
+)
+( cd VPC && \
+scons TOP_DIR=${builddir}
+)
+( cd VPCScreen-${version} && \
+scons TOP_DIR=${builddir}
+zip -0 VPCScreenProducerService.zip VPCScreenProducerService.py VPCScreenProducerService.svc
+)
+
+install -d ${pkgdir}/usr/bin
+install -d ${pkgdir}/usr/share/VPCScreen
+install -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices
+install -m 0755 -s VPCScreen-${version}/VPCScreenCapture ${pkgdir}/usr/bin/
+install -m 0644 VPCScreen-${version}/VPCScreenCapture.xrc ${pkgdir}/usr/share/VPCScreen/
+install -m 0644 VPCScreen-${version}/VPCScreenProducerService.zip ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/
+
+# Docs
+#
+mkdir -p ${docdir}
+cp VPCScreen-${version}/vpc-about.html VPCScreen-${version}/vpc-help.html \
+	${docdir}/
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+( cd ${here}
+    for bfd in Slack.build slack-* doinst.sh patches
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
+)
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg0}
+rm -f ${srcpkg1}
+rm -f ${srcpkg2}
+rm -f ${srcpkg3}
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# 20100402 CKW - release 7
+#  - testing ttl stuff
+#
+# 20100310 CKW - release 6
+#  - add patch-VPC-131fixes for 13.1
+#
+# 20090527 CKW - release 5
+#  - use .txz package format (for SL-13.0)
+#
+# CKW 20090226 - release 4
+#  - remove slack-required (circular dependency)
+#
+# CKW 20081022 - release 3
+#  - revert to /etc/AccessGrid3 until /usr/share is approved
+#
+# CKW 20080908 - release 2
+#  - install into /usr/share/AccessGrid3 rather than /etc/AccessGrid3
+#    (actually, use AGTKDATABASE)
+#
+# CKW 20070810 - release 1
+#

@@ -1,0 +1,20 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+      |-----handy-ruler------------------------------------------------------|
+bajjer: bajjer (jabber library for python)
+bajjer:
+bajjer: The Bajjer library provides an API for dealing with
+bajjer: XML streams. It provides SSL support using Python's
+bajjer: socket.ssl or PyOpenSSL, and it provides the ability
+bajjer: to set handlers, which call a callback function when
+bajjer: a certain type of jabber packet is received.
+bajjer:
+bajjer: From:
+bajjer:      https://codeforge.lbl.gov/projects/pccejt/
+bajjer:
+

@@ -1,0 +1,195 @@
+name=agrat
+version=4.4.01
+#svnversion=r4393
+svnversion=r4651
+release=6
+arch=${ARCH:-`uname -m`}
+srcpkg=mmedia-${svnversion}.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+tag=${TAG:-_uqv}
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+distro=slackware
+
+prefix=/usr
+functions=/usr/lib/slackbuilds/functions
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mtune=i686"
+  LIBDIR="${prefix}/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIR="${prefix}/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIR="${prefix}/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="${prefix}/lib"
+  ARCH_CONFIGURE=""
+elif [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="${prefix}/lib64"
+  ARCH_CONFIGURE="--libdir=$LIBDIR"
+fi
+
+prereqs="autoconf gcc tcl tk"
+
+here=`pwd`
+patch0=${here}/patches/patch-rat-configure.in
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+
+get_srcpkg ${srcpkg} || exit
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv mmedia-${svnversion} ${name}-${version}
+cd ${builddir}
+
+# Apply patches
+# like this: do_patch ${patch0}
+#
+do_patch ${patch0}
+
+echo "Post patch sleep ..."
+sleep 3
+# Build
+(cd common && ./configure --enable-ipv6 && make) || exit 1
+(cd rat \
+&& autoconf -v -f \
+&& ./configure \
+	--enable-ipv6 \
+	--prefix=${prefix} \
+	--mandir=${prefix}/man \
+	${ARCH_CONFIGURE} \
+&& make ) || exit 1
+
+# Install
+cd ${builddir}
+install -d ${pkgdir}${prefix}/bin
+install -d ${pkgdir}${prefix}/man/man1
+install -m 755 \
+    rat/rat \
+    rat/rat-4.4.01 \
+    rat/rat-4.4.01-ui \
+    rat/rat-4.4.01-media \
+    rat/rat-4.4.01-kill \
+    ${pkgdir}${prefix}/bin/
+(cd ${pkgdir}${prefix}/bin/ && cp -p rat-4.4.01-kill rat-kill)
+#install -m 644 rat/man/man1/rat.1 ${pkgdir}${prefix}/man/man1/
+cat rat/man/man1/rat.1 | gzip -c - >${pkgdir}${prefix}/man/man1/rat.1.gz
+
+
+# Docs
+#
+cd ${builddir}/rat
+mkdir -p ${docdir}
+cp COPYRIGHT INSTALL.TXT MODS README README.HPUX10 README.IXJ \
+    README.RELEASES README.WB-ADPCM README.debug README.devices \
+    README.files README.g728 README.gsm README.mbus README.playout \
+    README.reporting-bugs README.settings README.timestamps \
+    README.voxlet VERSION \
+	${docdir}
+
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+( cd ${here}
+    for bfd in Slack.build slack-* doinst.sh patches
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
+)
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+sed -e "s:SVNVERSION:${svnversion}:g" ${here}/slack-desc.in >${pkgdir}/install/slack-desc
+for pkgfile in slack-required slack-conflicts slack-suggests doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# 20200309 CKW release 6
+#  - use updated svn release 4651
+#
+# 20090522 CKW release 5
+#  - use .txz package format
+#
+# 20090219 CKW release 4
+#  - use updated svn version r4393
+#
+# 20080726 CKW release 3
+#  - use updated svn version r4229
+#
+# 20080625 CKW release 2 of 4.4.01
+#  - use UCL svn version r4189
+#
+# 20080416 CKW release 1 of 4.4.01
+#  - use svn version r4126
+#  - use system tcl, tk
+#  - change package name to agrat
+#  - add slack-* files for slapt-get
+#
+# 20070721 CKW release 3 using UCL svn version r4080
+#  - common & rat patched to fix 64 bit issues
+#
+# 20070504 CKW First release
+#  - svn checkout http://mediatools.cs.ucl.ac.uk/repos/mmedia/rat/trunk rat
+#
+###################################
+# Retrieve from SVN with:
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/vic/branches/mpeg4 vic
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/rat/trunk rat
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/common/trunk common
+#
+# Don't need these now - use system tcl, tk
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/tcl-8.0/trunk tcl-8.0
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/tk-8.0/trunk tk-8.0
+###################################
+

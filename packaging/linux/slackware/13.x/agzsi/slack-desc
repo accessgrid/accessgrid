@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+      |-----handy-ruler------------------------------------------------------|
+agzsi:
+agzsi: agzsi (Zolera SOAP Infrastructure)
+agzsi:
+agzsi: ZSI, the Zolera SOAP Infrastructure, is a pure-Python
+agzsi: module that provides an implementation of SOAP messaging,
+agzsi: as described in SOAP 1.1 Specification
+agzsi: (see http://www.w3.org/TR/soap).
+agzsi: It can also be used to build applications using SOAP Messages
+agzsi: with Attachments (see http://www.w3.org/TR/SOAP-attachments).
+agzsi: ZSI is intended to make it easier to write web services in Python
+agzsi:

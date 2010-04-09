@@ -1,0 +1,11 @@
+--- M2Crypto/SSL/Connection.py.orig	2008-10-13 14:47:33.000000000 +1000
++++ M2Crypto/SSL/Connection.py	2009-05-28 11:47:49.246209386 +1000
+@@ -39,6 +39,8 @@
+         self._fileno = self.socket.fileno()
+         
+         self.blocking = self.socket.gettimeout()
++        if self.blocking is None:
++            self.blocking = -1.0
+         
+         self.ssl_close_flag = m2.bio_noclose
+ 

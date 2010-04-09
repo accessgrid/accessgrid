@@ -1,0 +1,21 @@
+--- VPMedia/include/VPMedia/VPMedia.h.orig	2006-06-07 14:35:03.000000000 +1000
++++ VPMedia/include/VPMedia/VPMedia.h	2009-05-29 14:58:31.389386293 +1000
+@@ -22,6 +22,7 @@
+ #ifndef VPMEDIA_H
+ #define VPMEDIA_H
+ 
++#include <string.h>
+ #include <VPMedia/VPMedia_config.h>
+ 
+ #ifdef WIN32
+--- VPMedia/include/VPMedia/VPMTypes.h.orig	2006-06-07 14:35:03.000000000 +1000
++++ VPMedia/include/VPMedia/VPMTypes.h	2009-05-29 14:46:02.375577412 +1000
+@@ -12,6 +12,8 @@
+ #else
+ 
+ #include <stdint.h>
++typedef unsigned char u_char;
++typedef unsigned int u_int;
+ 
+ #endif // VPMEDIA_WIN32
+ 

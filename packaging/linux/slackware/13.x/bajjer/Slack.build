@@ -1,0 +1,138 @@
+name=bajjer
+version=0.2.5
+release=6
+arch=${ARCH:-`uname -m`}
+srcpkg=Bajjer-${version}.tar.gz
+buildroot=/var/tmp
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.txz
+releasedir=${RELEASEDIR:-/tmp}
+pythonversion=${PYTHONVERSION:-`python -c "import sys; print sys.version[:3]"`}
+functions=/usr/lib/slackbuilds/functions
+
+master_sites=https://codeforge.lbl.gov/projects/pccejt/
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/linux/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+# Add space separated list of prerequsite packages here
+#
+if [ "${pythonversion}" = "2.4" ]; then
+  prereqs="elementtree"
+else
+  prereqs=""
+fi
+
+here=`pwd`
+patch0=${here}/patches/patch-gov-lbl-dsd-bajjer-io.py
+patch1=${here}/patches/patch-gov-lbl-dsd-bajjer-stream.py
+patch2=${here}/patches/elemettree-python25.patch
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+
+get_srcpkg ${srcpkg}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv Bajjer-${version} ${builddir}
+cd ${builddir}
+
+do_patch ${patch0}
+do_patch ${patch1}
+case "${pythonversion}" in
+    "2.5"|"2.6")
+        do_patch ${patch2}
+        ;;
+esac
+
+echo -n "Post patch sleep ..."
+sleep 3
+
+# Build/install
+#
+python setup.py install --root=${pkgdir}
+
+
+mkdir -p ${docdir}
+cp CHANGELOG LICENSE PKG-INFO README \
+	${docdir}
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp -a ${here}/Slack.build ${here}/slack-* ${here}/patches \
+    ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# CKW 20090522 - release 6
+#  - determine python version programmatically
+#  - include quirks for python 2.6 (Slackware 13)
+#  - use .txz packaging format
+#
+# CKW 20080520 - release 5
+#  - make python2.5 patch conditional on pythonversion
+#  - add elementtree prereq if pyton 2.4
+#
+# CKW 20080415 - release 4
+#  - correct elementtree patches for python2.5
+#  - include slack-* files for slapt-get
+#
+# CKW 20071215 - release 3
+#  - added patch to fully close stream
+#
+# CKW 20071005 - release 2
+#  - added read speedup patch (patch0)
+#
+# CKW 20070506 - release 1 of version 0.2.5
+#
+

@@ -1,0 +1,20 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+         |-----handy-ruler------------------------------------------------------|
+vpcscreen:
+vpcscreen: vpcscreen (Screen streamer tool)
+vpcscreen:
+vpcscreen: VPCScreen from the ANU Internet Futures team captures
+vpcscreen: arbitary portions of a display screen from which an
+vpcscreen: RTP video stream is generated. This is encapsulated as an
+vpcscreen: AccessGrid node service.
+vpcscreen:
+vpcscreen:
+vpcscreen:
+vpcscreen:
+

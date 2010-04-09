@@ -1,0 +1,241 @@
+Index: vic-2.8ucl1.3.1/vic/tcl/ui-main.tcl
+===================================================================
+--- vic/tcl/ui-main.tcl	(revision 4148)
++++ vic/tcl/ui-main.tcl	(working copy)
+@@ -542,11 +542,10 @@
+ 	set f [smallfont]
+ 	set stamp $w.stamp
+ 	frame $stamp -relief ridge -borderwidth 2
+-	bind $stamp <Enter> "%W configure -background gray90"
+         if {[string match [ windowingsystem] "aqua"]} {
+                 bind $stamp <Enter> "%W configure -background CornflowerBlue"
+         } else {
+-                bind $stamp <Enter> "%W configure -background gray90"
++                bind $stamp <Enter> "%W configure -background white"
+         }   
+ 	bind $stamp <Leave> "%W configure -background [resource background]"
+ 	create_video_widget $stamp.video 80 60
+@@ -638,10 +637,12 @@
+                 menubutton $w.r.ctrl.info -text info -borderwidth 2 \
+                         -font $f -pady 4 -menu $m
+         } else {
+-                menubutton $w.r.ctrl.info -text info... -borderwidth 2 \
+-                        -highlightthickness 1 \
++                menubutton $w.r.ctrl.info -text info -borderwidth 2 \
++                        -highlightthickness 1 -indicatoron 1 \
+                         -relief groove -font $f -width 5 \
+-                        -menu $m
++                        -activebackground [$w.r.ctrl.color cget -activebackground] \
++                        -activeforeground [$w.r.ctrl.color cget -activeforeground] \
++                        -menu $m \
+         }      
+ 	build_info_menu $src $m
+ 
+Index: vic-2.8ucl1.3.1/vic/tcl/ui-resource.tcl
+===================================================================
+--- vic/tcl/ui-resource.tcl	(revision 4148)
++++ vic/tcl/ui-resource.tcl	(working copy)
+@@ -102,12 +102,12 @@
+ 		set times14 [search_font $foundry times medium 14]
+ 	}
+ 
+-	option add *Font $helv12b startupFile
+-	option add Vic.medfont $helv12b startupFile
+-	option add Vic.smallfont $helv10b startupFile
+-	option add Vic.minifont $helv4b startupFile
+-	option add Vic.helpfont $times14 startupFile
+-	option add Vic.entryfont $helv10 startupFile
++	#option add *Font $helv12b startupFile
++	option add Vic.medfont TkDefaultFont
++	option add Vic.smallfont TkSmallCaptionFont
++	option add Vic.minifont TkIconFont
++	option add Vic.helpfont TkTooltipFont
++	option add Vic.entryfont TkTextFont
+ 
+     }
+ 
+@@ -134,12 +134,12 @@
+ 	# base priority from widgetDefault to 61 so that user's X resources
+ 	# won't override these.
+ 	#
+-	if {$tcl_platform(platform) != "windows"} {
+-		tk_setPalette gray80
+-		foreach pal [array names tkPalette] {
+-			option add *$pal $tkPalette($pal) 61
+-		}
+-	}
++#	if {$tcl_platform(platform) != "windows"} {
++#		tk_setPalette gray80
++#		foreach pal [array names tkPalette] {
++#			option add *$pal $tkPalette($pal) 61
++#		}
++#	}
+ 
+ 	option add *Radiobutton.relief flat startupFile
+ 
+Index: vic-2.8ucl1.3.1/vic/tcl/ui-extout.tcl
+===================================================================
+--- vic/tcl/ui-extout.tcl	(revision 4148)
++++ vic/tcl/ui-extout.tcl	(working copy)
+@@ -81,8 +81,8 @@
+ 	set f [smallfont]
+ 
+ 	set m $w.mb.menu
+-	menubutton $w.mb -text Port... -menu $m \
+-		-relief raised -font $f
++	menubutton $w.mb -text Port -menu $m \
++		-relief raised -font $f -indicatoron 1
+ 	#XXX no supported devices have multiple external ports yet
+ 	$w.mb configure -state disabled
+ 
+Index: vic-2.8ucl1.3.1/vic/tcl/ui-ctrlmenu.tcl
+===================================================================
+--- /vic/tcl/ui-ctrlmenu.tcl	(revision 4148)
++++ vic/tcl/ui-ctrlmenu.tcl	(working copy)
+@@ -763,7 +763,7 @@
+ 	if {[string match [ windowingsystem] "aqua"]} {
+             menubutton $w -menu $m -text Device -width 8 -pady 4
+ 	} else {
+-	    menubutton $w -menu $m -text Device... \
++	    menubutton $w -menu $m -text Device -indicatoron 1 \
+ 		-relief raised -width 10 -font $f
+ 	}
+ 	menu $m
+@@ -968,7 +968,7 @@
+ 	    menubutton $w -menu $w.menu -text Port -width 8 -pady 4 \
+                 -state disabled
+ 	} else {
+- 	    menubutton $w -menu $w.menu -text Port... \
++ 	    menubutton $w -menu $w.menu -text Port -indicatoron 1 \
+ 		-relief raised -width 10 -font $f -state disabled
+         }
+ 	global portButton inputPort
+@@ -1012,8 +1012,8 @@
+ 	    menubutton $w -text Signal -menu $m -width 8 -pady 4 \
+ 		-state disabled
+ 	} else {
+-	    menubutton $w -text Signal... -menu $m -relief raised \
+-		-width 10 -font $f -state disabled
++	    menubutton $w -text Signal -menu $m -relief raised \
++		-width 10 -font $f -state disabled -indicatoron 1
+ 	}
+ 	menu $m
+ 	$m add radiobutton -label "auto" -command restart \
+@@ -1049,8 +1049,8 @@
+ 	if {[string match [ windowingsystem] "aqua"]} {
+             menubutton $w -text Options -menu $m -width 8 -pady 4
+ 	} else {
+-	    menubutton $w -text Options... -menu $m -relief raised -width 10 \
+-		-font $f
++	    menubutton $w -text Options -menu $m -relief raised -width 10 \
++		-font $f -indicatoron 1
+  	}
+ 	menu $m
+     	$m add checkbutton -label "Sending Slides" \
+@@ -1072,8 +1072,8 @@
+  	if {[string match [ windowingsystem] "aqua"]} {
+ 	    menubutton $w -text Tile -menu $m -width 8 -pady 4
+ 	} else {
+-	    menubutton $w -text Tile... -menu $m -relief raised -width 10 \
+-			-font $f
++	    menubutton $w -text Tile -menu $m -relief raised -width 10 \
++			-font $f -indicatoron 1
+ 	}
+ 	menu $m
+ 	$m add radiobutton -label Single -command "redecorate 1" \
+@@ -1092,8 +1092,8 @@
+ 	if {[string match [ windowingsystem] "aqua"]} {
+ 	    menubutton $w -text Options -menu $m -width 8 -pady 4
+ 	} else {
+- 	    menubutton $w -text Options... -menu $m -relief raised -width 10 \
+-		-font $f
++ 	    menubutton $w -text Options -menu $m -relief raised -width 10 \
++		-font $f -indicatoron 1
+ 	}
+ 	menu $m
+     	$m add checkbutton -label "Mute New Sources" \
+@@ -1123,8 +1123,8 @@
+ 			-width 10 -font $f -highlightthickness 0 \
+ 			-command "extout_select $outputDeviceList"
+ 	} else {
+-		menubutton $w -text External... -menu $m -relief raised \
+-			-width 10 -font $f 
++		menubutton $w -text External -menu $m -relief raised \
++			-width 10 -font $f -indicatoron 1
+ 		menu $m
+ 		foreach d $outputDeviceList {
+ 			$m add command -font $f -label [$d nickname] \
+Index: vic-2.8ucl1.3.1/vic/tcl/ui-windows.tcl
+===================================================================
+--- vic/tcl/ui-windows.tcl	(revision 4148)
++++ vic/tcl/ui-windows.tcl	(working copy)
+@@ -225,8 +225,8 @@
+ 		-highlightthickness 0
+ 
+ 	set m $w.bar.mode.menu
+-	menubutton $w.bar.mode -text Modes... -menu $m -relief raised \
+-		-width 8 -font $f
++	menubutton $w.bar.mode -text Modes -menu $m -relief raised \
++		-width 8 -font $f -indicatoron 1
+ 	menu $m
+ 
+         if {[string match [ windowingsystem] "aqua"]} { 
+@@ -254,8 +254,8 @@
+ 	}
+ 
+ 	set m $w.bar.size.menu
+-	menubutton $w.bar.size -text Size... -menu $m -relief raised -width 8 \
+-		-font $f
++	menubutton $w.bar.size -text Size -menu $m -relief raised -width 8 \
++		-font $f -indicatoron 1
+ 	menu $m
+         if {[string match [ windowingsystem] "aqua"]} {
+                 $w.mbar add cascade -label Size -menu $m
+@@ -292,7 +292,7 @@
+ 
+ # Marcus ... 
+ 	set m $w.bar.decoder.menu
+-	menubutton $w.bar.decoder -text Decoder... -menu $m -relief raised -width 8 -font $f
++	menubutton $w.bar.decoder -text Decoder -menu $m -relief raised -width 8 -font $f -indicatoron 1
+         if {[string match [ windowingsystem] "aqua"]} {
+                 $w.mbar add cascade -label Decoder -menu $m
+         }    	
+Index: vic-2.8ucl1.3.1/vic/tcl/ui-stats.tcl
+===================================================================
+--- vic/tcl/ui-stats.tcl	(revision 4148)
++++ vic/tcl/ui-stats.tcl	(working copy)
+@@ -601,8 +601,8 @@
+ 	frame $p
+ 
+ 	set m $p.mb.menu
+-	menubutton $p.mb -text Stats... -menu $m -relief raised -width 8 \
+-		-font $f
++	menubutton $p.mb -text Stats -menu $m -relief raised -width 8 \
++		-font $f -indicatoron 1
+ 	menu $m
+ 	$m add command -label RTP -command "create_rtp_window $src" -font $f
+ 	$m add command -label Decoder \
+Index: vic-2.8ucl1.3.1/vic/tcl/ui-grabber.tcl
+===================================================================
+--- vic/tcl/ui-grabber.tcl	(revision 4148)
++++ vic/tcl/ui-grabber.tcl	(working copy)
+@@ -113,8 +113,8 @@
+     frame $w.f.left -relief flat
+ 
+     set m $w.f.left.antiflicker.menu
+-    menubutton $w.f.left.antiflicker -menu $m -text "Anti-flicker..." \
+-	-relief raised -width 14 -font $f -padx 1 -pady 1
++    menubutton $w.f.left.antiflicker -menu $m -text "Anti-flicker" \
++	-relief raised -width 14 -font $f -padx 1 -pady 1 -indicatoron 1
+     menu $m
+     $m add radiobutton -label "disabled" -command "grabber antiflicker 0" \
+ 	-value "disabled" -variable antiflicker -font $f
+@@ -801,7 +801,7 @@
+ 	set m $w1.menu
+ 	set m1 $m.m1
+ 	menubutton $w1.menu -menu $m1 -text "Source:" \
+-		-relief raised -width 7 -font $f
++		-relief raised -width 7 -font $f -indicatoron 1
+ 	label $w1.label -width 6 -font $f
+ 	frame $w1.row
+ 	menu $m1

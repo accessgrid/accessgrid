@@ -1,0 +1,15 @@
+diff -urNad vic/tcl/ui-stats.tcl.orig vic/tcl/ui-stats.tcl
+--- vic/tcl/ui-stats.tcl.orig	2008-03-15 13:00:52.000000000 +1000
++++ vic/tcl/ui-stats.tcl	2008-03-22 15:59:35.673553948 +1000
+@@ -698,9 +698,9 @@
+ 
+ 	global V
+ 	if {$dir=="to"} {
+-		set cmd "|mtrace [$V(data-net) interface] [$src addr] [$V(data-net) addr]"
++		set cmd "|/usr/sbin/mtrace [$V(data-net) interface] [$src addr] [$V(data-net) addr]"
+ 	} else {
+-		set cmd "|mtrace [$src addr] [$V(data-net) addr]"
++		set cmd "|/usr/sbin/mtrace [$src addr] [$V(data-net) addr]"
+ 	}
+ 	if [catch "open {$cmd} r" fd] {
+ 		$w.t.text insert end "mtrace error: $fd"

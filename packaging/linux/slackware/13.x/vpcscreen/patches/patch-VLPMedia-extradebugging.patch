@@ -1,0 +1,10 @@
+--- VPMedia/src/sys/network_helper_posix.cpp.orig	2006-06-07 14:35:07.000000000 +1000
++++ VPMedia/src/sys/network_helper_posix.cpp	2010-03-31 06:24:13.228266312 +1000
+@@ -464,6 +464,7 @@
+       return false;
+     }
+     
++rtplog_debug( "IP_MULTICAST_TTL = %d, u_ttl = %d ", IP_MULTICAST_TTL, u_ttl);
+     if ( setsockopt( data_fd, 
+ 		     IPPROTO_IP, 
+ 		     IP_MULTICAST_TTL, 

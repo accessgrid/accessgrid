@@ -1,0 +1,103 @@
+name=hdvideozipfiles
+version=0.25.1
+release=1
+arch=${ARCH:-noarch}
+srcname=hdvideoservices
+
+srcpkg0=${srcname}-${version}.tar.gz
+
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${srcname}-${version}
+pkgdir=${buildroot}/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}.tar.gz
+functions=/scratch/PKG/functions
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/linux/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+here=`pwd`
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+
+get_srcpkg ${srcpkg0}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg0}
+cd ${builddir}
+
+
+# Build service packages
+#
+( cd DVideoService \
+&& cp ${here}/run?* . \
+&& zip -0 ${pkgdir}/DVideoService.zip \
+	run?* \
+	DVideoService.py \
+	DVideoService.svc
+)
+( cd DVideoConsumerService \
+&& cp ${here}/run?* . \
+&& zip -0 ${pkgdir}/DVideoConsumerService.zip \
+	run?* \
+	DVideoConsumerService.py \
+	DVideoConsumerService.svc \
+	StreamSelect.py
+)
+( cd HDVideoService \
+&& cp ${here}/run?* . \
+&& zip -0 ${pkgdir}/HDVideoService.zip \
+	run?* \
+	HDVideoService.py \
+	HDVideoService.svc
+)
+( cd HDVideoConsumerService \
+&& cp ${here}/run?* . \
+&& zip -0 ${pkgdir}/HDVideoConsumerService.zip \
+	run?* \
+	HDVideoConsumerService.py \
+	HDVideoConsumerService.svc \
+	StreamSelect.py
+)
+( cd SimpleHDVideoService \
+&& cp ${here}/run?* . \
+&& zip -0 ${pkgdir}/SimpleHDVideoService.zip \
+	run?* \
+	SimpleHDVideoService.py \
+	SimpleHDVideoService.svc
+)
+( cd SimpleHDVideoConsumerService \
+&& cp ${here}/run?* . \
+&& zip -0 ${pkgdir}/SimpleHDVideoConsumerService.zip \
+	run?* \
+	SimpleHDVideoConsumerService.py \
+	SimpleHDVideoConsumerService.svc
+)
+
+
+# Package it 
+#
+cd ${buildroot}
+tar zcvf ${releasedir}/${pkgname} ${name}-${version}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg0}
+
+
+
+# Changelog
+#

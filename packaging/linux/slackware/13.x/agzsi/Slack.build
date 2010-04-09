@@ -1,0 +1,115 @@
+name=agzsi
+svnversion=r1385
+version=2.0.${svnversion}
+release=2
+arch=${ARCH:-`uname -m`}
+srcpkg=zsi-${svnversion}.tar.gz
+TMP=${TMP:-/var/tmp}
+tag=${TAG:-_uqv}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+releasedir=${RELEASEDIR:-/tmp}
+functions=/usr/lib/slackbuilds/functions
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles
+distdir=/usr/ports/distfiles
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+prereqs="slackbuilds python"
+
+here=`pwd`
+patch0=${here}/patches/patch-ZSI-client.py
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+
+get_srcpkg ${srcpkg}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv zsi-${svnversion} ${name}-${version}
+cd ${builddir} || exit 1
+
+do_patch ${patch0}
+
+#
+echo "Post patch sleep ..."
+sleep 3
+
+python setup.py install --root=${pkgdir}
+( cd ${pkgdir}/usr/bin && ln wsdl2dispatch wsdl2dispatch.py && ln wsdl2py wsdl2py.py )
+
+
+mkdir -p ${docdir}
+cp CHANGES README \
+	${docdir}
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+( cd ${here}
+    for bfd in Slack.build slack-* doinst.sh patches
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
+)
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+# Clean up
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# CKW 20090527 - release 2
+#  - add Tom's self.h = None patch
+#  - use .txz format
+#  - include slack-* files for slapt-get
+#
+# CKW 20070528 - release 1 of r1385 from svn
+# svn co https://pywebsvcs.svn.sourceforge.net/svnroot/pywebsvcs/branches/ZSI_v2_0_0 zsi
+#
+

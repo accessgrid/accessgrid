@@ -1,0 +1,2 @@
+#!/bin/sh
+exec ./vic -z 3 -g -h 15 -B 80000 -b 38000 -R 28 -f LavcH263 "$@"

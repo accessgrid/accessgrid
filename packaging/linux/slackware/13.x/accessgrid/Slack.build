@@ -1,0 +1,277 @@
+name=accessgrid3.2
+version=3.2
+svnversion=6754
+release=0${svnversion}
+arch=${ARCH:-noarch}
+prefix=${PREFIX:-/usr}
+srcpkg0=AccessGrid-${version}-${release}.tar.gz
+srcpkg1=sharedwebkitbrowser-0.8.tar.gz
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+tag=${TAG:-_uqv}
+pkgname=${name}-${version}-${arch}-${release}1${tag}.txz
+functions=/usr/lib/slackbuilds/functions
+XDG_MERGEDIR=etc/xdg/menus/applications-merged
+#AGTKDATABASE=/usr/share
+AGTKDATABASE=/etc
+SYSTEMBASE=/etc
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mtune=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+# Add space separated list of build prerequsites (pkg names) here
+#
+prereqs="slackbuilds pkgtools python agzsi python-setuptools"
+
+here=`pwd`
+
+patch0=${here}/patches/patch-packaging-BuildSnapshot.py
+patch1=${here}/patches/patch-AccessGrid-hosting-ZSI-Server.py
+#patch2=${here}/patches/patch-sharedapps-SharedBrowser-SharedBrowser.py
+#patch3=${here}/patches/patch-AccessGrid_Platform_unix_Config.py
+patch4=${here}/patches/patch-add_datadir.diff
+patch5=${here}/patches/patch-temp_reversion_AGTkDataPath
+#patch6=${here}/patches/patch-mcast_output
+#patch7=${here}/patches/diff-trunk_AccessGrid_ServiceDiscovery.py-from-r6334-to-r6735.diff
+
+patch10=${here}/patches/patch-services-node-AudioService-AudioService.build.py
+patch11=${here}/patches/patch-services-node-VideoService-VideoService.build.py
+patch12=${here}/patches/patch-services-node-VideoProducerService-VideoProducerService.build.py
+patch13=${here}/patches/patch-services-node-VideoConsumerService-VideoConsumerService.build.py
+patch14=${here}/patches/patch-services-node-VideoProducerServiceH264-VideoProducerServiceH264.py
+patch15=${here}/patches/patch-services-node-VideoServiceH264-VideoServiceH264.build.py
+
+
+patch19=${here}/patches/patch-packaging-servicesToShip
+
+
+patch20=${here}/patches/patch-xfce46-desktop-menu.xml
+
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+set -e
+
+check_prereqs ${prereqs} || exit
+
+get_srcpkg ${srcpkg0}
+get_srcpkg ${srcpkg1}
+
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+mkdir -p ${builddir}
+cd ${builddir}
+tar zxvf ${here}/${srcpkg0}
+
+# Insert new (webkit) SharedBrowser
+#
+echo "Adding webkit based SharedBrowser"
+(cd ${buildroot} && tar zxvf ${here}/${srcpkg1})
+cp ${buildroot}/sharedwebkitbrowser-0.8/SharedBrowser.py AccessGrid/sharedapps/SharedBrowser/
+
+# Apply patches
+#
+cd ${builddir}/AccessGrid
+do_patch ${patch0}
+do_patch ${patch1}
+#do_patch ${patch2}
+#do_patch ${patch3}
+do_patch ${patch4}
+do_patch ${patch5}
+
+do_patch ${patch10}
+do_patch ${patch11}
+do_patch ${patch12}
+do_patch ${patch13}
+do_patch ${patch14}
+do_patch ${patch15}
+do_patch ${patch19}
+
+# Gradually migrate all patches to this method:
+do_patches
+
+echo -n "Post-patch sleep ..."
+sleep 5
+echo
+
+# Build & install
+#
+cd ${builddir}/AccessGrid/packaging; export AGBUILDROOT=${builddir}; python BuildSnapshot.py --no-checkout --dist=slackware
+
+
+if [ ! -d ${builddir}/dist ]; then mv ${builddir}/dist-* ${builddir}/dist; fi;
+cd ${builddir}/dist
+
+mkdir -p ${pkgdir}/${prefix}/bin
+install -m 0755 ${here}/agkill ${pkgdir}/${prefix}/bin
+install -m 0755 bin/* ${pkgdir}/${prefix}/bin
+if [ -d lib64 ]; then
+  cp -R lib64/ ${pkgdir}/${prefix}/lib64
+else
+  cp -R lib/ ${pkgdir}/${prefix}/lib
+fi
+rm -rf share/applnk share/gnome
+cp -R share/ ${pkgdir}/${prefix}/share
+mv ${pkgdir}/${prefix}/share/doc/AccessGrid ${pkgdir}/${prefix}/share/doc/${name}-${version}
+
+mkdir -p ${pkgdir}/${SYSTEMBASE}
+cp -R etc/AccessGrid3 ${pkgdir}/${SYSTEMBASE}/
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/SharedApplications
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/Services
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/Plugins
+cp -R SharedApplications ${pkgdir}/${AGTKDATABASE}/AccessGrid3
+[ -e Services ] && cp -R Services ${pkgdir}/${AGTKDATABASE}/AccessGrid3
+[ -e NodeServices ] && cp -R NodeServices ${pkgdir}/${AGTKDATABASE}/AccessGrid3
+[ -e Plugins ] && cp -R Plugins ${pkgdir}/${AGTKDATABASE}/AccessGrid3
+
+# Gnome main menu
+mkdir -p ${pkgdir}/${XDG_MERGEDIR}
+cp ${builddir}/AccessGrid/packaging/linux/xdg/AccessGrid3.menu \
+	${pkgdir}/${XDG_MERGEDIR}/
+# KDE main menu
+mkdir -p ${pkgdir}/etc/kde/xdg/menus/applications-merged
+cp ${builddir}/AccessGrid/packaging/linux/xdg/AccessGrid3.menu \
+	${pkgdir}/etc/kde/xdg/menus/applications-merged/
+
+mkdir -p ${pkgdir}/${prefix}/share/desktop-directories
+cp ${builddir}/AccessGrid/packaging/linux/xdg/*3*.directory \
+	${pkgdir}/${prefix}/share/desktop-directories/
+mkdir -p ${pkgdir}/${prefix}/share/applications
+cp ${builddir}/AccessGrid/packaging/linux/xdg/*3*.desktop \
+	${pkgdir}/${prefix}/share/applications/
+
+mkdir -p ${pkgdir}/${prefix}/share/AccessGrid
+cp -R ${builddir}/AccessGrid/packaging/linux/ag-ellipse.png \
+	${pkgdir}/${prefix}/share/AccessGrid/
+
+mkdir -p ${pkgdir}/${AGTKDATABASE}/AccessGrid3/PackageCache
+
+mkdir -p ${pkgdir}/usr/share/pixmaps
+cp -R ${builddir}/AccessGrid/packaging/linux/ag-ellipse.png \
+    ${pkgdir}/usr/share/pixmaps/
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+( cd ${here}
+    for bfd in Slack.build slack-* doinst.sh* patches
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
+)
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+cp ${patch20} ${pkgdir}/install
+patch20name=`basename ${patch20}`
+sed -e "s:XFCEMENU:${patch20name}:g" ${here}/doinst.sh.in >${pkgdir}/install/doinst.sh
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+
+#
+#
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg0}
+rm -f ${srcpkg1}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+exit
+
+# Changelog
+#
+# 20090904 CKW - release of 3.2 svn r6754 (067541)
+#  - add pre-svn patch to order MyVenues menu items
+#  - remove pyxml dependency
+#
+# 20090625 CKW - release of 3.2 svn r6754 (067540)
+#  - use latest svn
+#
+# 20090615 CKW - release of 3.2 svn r6748 (067481)
+#  - add language patch for Toolkit.py
+#
+# 20090529 CKW - release of 3.2 svn r6748 (067480)
+#  - use .txz package format
+#  - revert to wxPythonGTK as dependecy
+#  - remove wxMoxzilla dep
+#
+# CKW 20090522 beta release of 3.2 svn r6747 (067470)
+#  - added wxPython to slack-required 
+#    (wxPython supersedes wxPythonGTK)
+#  - fixed slack-conficts file (doesn't use version numbers)
+#
+# CKW 20090430 beta release of 3.2 svn r6743 (067430)
+#  - updated to r6743
+#
+# CKW 20090326 beta release of 3.2 svn r6735 (067350)
+#  - updated to r6735
+#
+# 20090326 CKW - another beta release (067272)
+#  - add Doug's avahi patch from svn (r6735)
+#
+# 20090316 CKW - another beta release (067271)
+#  - add webkit based SharedBrowser #  - add pywebkitgtk to slack-required
+#  - remove avahi from slack-required
+#
+# CKW 20081022 beta release of 3.2 (svn version 6727)
+#  - patch to retrieve correct mcast status format for
+#    user's preferences file
+#  - add AGTKDATABASE and SYSTEMBASE in build to prepare
+#    to move some things under /etc/AccessGrid3 into
+#    /usr/share/AccessGrid3/
+#
+# CKW 20080717 beta release of 3.2 (svn version 6721)
+#
+# CKW 20080716 pre release (svn version 6716) of 3.2
+#
+# CKW 20080627 pre release (svn version 6703) of 3.2
+#  - new upstream svn release (includes VideoServiceH264)
+#  - remove letter from version string i.e. 06703 not 0r6703
+#
+# CKW 20080624 pre release 0r6702 of 3.2
+#  - also remove agvcrlauncher dependency
+#    (will release later as a plugin)
+#  - use "su -c" to agpm3 command in doinst.sh
+#

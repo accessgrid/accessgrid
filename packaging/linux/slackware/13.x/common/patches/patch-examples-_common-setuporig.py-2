@@ -1,0 +1,11 @@
+--- /var/tmp/common-0.1/examples/_common/setuporig.py.orig	2006-12-13 16:00:02.778418000 +1000
++++ /var/tmp/common-0.1/examples/_common/setuporig.py	2006-12-13 16:07:22.000172944 +1000
+@@ -20,7 +20,7 @@
+ RUN_EPYDOC    = 0
+ RUN_EPYDOCIFY = 1
+ SWIG_ARGS = [ "-python", "-outdir", "common", "-c++", "-new_repr", 
+-              "-I%s" % get_python_inc(plat_specific=1),
++              "-I%s" % get_python_inc(plat_specific=1), "-DWORDS_SMALLENDIAN",
+               "-I%s" % os.path.join("..", "..", "src")]
+ SRC = os.path.join('..','..')
+ 

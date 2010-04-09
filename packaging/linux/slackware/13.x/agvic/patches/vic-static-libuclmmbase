@@ -1,0 +1,11 @@
+--- /var/tmp/agvic-1.4/vic/Makefile.in.orig	2009-06-01 12:14:20.065621663 +1000
++++ /var/tmp/agvic-1.4/vic/Makefile.in	2009-06-01 12:41:47.807991647 +1000
+@@ -54,7 +54,7 @@
+ C++ = @CXX@
+ CCOPT = @V_CCOPT@
+ 
+-LDFLAGS= @LDFLAGS@
++LDFLAGS= @LDFLAGS@ -L../common/src
+ 
+ INSTALL = @INSTALL@
+ INSTALL_PROGRAM = @INSTALL_PROGRAM@

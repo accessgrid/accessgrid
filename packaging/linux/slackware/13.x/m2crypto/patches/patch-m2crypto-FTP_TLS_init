@@ -1,0 +1,10 @@
+--- M2Crypto/ftpslib.py.orig	2008-10-13 14:47:33.000000000 +1000
++++ M2Crypto/ftpslib.py	2009-06-05 21:37:33.502776801 +1000
+@@ -48,6 +48,7 @@
+ 
+     def __init__(self, host=None, ssl_ctx=None):
+         """Initialise the client. If 'host' is supplied, connect to it."""
++        FTP.__init__(self, host)
+         if ssl_ctx is not None:
+             self.ssl_ctx = ssl_ctx
+         else:

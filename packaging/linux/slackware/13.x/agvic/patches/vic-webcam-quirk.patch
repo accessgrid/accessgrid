@@ -1,0 +1,17 @@
+Index: grabber-v4l2.cpp
+===================================================================
+--- vic/video/grabber-v4l2.cpp.orig	(revision 4533)
++++ vic/video/grabber-v4l2.cpp	(working copy)
+@@ -471,6 +471,12 @@
+         decimate_  = 2;
+         running_   = 0;
+ 
++	v4l2_close(fd_);
++        fd_ = v4l2_open(dev, O_RDWR);
++        if (fd_ < 0) {
++                perror("open");
++                return;
++        }
+ }
+ 
+ 

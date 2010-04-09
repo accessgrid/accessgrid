@@ -1,0 +1,110 @@
+name=twisted
+version=10.0.0
+release=1
+arch=${ARCH:-`uname -m`}
+srcpkg=Twisted-${version}.tar.bz2
+buildroot=/var/tmp
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+tag=${TAG:-_uqv}
+pkgname=${name}-${version}-${arch}-${release}${tag}.tgz
+releasedir=${RELEASEDIR:-/tmp}
+functions=/usr/lib/slackbuilds/functions
+
+master_sites=http://tmrc.mit.edu/mirror/twisted/Twisted/2.5/
+master_sites=http://tmrc.mit.edu/mirror/twisted/Twisted/10.0/
+master_sites=http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
+distdir=/nfs/distfiles/
+
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mcpu=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mcpu=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+fi
+
+prereqs="slackbuilds python"
+
+here=`pwd`
+patch0=${here}/patches/patch-twisted-internet-threadedselect.py
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+get_srcpkg ${srcpkg}
+check_md5sum Twisted-${version}.tar.bz2.md5sum
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar jxvf ${here}/${srcpkg}
+mv Twisted-${version} ${builddir}
+cd ${builddir}
+
+do_patch ${patch0}
+
+echo "Post-patch sleep ..."
+sleep 5
+
+python setup.py build
+
+python setup.py install --root=${pkgdir}
+
+
+mkdir -p ${docdir}
+cp CREDITS ChangeLog.Old INSTALL LICENSE NEWS README \
+	${docdir}
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+cp -a ${here}/Slack.build ${here}/slack-* ${here}/doinst.sh ${here}/patches \
+${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+cd ${pkgdir}
+/sbin/makepkg -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg}
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+## Changelog
+#
+# 20100309 - release 1 0f 10.0.0
+#
+# 20090522 - release 1 of 8.2
+#  - new upstream release
+#  - use new .txz package format
+#  - include slack-* files for slapt-get
+#
+# CKW 20070626 - first package release
+#

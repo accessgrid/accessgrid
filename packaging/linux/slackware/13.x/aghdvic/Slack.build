@@ -1,0 +1,250 @@
+name=aghdvic
+svnversion=r119
+version=${svnversion}
+release=2
+arch=${ARCH:-`uname -m`}
+
+svcsdir=hdvideoservices-0.36
+srcpkg0=${name}-${version}.tar.gz
+srcpkg1=${svcsdir}.tar.gz
+
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+tag=${TAG:-_uqv}
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+functions=/usr/lib/slackbuilds/functions
+#AGTKDATABASE=/usr/share
+AGTKDATABASE=/etc
+SYSTEMBASE=/etc
+
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/linux/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+LIBDIR="/usr/lib"
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mtune=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" -o "${arch}" = "x86_64_slamd64" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="/usr/lib64"
+fi
+ARCH_CONFIGURE="--libdir=$LIBDIR"
+
+# Add space separated list of prerequsite packages here
+#
+prereqs="libraw1394 libiec61883"
+
+here=`pwd`
+#patch0=${here}/patches/patch-vic_FastCopy.tpp
+
+set -e
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+get_srcpkg ${srcpkg0}
+get_srcpkg ${srcpkg1}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg0}
+cd ${builddir}
+tar zxvf ${here}/${srcpkg1}
+
+# Apply patches
+# like this: do_patch ${patch0}
+# or
+# like this for all patches listed in patches/00list: do_patches
+#
+do_patches
+#echo "Post patch sleep ..."
+#sleep 5
+
+
+# Build & install
+#
+./configure && make
+[ $? -eq 0 ] || exit 1
+
+
+# Build service packages
+#
+install -m 755 -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/
+strip vic/vic
+( cd ${svcsdir}/DVideoService \
+&& cp ${builddir}/vic/vic . \
+&& cp ${builddir}/vic/run?* . \
+&& zip -0 ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/DVideoService.zip \
+	vic \
+	run?* \
+	DVideoService.py \
+	DVideoService.svc
+)
+( cd ${svcsdir}/DVideoConsumerService \
+&& cp ${builddir}/vic/vic . \
+&& cp ${builddir}/vic/run?* . \
+&& zip -0 ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/DVideoConsumerService.zip \
+	vic \
+	run?* \
+	DVideoConsumerService.py \
+	DVideoConsumerService.svc \
+	StreamSelect.py
+)
+( cd ${svcsdir}/HDVideoService \
+&& cp ${builddir}/vic/vic . \
+&& cp ${builddir}/vic/run?* . \
+&& zip -0 ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/HDVideoService.zip \
+	vic \
+	run?* \
+	HDVideoService.py \
+	HDVideoService.svc
+)
+( cd ${svcsdir}/HDVideoConsumerService \
+&& cp ${builddir}/vic/vic . \
+&& cp ${builddir}/vic/run?* . \
+&& zip -0 ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/HDVideoConsumerService.zip \
+	vic \
+	run?* \
+	HDVideoConsumerService.py \
+	HDVideoConsumerService.svc \
+	StreamSelect.py
+)
+( cd ${svcsdir}/SimpleHDVideoService \
+&& cp ${builddir}/vic/vic . \
+&& cp ${builddir}/vic/run?* . \
+&& zip -0 ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/SimpleHDVideoService.zip \
+	vic \
+	run?* \
+	SimpleHDVideoService.py \
+	SimpleHDVideoService.svc
+)
+( cd ${svcsdir}/SimpleHDVideoConsumerService \
+&& cp ${builddir}/vic/vic . \
+&& cp ${builddir}/vic/run?* . \
+&& zip -0 ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/SimpleHDVideoConsumerService.zip \
+	vic \
+	run?* \
+	SimpleHDVideoConsumerService.py \
+	SimpleHDVideoConsumerService.svc
+)
+
+mkdir -p ${pkgdir}/etc/sysctl.d
+cp ${here}/60-aghdvic.conf ${pkgdir}/etc/sysctl.d/
+
+mkdir -p ${pkgdir}/lib/udev/rules.d
+cp -p ${here}/86-firewire-camera.rules.new \
+        ${pkgdir}/lib/udev/rules.d/
+
+# Docs
+#
+mkdir -p ${docdir}
+cp -a vic/README* ${docdir}
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+( cd ${here}
+    for bfd in Slack.build slack-* doinst.sh patches
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
+)
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+sed -e "s:SVNVERSION:${svnversion}:g" ${here}/slack-desc.in >${pkgdir}/install/slack-desc
+autogen_slack_required
+for pkgfile in slack-required slack-conflicts slack-suggests doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+# Cleanup
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg0}
+rm -f ${srcpkg1}
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# 20090630 CKW release 2
+#  -  include a udev rules file to set
+#     friendly /dev/raw1394 permissions
+#
+# 20090629 CKW - release 1 of r119
+#  - new upstream version (r119)
+#  - use latest service package (0.36)
+#    (interlaceType option)
+# 
+# 20090626 CKW - release 9
+#  - use latest service package (0.34.0)
+#    (positionWindow option)
+#
+# 20090527 CKW - release 8
+#  - use .txz package format
+#  - add string.h include patch
+#
+# 20090302 CKW - release 7
+#  - added libraw1394 & libiec61883 to runtime deps
+#
+# 20081022 CKW - release 6 of r117
+#  - revert to /etc/AccessGrid3 for NodeServices until /usr/share
+#    is approved
+#
+# 20080925 CKW - release 5 of r117
+#  - new hdvideoservices (0.25.1) ensuring correct start directory
+#
+# 20080924 CKW - release 4 of r117
+#  - add sysctl processing
+#
+# 20080908 CKW - release 3 of r117
+#  - use /usr/share/AccessGrid3 instead of /etc/AccessGrid3
+#    (via AGTKDATABASE variable)
+#
+# 20080718 CKW - release 2 of r117
+#  -  use hdvideoservices-0.24.1 (runDVslow instead of runDV)
+#
+# 20080430 CKW - release 1 of r117
+#  - integrate as service packages using hdvideoservices-0.24
+#  - add slack-* files for slapt-get
+#
+# 20071111 CKW - release 1 of r115
+#
+# 20070821 CKW - release 1 of r109
+#
+#
+# SVN:
+# svn co https://svn.itee.uq.edu.au/repo/avcast/trunk/ag-media/
+#
+

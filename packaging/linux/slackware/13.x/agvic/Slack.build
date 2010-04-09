@@ -1,0 +1,297 @@
+name=agvic
+version=1.4
+release=91
+#svn_revision=r4449
+#svn_revision=r4533
+#svn_revision=r4651
+#svn_revision=r4694
+svn_revision=r4705
+ffmegversion=r20462
+libswscaleversion=r29824
+x264version=snapshot-20090708-2245
+arch=${ARCH:-`uname -m`}
+srcpkg0=mmedia-${svn_revision}.tar.bz2
+#srcpkg1=ffmpeg-r13987.tar.gz
+#srcpkg1=ffmpeg-0.5.tar.bz2
+srcpkg1=ffmpeg-r20462.tar.bz2
+#srcpkg2=libswscale-r27137.tar.gz
+srcpkg2=libswscale-r29824.tar.bz2
+srcpkg3=x264-${x264version}.tar.bz2
+TMP=${TMP:-/var/tmp}
+buildroot=${TMP}
+builddir=${buildroot}/${name}-${version}
+pkgdir=${buildroot}/${name}-${version}-pkg
+docdir=${pkgdir}/usr/doc/${name}-${version}
+tag=${TAG:-_uqv}
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+
+functions=/usr/lib/slackbuilds/functions
+prefix=/usr
+
+master_sites=http://ffmpeg.mplayerhq.hu/releases/	# ffmpeg-0.5.tar.bz2
+master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
+distdir=/nfs/distfiles/
+releasedir=${RELEASEDIR:-/tmp}
+
+LIBDIR="${prefix}/lib"
+if [ "${arch}" = "i386" ]; then
+  SLKCFLAGS="-O2 -march=i386 -mtune=i686"
+elif [ "${arch}" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+elif [ "${arch}" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+elif [ "${arch}" = "s390" ]; then
+  SLKCFLAGS="-O2"
+elif [ "${arch}" = "x86_64" ]; then
+  SLKCFLAGS="-O2"
+  LIBDIR="${prefix}/lib64"
+fi
+ARCH_CONFIGURE="--libdir=$LIBDIR"
+
+# Add space separated list of prerequsite packages here
+#
+prereqs="tcl yasm libdv libv4l "
+# In particular, x264-snapshot-20090819.2245
+
+here=`pwd`
+
+patch1=${here}/patches/vic-x264.dpatch
+#patch2=${here}/patches/vic-mtrace.dpatch
+patch3=${here}/patches/vic-render-color-swscale.dpatch
+#patch4=${here}/patches/vic-video-grabber-video4linux.dpatch
+patch5=${here}/patches/vic-2.8ucl1.4.0-ttk.patch
+patch6=${here}/patches/vic-webcam-quirk.patch
+patch7=${here}/patches/vic-net-ip_cpp-revert-${svn_revision}.patch
+patch8=${here}/patches/use_localuclmmbase.patch
+
+PATH=/sbin:${PATH}
+. ${functions}
+
+check_prereqs ${prereqs} || exit
+# There can be a problem with the build using private versions of ffmeg,
+# libswscale and x264 in that final linking may reference system libraries
+# instead of the private versions. That can cause a problem when building
+# if the system and private versions are different enough. I guess it may
+# do weird things at runtime too. Therefore, lets stop right now if we find
+# any system packages that we don't want around for compilation. We can use
+# the prereq function in reveerse to do that ...
+
+echo
+echo "Now checking for packages we don't want around during compilation ..."
+prereqs="ffmpeg"
+check_prereqs ${prereqs} >/dev/null ; [ $? -eq 0 ] && {
+  echo "Actually, we don't want to compile with the ${prereqs} package installed."
+  echo "Please remove the ${prereqs} package and start again. Exiting now ..."
+  exit 1
+}
+prereqs="x264"
+check_prereqs ${prereqs} >/dev/null ; [ $? -eq 0 ] && {
+  echo "Actually, we don't want to compile with the ${prereqs} package installed."
+  echo "Please remove the ${prereqs} package and start again. Exiting now ..."
+  exit 1
+}
+prereqs="x264-snapshot"
+check_prereqs ${prereqs} >/dev/null ; [ $? -eq 0 ] && {
+  echo "Actually, we don't want to compile with the ${prereqs} package installed."
+  echo "Please remove the ${prereqs} package and start again. Exiting now ..."
+  exit 1
+}
+echo "OK, no unwanted packages. Lets begin ..."; echo
+
+get_srcpkg ${srcpkg0}
+get_srcpkg ${srcpkg1}
+get_srcpkg ${srcpkg2}
+get_srcpkg ${srcpkg3}
+check_md5sum ${srcpkg0}.md5sum
+check_md5sum ${srcpkg1}.md5sum
+check_md5sum ${srcpkg2}.md5sum
+check_md5sum ${srcpkg3}.md5sum
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+mkdir -p ${pkgdir}
+
+#
+#
+cd ${buildroot}
+tar xvf ${here}/${srcpkg0}
+mv mmedia-${svn_revision} ${name}-${version}
+cd ${builddir}
+(cd vic && tar xvf ${here}/${srcpkg1})	# ; ln -s ffmpeg-0.5 ffmpeg)
+(cd vic/ffmpeg && tar xvf ${here}/${srcpkg2})
+(cd vic && tar xvf ${here}/${srcpkg3}; ln -s x264-${x264version} x264 )
+(cd vic && cp -a ${here}/decklink . )
+
+# Apply patches
+# like this: do_patch ${patch0}
+#
+##do_patch ${patch1}
+#do_patch ${patch2}
+do_patch ${patch3}
+#do_patch ${patch4}
+#do_patch ${patch6}
+#do_patch ${patch7}
+do_patch ${patch8}
+
+echo -n "Post patch sleep ..."
+sleep 3
+
+# Build with system tcl & tk
+(cd common && autoconf -f && ./configure && make) || {
+  echo "Couldn't configure"
+  exit 1
+}
+(cd vic && autoconf -f \
+    && LDFLAGS=-L../common/src ./configure --prefix=${prefix} \
+    --enable-ipv6 \
+    --enable-dvdecode \
+    --enable-gpl \
+    --with-decklink=decklink/ \
+    && make ) || {
+  echo "Couldn't build"
+  exit 2
+}
+
+
+# Install
+cd ${builddir}
+install -d ${pkgdir}/usr/bin
+install -d ${pkgdir}/usr/man/man1
+install -m 755 \
+    vic/vic vic/histtolut \
+    ${pkgdir}/usr/bin/
+strip --strip-unneeded ${pkgdir}/usr/bin/*
+install -m 644 vic/vic.1 ${pkgdir}/usr/man/man1/
+
+# Compress and fix manpage links.
+#
+[ -e ${pkgdir}/usr/man ] && {
+    find ${pkgdir}/usr/man -type f -name \*.? -exec gzip -9f {} \;
+    find ${pkgdir}/usr/man -type l -name \*.? -printf \
+        "( cd '%h'; [ -e '%l.gz' ] && {
+            rm -f '%f'; ln -sf '%l.gz' '%f.gz';
+        } );\n" | bash
+}
+
+# Docs
+#
+mkdir -p ${docdir}
+cd ${builddir}/vic
+cp -a html CHANGES.html FILES README README.WIN32 VERSION \
+	${docdir}
+
+
+# Include build script
+mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
+( cd ${here}
+    for bfd in Slack.build slack-* doinst.sh decklink
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
+
+    # Don't want .svn entries
+    [ -e patches ] && {
+        mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches
+        cp -a patches/* ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches/
+    }
+)
+
+# Package it 
+#
+mkdir -p ${pkgdir}/install
+autogen_slack_required
+sed -e "s:SVNREVISION:${svn_revision}:g;" ${here}/slack-desc.in >${pkgdir}/install/slack-desc
+for pkgfile in slack-required slack-conflicts slack-suggests doinst.sh
+do
+  [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
+done
+chmod 0644 ${pkgdir}/install/slack-*
+
+cd ${pkgdir}
+/sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
+cd ${here}
+
+#
+#
+[ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
+[ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
+rm -f ${srcpkg0}
+rm -f ${srcpkg1}
+rm -f ${srcpkg2}
+rm -f ${srcpkg3}
+
+
+# Install immediately?
+#
+if [ $# -gt 0 -a "${1}" = "install" ]; then
+  /sbin/upgradepkg --install-new --reinstall ${releasedir}/${pkgname}
+fi
+
+
+# Changelog
+#
+# 20100322 CKW - release 91
+#  - new svn rlease 4705
+#
+# 20100318 CKW - release 9
+#  - new svn release 4694
+#  - first blackmagic support
+#
+# 20091207 CKW - release 8
+#  - new svn version r4533
+#  - patch to work hack around uvcvideo driver problem
+#  - revert to r4449 version of net/net-ip.cpp (to avoid bogus IP_ADD_MEMBERSHIP error)
+#
+# 20090601 CKW - release 7
+#  - new svn version r4449
+#  - add LDFLAG to use static uclmmbase library
+#  - remove mtrace patch (now in source code)
+#  - remote grabber-video4l... (now in source)
+#  - build with libv4l
+#  - try auto dependency generation
+#
+# 20090522 CKW release 6
+#  - use .txz package format
+#
+# 20090403 CKW release 5 of 1.4beta
+#  - using svn r4403
+#
+# 20090113 CKW release 4 of 1.4beta
+#  - using svn r4395
+#  - using patch for new tk
+#
+# 20090113 CKW release 3 of 1.4beta
+#  - using svn r4345 (fixes jpeg rendering)
+#
+# 20080714 CKW release 2 of 1.4beta
+#  - using svn r4215
+#
+# 20080626 CKW release 1 of 1.4beta
+#  - using svn r4189
+#
+# 20080414 CKW
+#  - release 1 of v1.3.1 (svn r4126)
+#  - with mpeg2, h264
+#
+# 20070808 CKW
+#  - release 1 of svn version r4086
+#
+# 20070720 CKW
+#  - release 1 of svn version r4080
+#
+# 20070606 CKW First release
+#
+#
+###################################
+# Retrieve from SVN with:
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/vic/branches/mpeg4 vic
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/rat/trunk rat
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/common/trunk common
+#
+# Don't need these now - use system tcl, tk
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/tcl-8.0/trunk tcl-8.0
+# svn checkout https://mediatools.cs.ucl.ac.uk/repos/mmedia/tk-8.0/trunk tk-8.0
+###################################
+

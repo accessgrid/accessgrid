@@ -1,0 +1,18 @@
+--- rat/configure.in.orig	2007-07-18 22:33:07.000000000 +1000
++++ rat/configure.in	2007-07-21 22:49:38.037465337 +1000
+@@ -178,15 +178,6 @@
+ 		 AC_DEFINE(HAVE_OSPREY_AUDIO)])
+ 	;;
+ *linux*)
+-	# Do we have telephony drivers?
+-	AC_CHECK_HEADER(linux/telephony.h,[
+-		AC_MSG_CHECKING([for recent telephony drivers])
+-		AC_EGREP_HEADER(PHONE_CID, linux/telephony.h,[ 
+-			AC_MSG_RESULT(present)
+-			AUD_OBJ="$AUD_OBJ auddev_ixj.o"
+-			AC_DEFINE(HAVE_IXJ_AUDIO)
+-		],AC_MSG_RESULT(missing))
+-	])
+ 	# Do we have ALSA?
+ 	AC_CHECK_HEADER(alsa/asoundlib.h,[
+ 		AUD_OBJ="$AUD_OBJ auddev_alsa.o"

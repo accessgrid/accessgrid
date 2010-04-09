@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.  Line
+# up the first '|' above the ':' following the base package name, and the '|'
+# on the right side marks the last column you can put a character in.  You must
+# make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':'.
+
+             |-----handy-ruler------------------------------------------------------|
+accessgrid3.2:
+accessgrid3.2: accessgrid3.2 (Collaboration Toolkit)
+accessgrid3.2:
+accessgrid3.2: The Access Grid Toolkit provides the necessary components for
+accessgrid3.2: users to participate in Access Grid based collaborations,
+accessgrid3.2: and also for developers to work on network services,
+accessgrid3.2: applications services and node services to extend the
+accessgrid3.2: functionality of the Access Grid.
+accessgrid3.2:
+accessgrid3.2: http://www.accessgrid.org
+accessgrid3.2:

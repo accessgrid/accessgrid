@@ -1,0 +1,5 @@
+#!/bin/sh
+exec ./vic -z 3 -g -h 21 -B 80000 -b 37000 -R 28 -f LavcH263 "$@"
+
+# this one is for demo quality, smooth playback with single, or few, streams
+#./vic -E -W 500 -z 3 -g -h 21 -B 80000 -b 37000 -R 28 -f LavcH263 $* 
