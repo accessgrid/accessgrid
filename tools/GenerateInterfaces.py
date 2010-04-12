@@ -10,8 +10,8 @@ parser.add_option("-m", "--with-modules", dest="modules",
 options, args = parser.parse_args()
 
 if sys.platform == "win32":
-    w2pyExec = "%s %s " % (sys.executable, os.path.join(sys.prefix, "Scripts", "wsdl2py.py") )
-    w2dExec = "%s %s " %  (sys.executable, os.path.join(sys.prefix, "Scripts", "wsdl2dispatch.py") )
+    w2pyExec = "%s %s " % (sys.executable, os.path.join(sys.prefix, "Scripts", "wsdl2py") )
+    w2dExec = "%s %s " %  (sys.executable, os.path.join(sys.prefix, "Scripts", "wsdl2dispatch") )
     os.chdir( os.path.join("..", "AccessGrid", "wsdl") )
     dstPath = os.path.join("..", "interfaces")
     srcPath = "."
