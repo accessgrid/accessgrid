@@ -258,6 +258,7 @@ Name: {app}\PackageCache
 Name: {app}\SharedApplications
 Name: {app}\Services
 Name: {app}\NodeServices
+Name: {app}\Plugins
 
 [Types] 
 Name: "custom"; Description: "Custom installation"; Flags: iscustom
