@@ -81,12 +81,19 @@ def Generate(typesModule,wsdlFile,dstPath):
                     typesMod)
     if not options.quiet:
         print "* ", command
-    os.system(command)
+    ret = os.system(command)
+    if ret:
+        print "Generation of client interface %s failed" % (typesModule)
+        return ret
+
     
     command = w2dExec + " -f %s -e -o %s -t %s --simple-naming " %  ( wsdlFile, dstPath,typesMod)
     if not options.quiet:
         print "* ", command
-    os.system(command)
+    ret = os.system(command)
+    if ret:
+        print "Generation of WSDL file %s from %s failed" % (wsdlFile,typesModule)
+    return ret
 
 
 if options.modules:
@@ -100,4 +107,6 @@ else:
     subWsdlList = wsdlList
 
 for typesMod,wsdlFile in subWsdlList:
-    Generate(typesMod,os.path.join(srcPath,wsdlFile),dstPath)
+    ret = Generate(typesMod,os.path.join(srcPath,wsdlFile),dstPath)
+    if ret:
+        sys.exit(ret)
