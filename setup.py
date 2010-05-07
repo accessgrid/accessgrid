@@ -185,6 +185,7 @@ mac_scripts = [ r"bin/VenueServer.py",
                 ]
 
 mac_data =    [ 
+              ('Plugins', ''),
               ('Config/nodeConfig',
                [r"packaging/config/default",
                 ]
