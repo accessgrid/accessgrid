@@ -624,9 +624,9 @@ class SharedPresentationFrame(wx.Frame):
         
         try:
             if sys.platform == Platform.WIN:
-                filenames = self.queryVenueFilesCallback("*.ppt")
+                filenames = self.queryVenueFilesCallback(["*.ppt","*.pptx"])
             else:
-                filenames = self.queryVenueFilesCallback(["*.ppt", "*.sxi"])
+                filenames = self.queryVenueFilesCallback(["*.ppt","*.pptx","*.sxi"])
             self.slidesCombo.Clear()
             for file in filenames:
                 self.slidesCombo.Append(file)
