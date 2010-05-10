@@ -175,6 +175,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
     ID_HELP = wx.NewId()
     ID_HELP_ABOUT = wx.NewId()
     ID_HELP_MANUAL = wx.NewId()
+    ID_HELP_DOC = wx.NewId()
     ID_HELP_AGORG = wx.NewId()
     ID_HELP_FL = wx.NewId()
     ID_HELP_FLAG = wx.NewId()
@@ -246,7 +247,8 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
 
         # Help Doc locations
         agtkConfig = Config.AGTkConfig.instance()
-        self.manual_url = "http://www.mcs.anl.gov/fl/research/accessgrid/documentation/manuals/VenueClient/3_0"
+        self.manual_url = "http://www.accessgrid.org/userguide"
+        self.doc_url = "http://www.accessgrid.org/documentation"
         self.agdp_url = "http://www.accessgrid.org/agdp"
         self.ag_url = "http://www.accessgrid.org/"
         self.flag_url = "http://www.mcs.anl.gov/fl/research/accessgrid"
@@ -562,6 +564,8 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         self.help = wx.Menu()
         self.help.Append(self.ID_HELP_MANUAL, "Venue Client &Manual",
                          "Venue Client Manual")
+        self.help.Append(self.ID_HELP_DOC, "Access Grid &Documentation",
+                         "Access Grid Documentation")
         self.help.AppendSeparator()
         self.help.Append(self.ID_HELP_AGORG, "Access &Grid (accessgrid.org) Web Site",
                          "")
@@ -742,6 +746,7 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
         # Help Menu
         wx.EVT_MENU(self, self.ID_HELP_ABOUT, self.OpenAboutDialogCB)
         wx.EVT_MENU(self, self.ID_HELP_MANUAL,self.OpenManualCB)
+        wx.EVT_MENU(self, self.ID_HELP_DOC,self.OpenDocCB)
         wx.EVT_MENU(self, self.ID_HELP_AGORG,self.OpenAGOrgCB)
         wx.EVT_MENU(self, self.ID_HELP_FLAG, self.OpenFLAGCB)
         wx.EVT_MENU(self, self.ID_HELP_FL,self.OpenFLCB)
@@ -2079,6 +2084,9 @@ class VenueClientUI(VenueClientObserver, wx.Frame):
     def OpenManualCB(self,event):
         self.OpenURL(self.manual_url)
         
+    def OpenDocCB(self,event):
+        self.OpenURL(self.doc_url)
+
     def OpenAGDPCB(self,event):
         self.OpenURL(self.agdp_url)
     
