@@ -105,6 +105,11 @@ DirectShowScanner::DirectShowScanner() {
 
 		 IBaseFilter *pCap = NULL;
 		 hr = pMoniker->BindToObject(0, 0, IID_IBaseFilter, (void**)&pCap);
+		 if (FAILED(hr)) {
+			VariantClear(&varName);
+			pPropBag->Release();
+			continue;
+		 }
 		 hr = pGraph_->AddFilter(pCap, L"VicCaptureFilter");
 		 pCap->GetClassID(&clsid);
 		 if (IsEqualGUID(clsid,CLSID_VfwCapture)) {
