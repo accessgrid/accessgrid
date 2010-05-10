@@ -38,6 +38,7 @@ if sys.platform == Platform.WIN:
     try:
         import win32com
         import win32com.client
+        import pywintypes
     except:
         print "No Windows COM support!"
         sys.exit(1)
@@ -54,11 +55,11 @@ from AccessGrid import Platform
 from AccessGrid.Toolkit import WXGUIApplication
 #from AccessGrid import DataStore
 from AccessGrid.SharedAppClient import SharedAppClient
-from AccessGrid.DataStoreClient import GetVenueDataStore
+from AccessGrid.DataStoreClient import GetVenueDataStore, FileNotFound
 from AccessGrid.interfaces.Venue_client import VenueIW
 from AccessGrid.Platform.Config import UserConfig
 from AccessGrid.ClientProfile import ClientProfile
-from AccessGrid.UIUtilities import MessageDialog
+from AccessGrid.UIUtilities import MessageDialog, ErrorDialog
 from AccessGrid import icons
 from AccessGrid.VenueClient import GetVenueClientUrls
 from AccessGrid.interfaces.VenueClient_client import VenueClientIW
@@ -110,8 +111,7 @@ class PowerPointViewer:
         from win32com.client import gencache
         import pythoncom
         pythoncom.CoInitialize()
-     
-       
+
         try:
             gencache.EnsureModule('{91493440-5A91-11CF-8700-00AA0060263B}', 0, 2, 6)
         except IOError:
@@ -142,7 +142,12 @@ class PowerPointViewer:
         file and starts viewing it.
         """
         # Instantiate the powerpoint application via COM
-        self.ppt = win32com.client.Dispatch("PowerPoint.Application")
+        try:
+            self.ppt = win32com.client.Dispatch("PowerPoint.Application")
+        except pywintypes.com_error,e:
+            self.log.exception("Failed to start PowerPoint")
+            raise ViewerSoftwareNotInstalled()
+
 
         if self.ppt.Presentations.Count > 0:
             self.pptAlreadyOpen = 1
@@ -171,7 +176,7 @@ class PowerPointViewer:
                 
         # Exit the powerpoint application, but only if 
         # it was opened by the viewer
-        if not self.pptAlreadyOpen:
+        if not self.pptAlreadyOpen and self.ppt:
             self.ppt.Quit()
         
     def LoadPresentation(self, file):
@@ -597,7 +602,15 @@ class SharedPresentationFrame(wx.Frame):
         """
         This method is used to display a message dialog to the user.
         """
+        self.Raise()
         MessageDialog(self, message, title, style = wx.OK|wx.ICON_INFORMATION)
+  
+    def ShowMessageAndDie(self, message, title):
+        """
+        This method is used to display a message dialog to the user.
+        """
+        MessageDialog(self, message, title, style = wx.OK|wx.ICON_ERROR)
+        self.exitCallback()
   
     def SetMaster(self, flag):
         """
@@ -624,9 +637,9 @@ class SharedPresentationFrame(wx.Frame):
         
         try:
             if sys.platform == Platform.WIN:
-                filenames = self.queryVenueFilesCallback(["*.ppt","*.pptx"])
+                filenames = self.queryVenueFilesCallback(["*.ppt", "*.pptx"])
             else:
-                filenames = self.queryVenueFilesCallback(["*.ppt","*.pptx","*.sxi"])
+                filenames = self.queryVenueFilesCallback(["*.ppt", "*.pptx", "*.sxi"])
             self.slidesCombo.Clear()
             for file in filenames:
                 self.slidesCombo.Append(file)
@@ -698,6 +711,12 @@ class UIController(wx.App):
         """
         self.frame.ShowMessage(message, title)
       
+    def ShowMessageAndDie(self, message, title):
+        """
+        Pass-through to frame's ShowMessage method
+        """
+        self.frame.ShowMessageAndDie(message, title)
+      
     def SetSlideNum(self,slideNum):
         """
         Pass-through to frame's SetSlideNum method
@@ -726,6 +745,7 @@ class SharedPresEvent:
     LOCAL_CLOSE = "local close"
     LOCAL_SYNC = "local sync"
     LOCAL_QUIT = "local quit"
+    LOCAL_STOP_VIEWER = "local stop viewer"
     LOCAL_NO_VIEWER = "local no viewer"
 
 class SharedPresKey:
@@ -799,6 +819,7 @@ class SharedPresentation:
         self.methodDict[SharedPresEvent.LOCAL_CLOSE] = self.ClosePresentation
         self.methodDict[SharedPresEvent.LOCAL_SYNC] = self.Sync
         self.methodDict[SharedPresEvent.LOCAL_QUIT] = self.Quit
+        self.methodDict[SharedPresEvent.LOCAL_STOP_VIEWER] = self.StopViewer
         self.methodDict[SharedPresEvent.LOCAL_NO_VIEWER] = self.NoViewer
 
         # Get client profile
@@ -841,7 +862,7 @@ class SharedPresentation:
                                       self.QueryVenueFiles )
         
         # Start the queue thread
-        Thread(target=self.ProcessEventQueue).start()
+        Thread(target=self.ProcessEventQueue,name='ProcessEventQueue').start()
 
         # Start the controller 
         # (this is the main thread, so we'll block here until
@@ -861,7 +882,7 @@ class SharedPresentation:
        
         # Shutdown sharedAppClient
         self.sharedAppClient.Shutdown()
-       
+
     def OpenVenueData(self,venueDataUrl):
         """
         OpenFile opens the specified file in the viewer.
@@ -893,6 +914,9 @@ class SharedPresentation:
            
         except ViewerSoftwareNotInstalled:
             self.log.debug("The necessary viewer software (for example power point) is not installed; exiting")
+            # empty the event queue before posting the error event
+            while not self.eventQueue.empty():
+                self.eventQueue.get()
             self.eventQueue.put([SharedPresEvent.LOCAL_NO_VIEWER, None])
                
         # Loop, processing events from the event queue
@@ -1049,6 +1073,14 @@ class SharedPresentation:
         """
         self.log.debug("Method QuitCB called")
         self.eventQueue.put([SharedPresEvent.LOCAL_QUIT, None])
+
+    def StopViewerCB(self):
+        """
+        This method puts a "stop viewer" event in the queue, to get the
+        viewer to shutdown
+        """
+        self.log.debug("Method StopViewerCB called")
+        self.eventQueue.put([SharedPresEvent.LOCAL_STOP_VIEWER, None])
 
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1306,8 +1338,7 @@ class SharedPresentation:
             self.log.exception("Can not end show, ignore")
 
     def NoViewer(self, data=None):
-        wx.CallAfter(self.controller.ShowMessage, "The necessary viewer software (for example PowerPoint) is not installed", "Viewer Not Installed")
-        self.Quit()
+        wx.CallAfter(self.controller.ShowMessageAndDie, "The necessary viewer software (for example, PowerPoint) is not installed.\nPlease install and restart SharedPresentation.", "Viewer Not Installed")
         
     def Quit(self, data=None):
         """
@@ -1334,12 +1365,34 @@ class SharedPresentation:
             self.log.info("Exception destroying controller. This happens when using the x button in the top right corner. Not critical.")
         except:
             self.log.exception("Exception destroy controller.")
-        
+
         # Get rid of the controller
         self.controller = None
         
         # Turn off the main loop
         self.running = 0
+
+
+    def StopViewer(self, data=None):
+        """
+        This is the _real_ Quit method that tells the viewer to quit
+        """
+        self.log.debug("Method Quit called")
+        
+        # Stop the viewer
+        try:
+            self.viewer.Stop()
+        except:
+            self.log.exception("Exception stopping show")
+
+        # Close the viewer
+        try:
+            self.viewer.Quit()
+        except:
+            self.log.exception("Exception quitting viewer")
+
+        return
+
 
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1536,6 +1589,8 @@ class SharedPresentation:
         # Retrieve the current presentation
         self.presentation = self.sharedAppClient.GetData(SharedPresKey.SLIDEURL)
         errorFlag = False
+        errorMessage = ""
+
         # Check i presentation still exists.
 
         # Set the slide URL in the UI
@@ -1579,16 +1634,22 @@ class SharedPresentation:
                     filename = self.presentation.split('/')[-1]
                     ds.Download(filename, tmpFile)
                     self.viewer.LoadPresentation(tmpFile)
+                except FileNotFound:
+                    errorFlag = 1
+                    errorMessage = "Error loading presentation %s; the file does not exist in the Venue." %self.presentation
+                    self.log.exception(errorMessage)
                 except:
                     errorFlag = 1
-                    self.log.exception("Can not load file %s 5"%self.presentation)
+                    errorMessage = "Error loading presentation %s." %self.presentation
+                    self.log.exception(errorMessage)
                                                        
             else:
                 try:
                     self.viewer.LoadPresentation(self.presentation)
                 except:
                     errorFlag = 1
-                    self.log.exception("Can not load file %s 6"%self.presentation)
+                    errorMessage = "Error loading presentation %s." %self.presentation
+                    self.log.exception(errorMessage)
 
             if not errorFlag:       
                 # Go to the current slide
@@ -1599,9 +1660,9 @@ class SharedPresentation:
                     self.Next()
 
             else:
-                self.log.error("SharedPresentation.LocalLoadVenue: Can not load presentation %s"%(self.presentation))
+                self.log.error(errorMessage)
                 wx.CallAfter(self.controller.ShowMessage,
-                            "Can not load presentation %s." %self.presentation, "Notification")
+                            errorMessage, "Notification")
                 self.slideNum = ''
                 
         # Set the slide number in the UI
@@ -1664,115 +1725,128 @@ def Usage():
 #
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-if __name__ == "__main__":
-    
-    import agversion
-    agversion.select(3)
-
-    # Initialization of variables
-    venueURL = None
-    appURL = None
-    venueDataUrl = None
-    connectionId = None
-    name = "SharedPresentation"
-    debug = 0
-    presentationFile = None
-    startSession = 0
-
-    app = WXGUIApplication()
-    init_args = []
-    if "--debug" in sys.argv or "-d" in sys.argv:
-        init_args.append("--debug")
-       
-    app.Initialize(name,args=init_args)
-    
-    wx.InitAllImageHandlers()
-
-    # Here we parse command line options
+if __name__ == '__main__':
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "f:d:v:a:l:c:ih",
-                                   ["venueURL=", "applicationURL=",
-                                    "information=", "connectionId=",
-                                    "presentationFile=", "data=", 
-                                    "start", "debug", "help"])
-    except getopt.GetoptError,e:
-        Usage()
-        sys.exit(2)
+    
+        import agversion
+        agversion.select(3)
 
-    for o, a in opts:
-        if o in ("-v", "--venueURL"):
-            venueURL = a
-        elif o in ("-a", "--applicationURL"):
-            appURL = a
-        elif o in ("-c", "--connectionId"):
-            connectionId = a
-        elif o in ("-i", "--information"):
-            print "App Name: %s" % SharedPresentation.appName
-            print "App Description: %s" % SharedPresentation.appDescription
-            print "App Mimetype: %s" % SharedPresentation.appMimetype
-            sys.exit(0)
-        elif o in ("-d", "--data"):
-            venueDataUrl = a
-        elif o in ('-f','--presentationFile'):
-            presentationFile = a
-        elif o in ("--start"):
-            startSession = 1
-        elif o in ("--debug",):
-            debug = 1
-        elif o in ("-h", "--help"):
+        # Initialization of variables
+        venueURL = None
+        appURL = None
+        venueDataUrl = None
+        connectionId = None
+        name = "SharedPresentation"
+        debug = 0
+        presentationFile = None
+        startSession = 0
+        presentation = None
+
+        app = WXGUIApplication()
+        init_args = []
+        if "--debug" in sys.argv or "-d" in sys.argv:
+            init_args.append("--debug")
+           
+        app.Initialize(name,args=init_args)
+        
+        wx.InitAllImageHandlers()
+
+
+        # Here we parse command line options
+
+        try:
+            opts, args = getopt.getopt(sys.argv[1:], "f:d:v:a:l:c:ih",
+                                       ["venueURL=", "applicationURL=",
+                                        "information=", "connectionId=",
+                                        "presentationFile=", "data=", 
+                                        "start", "debug", "help"])
+        except getopt.GetoptError,e:
+            Usage()
+            sys.exit(2)
+
+        for o, a in opts:
+            if o in ("-v", "--venueURL"):
+                venueURL = a
+            elif o in ("-a", "--applicationURL"):
+                appURL = a
+            elif o in ("-c", "--connectionId"):
+                connectionId = a
+            elif o in ("-i", "--information"):
+                print "App Name: %s" % SharedPresentation.appName
+                print "App Description: %s" % SharedPresentation.appDescription
+                print "App Mimetype: %s" % SharedPresentation.appMimetype
+                sys.exit(0)
+            elif o in ("-d", "--data"):
+                venueDataUrl = a
+            elif o in ('-f','--presentationFile'):
+                presentationFile = a
+            elif o in ("--start"):
+                startSession = 1
+            elif o in ("--debug",):
+                debug = 1
+            elif o in ("-h", "--help"):
+                Usage()
+                sys.exit(0)
+        
+        # If we're not passed some url that we can use, bail showing usage
+        if appURL == None and venueURL == None and startSession==0:
             Usage()
             sys.exit(0)
-    
-    # If we're not passed some url that we can use, bail showing usage
-    if appURL == None and venueURL == None and startSession==0:
-        Usage()
-        sys.exit(0)
 
-    if startSession:
-        vcUrls = GetVenueClientUrls()
-        venueClientUrl = vcUrls[0]
+        if startSession:
+            vcUrls = GetVenueClientUrls()
+            venueClientUrl = vcUrls[0]
 
-        # - create venue client IW
-        venueClient = VenueClientIW(venueClientUrl)
+            # - create venue client IW
+            venueClient = VenueClientIW(venueClientUrl)
 
-        # - get venue url from venue client
-        venueURL = venueClient.GetVenueURL()
+            # - get venue url from venue client
+            venueURL = venueClient.GetVenueURL()
 
-        # - get profile from venue client
-        clientProfile = venueClient.GetClientProfile()
-        connectionId = clientProfile.connectionId
+            # - get profile from venue client
+            clientProfile = venueClient.GetClientProfile()
+            connectionId = clientProfile.connectionId
 
-        venueURL = str(venueURL)
-        venueProxy = VenueIW(venueURL)
-        presentationFilename = os.path.basename(presentationFile)
+            venueURL = str(venueURL)
+            venueProxy = VenueIW(venueURL)
+            presentationFilename = os.path.basename(presentationFile)
 
-        appName = SharedPresentation.appName + ' ' + presentationFilename + ', ' + time.asctime()
+            appName = SharedPresentation.appName + ' ' + presentationFilename + ', ' + time.asctime()
 
-        app = venueProxy.CreateApplication(appName,
-                                              SharedPresentation.appDescription,
-                                              SharedPresentation.appMimetype)
-        appURL = str(app.uri)
-   
-    # This is all that really matters!
-    presentation = SharedPresentation(appURL, venueURL, name, connectionId=connectionId)
+            app = venueProxy.CreateApplication(appName,
+                                                  SharedPresentation.appDescription,
+                                                  SharedPresentation.appMimetype)
+            appURL = str(app.uri)
 
-    if presentationFile:
-        # upload the given file to the venue
-        dsc = GetVenueDataStore(venueURL, connectionId)
-        dsc.Upload(presentationFile)
-        dsc.LoadData()
-        fdata = dsc.GetFileData(presentationFilename)
+        # This is all that really matters!
+        presentation = SharedPresentation(appURL, venueURL, name, connectionId=connectionId)
+        if presentationFile:
+            # upload the given file to the venue
+            dsc = GetVenueDataStore(venueURL, connectionId)
+            dsc.Upload(presentationFile)
+            dsc.LoadData()
+            fdata = dsc.GetFileData(presentationFilename)
 
-        # open the file in this session
-        presentation.OpenVenueData(fdata.uri)
+            # open the file in this session
+            presentation.OpenVenueData(fdata.uri)
 
-    elif venueDataUrl:
-        presentation.OpenVenueData(venueDataUrl)
-    else:
-        presentation.LoadFromVenue()
+        elif venueDataUrl:
+            presentation.OpenVenueData(venueDataUrl)
+        else:
+            presentation.LoadFromVenue()
 
-    presentation.Start()
+        presentation.Start()
+
+    except:
+        if presentation and presentation.log:
+            presentation.log.exception("Error in SharedPresentation")
+            presentation.StopViewerCB()
+        else:
+            app = wx.PySimpleApp()
+        ErrorDialog(None, "An error occurred while running SharedPresentation.", "Error")
+        if presentation:
+            presentation.Quit()
 
     # This is needed because COM shutdown isn't clean yet.
     # This should be something like:
