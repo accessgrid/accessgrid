@@ -15,6 +15,7 @@ def BuildLinux():
 
 def BuildWindows():
 
+    global opensslinstalldir
     opensslinstalldir = opensslinstalldir.replace('\\','\\\\')
     
     ret = os.system("perl Configure VC-WIN32 --prefix=%s" % opensslinstalldir)
@@ -57,7 +58,7 @@ def BuildDarwin():
     return ret
 
 os.chdir(os.path.abspath(os.path.join(os.environ['AGBUILDROOT'],
-                                      "openssl-0.9.8e")))
+                                      "openssl-0.9.8g")))
 opensslinstalldir = os.path.abspath(os.path.join(os.getcwd(),'opensslinstall'))
 
 if sys.platform == 'linux2':

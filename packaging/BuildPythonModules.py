@@ -22,14 +22,14 @@ StartDir=os.path.dirname(os.path.abspath(__file__))
 #
 # Setup the given module in the given dest directory
 #
-def SetupModule(modName, source, dest, morebuildopts=[],moreinstallopts=[]):
+def SetupModule(modName, source, dest, morebuildopts=[],moreinstallopts=[],buildcmd='build'):
     os.chdir(os.path.join(source,modName))
     ret = os.spawnl(os.P_WAIT,sys.executable,sys.executable,"setup.py","clean","--all")
     if ret:
         print 'Clean of Python module %s failed' % modName
         sys.exit(1)
 
-    buildopts = [ sys.executable, 'setup.py','build'] + morebuildopts
+    buildopts = [ sys.executable, 'setup.py',buildcmd] + morebuildopts
     ret = os.spawnv(os.P_WAIT,sys.executable,buildopts)
     if ret:
         print 'Build of Python module %s failed' % modName
@@ -87,16 +87,18 @@ print "*********** Building zsi\n"
 SetupModule("zsi", SOURCE, DEST, moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
 
 print "*********** Building m2crypto\n"
-openssl='openssl-0.9.8e'
+openssl='openssl-0.9.8g'
 openssldir=os.path.join(SOURCE,openssl,'opensslinstall')
 if sys.platform in ['darwin']:
     # apply patch to statically link openssl libs into m2crypto
-    os.chdir(os.path.join(SOURCE,'m2crypto-0.17'))
+    os.chdir(os.path.join(SOURCE,'M2Crypto-0.20.2'))
     patchfile = os.path.join(StartDir,'mac','setup.py.m2crypto-0.17.patch')
     cmd = 'patch -N < ' + patchfile
     print 'patching with cmd: ', cmd
     os.system(cmd)
-SetupModule("m2crypto-0.17", SOURCE, DEST, ['--openssl=%s' % openssldir], moreinstallopts=['--single-version-externally-managed', '--root=/' ] )
+SetupModule("M2Crypto-0.20.2", SOURCE, DEST, ['--openssl=%s' % openssldir], moreinstallopts=['--single-version-externally-managed', '--root=/' ], buildcmd='build_ext' )
+
+
 print "*********** Building twisted\n"
 SetupModule("TwistedCore-2.5.0", SOURCE, DEST)
 
