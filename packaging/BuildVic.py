@@ -14,7 +14,7 @@ VICDIR = os.path.join(SOURCE,'mmedia')
 
 def build_win(dir):
     p = os.path.join(dir, "vic", "vic.2003.sln")
-    os.system('devenv %s /rebuild "DDraw Debug"' % (p,))
+    os.system('devenv %s /rebuild "DDraw Release"' % (p,))
     
 def build_linux(dir):
     os.chdir(dir)
@@ -31,7 +31,7 @@ def build_freebsd(dir):
 
 # Set plat-specific bits
 if sys.platform == 'win32':
-    VIC_EXE = os.path.join(VICDIR,'vic','ddraw_debug','vic.exe')
+    VIC_EXE = os.path.join(VICDIR,'vic','ddraw_release','vic.exe')
     copyExe = 'copy'
     build = build_win
 elif sys.platform == 'linux2':
