@@ -17,7 +17,7 @@ __revision__ = "$Id: Version.py,v 1.25 2007-11-05 16:48:12 turam Exp $"
 MAJOR_VERSION = 3 
 MINOR_VERSION = 2
 POINT_VERSION = 0
-STATUS = "beta"
+STATUS = "rc1"
 
 BUILD_NUMBER = 1
 
