@@ -308,7 +308,7 @@ if __name__ == "__main__":
 
     app = CmdlineApplication().instance()
     app.AddCmdLineOption( Option("-v", "--venueUrl", type="string", dest="venueUrl",
-                        default='https://localhost:8000/Venues/default', metavar="VENUE_URL",
+                        default=None, metavar="VENUE_URL",
                         help="Set the venue in which the VenueVNC application should be started.") )
     app.AddCmdLineOption( Option("-n", "--name", type="string", dest="name",
                         default=None, metavar="NAME",
@@ -336,6 +336,12 @@ if __name__ == "__main__":
         for opt in ['venueUrl','name','vncserverexe','display','geometry','depth']:
             log.info('  %s = %s' % (opt,str(app.GetOption(opt))))
     
+    # Verify venue url option
+    if not app.GetOption('venueUrl'):
+        msg = "VenueURL must be specified; exiting." 
+        print msg
+        log.info(msg)
+        sys.exit(1)
     
     # Use the vnc executable specified on the command line, or...
     vncserverexe = app.GetOption('vncserverexe')
