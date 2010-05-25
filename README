@@ -36,19 +36,19 @@ and shared web browsing.
 Developers wishing to contribute to the Access Grid Project or the
 Access Grid Toolkit should get familiar with the source code and the
 tools, and then decide what part of the AGTk to work on.  Developer
-documentation is available at:
+documentation is available at http://www.accessgrid.org/developer.
 
-http://www.accessgrid.org/developer
+Information about past and ongoing projects is available at
+http://www.accessgrid.org/projects.
 
 Also, the ag-dev mailing list is a great place to discuss development
-work.  Subscription information is online here:
-
-http://www.accessgrid.org/mailinglists
+work.  Subscription information is online at 
+http://www.accessgrid.org/mailinglists.
 
 
 . For Service Providers
 
-Individuals wishing to provide AGTk Services, should first host some
+Individuals wishing to provide AGTk Services should first host some
 Virtual Venues through a Virtual Venue Server. 
 
 OBTAINING THE TOOLKIT
@@ -71,13 +71,13 @@ http://bugzilla.mcs.anl.gov/accessgrid
 DOCUMENTATION
 
 In addition to the included documentation, more documentation can be
-found on the Futures Laboratory Access Grid Toolkit web pages
+found on the Access Grid web site:
 http://www.accessgrid.org/documentation
 
 MAILING LISTS
 
-There are a set of mailing lists for discussing various aspects of the
-AGTk, information about these lists, including how to join them can be
+There are several mailing lists for discussing various aspects of the
+AGTk. Information about these lists, including how to subscribe, can be
 found at http://www.accessgrid.org/mailinglists.
 
 ACKNOWLEDGEMENTS
@@ -87,7 +87,7 @@ AGTk by either providing requirements, reviewing documents, working on
 software, or providing operational support, training and enthusiasm
 since the beginning of the Access Grid Project in the Winter/Spring of
 1998/1999.  If anybody is missing please, Please, PLEASE, let us
-know. All those we'd like to acknowledge are listed here,
+know. All those we'd like to acknowledge are listed here.
 
 Groups and Institutions
 =======================
