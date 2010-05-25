@@ -3924,6 +3924,7 @@ class ContentListPanel(wx.Panel):
         self.curItemId = None
         self.curTwig=None
         self.recursionCount = 0
+        self.dataSectionExpanded = False
 
         self.tree = wx.TreeCtrl(self, id, wx.DefaultPosition, 
                                wx.DefaultSize, style = wx.TR_HAS_BUTTONS |
@@ -3938,6 +3939,7 @@ class ContentListPanel(wx.Panel):
         wx.EVT_LEFT_DCLICK(self.tree, self.OnDoubleClick)
         wx.EVT_TREE_KEY_DOWN(self.tree, id, self.OnKeyDown)
         wx.EVT_TREE_ITEM_EXPANDING(self.tree, id, self.OnExpand)
+        wx.EVT_TREE_ITEM_COLLAPSING(self.tree, id, self.OnCollapse)
         #wx.EVT_TREE_BEGIN_DRAG(self.tree, id, self.OnBeginDrag) 
         wx.EVT_TREE_SEL_CHANGED(self.tree, id, self.OnSelect)
        
@@ -4155,6 +4157,8 @@ class ContentListPanel(wx.Panel):
             self.dataDict[dataDescription.id] = dataId
             self.tree.SortChildren(self.data)
             self.tree.Refresh()
+            if self.dataSectionExpanded:
+                self.tree.Expand(self.data)
             
     #Added by NA2-HPCE
     def AddDir(self, dataDescription):
@@ -4181,7 +4185,8 @@ class ContentListPanel(wx.Panel):
         self.dataDict[dataDescription.id] = dataId
         self.tree.SortChildren(self.selectedTwig)
         self.tree.Refresh()
-            
+        if self.dataSectionExpanded:
+            self.tree.Expand(self.data)
        
     def UpdateData(self, dataDescription):
         id = None
@@ -4352,6 +4357,10 @@ class ContentListPanel(wx.Panel):
     def OnExpand(self, event):
         treeId = event.GetItem()
         item = self.tree.GetItemData(treeId).GetData()
+        if(treeId.IsOk()):
+            text = self.tree.GetItemText(treeId)
+            if text == self.DATA_HEADING:
+                self.dataSectionExpanded = True
 
         if item:
             if not isinstance(item, DataDescription):
@@ -4367,6 +4376,14 @@ class ContentListPanel(wx.Panel):
             else:
                 pass
                 
+    def OnCollapse(self, event):
+        treeId = event.GetItem()
+        item = self.tree.GetItemData(treeId).GetData()
+        if(treeId.IsOk()):
+            text = self.tree.GetItemText(treeId)
+            if text == self.DATA_HEADING:
+                self.dataSectionExpanded = False
+
     def OnDoubleClick(self, event):
         mimeConfig = Config.MimeConfig.instance()
         self.x = event.GetX()
