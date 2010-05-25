@@ -1475,7 +1475,7 @@ class BridgingPanel(wx.Panel):
         '''
         Invoked when user selects enable in the item menu.
         '''
-        enableFlag = event.IsChecked()
+        enableFlag = self.menu.IsChecked(self.enableId)
         self.menu.Check(self.enableId, enableFlag)
 
         selectedItem = self.bridges[self.selected]
