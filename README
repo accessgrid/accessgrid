@@ -1,7 +1,7 @@
 
 		    The Access Grid Toolkit (AGTk)
 			
-			       2008-07-14
+			       2010-05-25
 				
 	    http://www.mcs.anl.gov/fl/research/accessgrid
 	    
@@ -38,12 +38,12 @@ Access Grid Toolkit should get familiar with the source code and the
 tools, and then decide what part of the AGTk to work on.  Developer
 documentation is available at:
 
-http://www.mcs.anl.gov/fl/research/accessgrid/software/developer.html
+http://www.accessgrid.org/developer
 
 Also, the ag-dev mailing list is a great place to discuss development
 work.  Subscription information is online here:
 
-http://www.mcs.anl.gov/fl/research/accessgrid/about/maillist.html
+http://www.accessgrid.org/mailinglists
 
 
 . For Service Providers
@@ -53,11 +53,11 @@ Virtual Venues through a Virtual Venue Server.
 
 OBTAINING THE TOOLKIT
 
-Downloading the latest snapshot of the toolkit from
-http://www.mcs.anl.gov/fl/research/accessgrid/software/download.html
+Download the latest snapshot of the toolkit from
+http://www.accessgrid.org/software
 
-CVS Access is available, information can be found at
-http://www.mcs.anl.gov/fl/research/accessgrid/software/cvs.html
+SVN Access is available; information can be found at
+http://www.accessgrid.org/developer
 
 INSTALLATION
 
@@ -66,19 +66,19 @@ Please see the INSTALL file for the appropriate platform and OS.
 BUG REPORTING
 
 Please report bugs using the Bugzilla interface found at
-http://bugzilla.mcs.anl.gov/accessgrid.
+http://bugzilla.mcs.anl.gov/accessgrid
 
 DOCUMENTATION
 
 In addition to the included documentation, more documentation can be
 found on the Futures Laboratory Access Grid Toolkit web pages
-http://www.mcs.anl.gov/fl/research/accessgrid/documentation/index.html.
+http://www.accessgrid.org/documentation
 
 MAILING LISTS
 
 There are a set of mailing lists for discussing various aspects of the
 AGTk, information about these lists, including how to join them can be
-found at http://www.mcs.anl.gov/fl/research/accessgrid/about/maillist.html.
+found at http://www.accessgrid.org/mailinglists.
 
 ACKNOWLEDGEMENTS
 
