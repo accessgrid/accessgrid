@@ -91,6 +91,7 @@ os.mkdir(pkgResourcesDir)
 os.mkdir(macosDir)
 shutil.copy2("Info.plist", contentsDir)
 shutil.copy2("Description.plist", pkgResourcesDir)
+shutil.copy2("background.jpg", pkgResourcesDir)
 
 #shutil.copy2("AGTk.icns", resourcesDir)
 # fix up templates for python version before copying
