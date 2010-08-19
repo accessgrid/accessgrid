@@ -276,8 +276,12 @@ class AudioService( AGService ):
                 
             options.append( "-f" )
             if Platform.isOSX():
-                options.append( "L16-8K-Mono" ) # prevent mac mash converter
-            else:                               # issues (at least on this G5).
+                #options.append( "L16-8K-Mono" ) # prevent mac mash converter
+                #                                # issues (at least on this G5).
+
+                # 3.2 shipped with OpenAL-based RAT which performs well at 16K
+                options.append( "L16-16K-Mono" ) 
+            else:
                 options.append( "L16-16K-Mono" )
             # Check whether the network location has a "type"
             # attribute Note: this condition is only to maintain
