@@ -4,16 +4,25 @@
 #
 su -c "agpm3.py --post-install"
 
-# Add AG menus for XFCE
+# Conditionally add AG menus for XFCE
 #
 patchfile=install/XFCEMENU
-cat ${patchfile} |patch -p0 -Ns --dry-run >/dev/null
-if [ $? -eq 0 ]; then
-  cat ${patchfile} |patch -p0 -Ns
+patch_xfce_menu () {
+  cat ${patchfile} |patch -p0 -Ns --dry-run >/dev/null
+  if [ $? -eq 0 ]; then
+    cat ${patchfile} |patch -p0 -Ns
+  
+    # How to reload iff xfdesktop is running?
+    xfdesktop --reload >/dev/null
+  fi
+  
+  rm -f ${patchfile}
+}
 
-  # How to reload iff xfdesktop is running?
-  xfdesktop --reload
-fi
+haveAGmenu=`grep AccessGridMarker etc/xfce/xdg/menus/xfce-applications.menu`
+[ $? -ne 0 ] && {
+  echo "Patching XFCE main menu"
+  patch_xfce_menu
+}
 
-rm -f ${patchfile}
-
+echo "All done"

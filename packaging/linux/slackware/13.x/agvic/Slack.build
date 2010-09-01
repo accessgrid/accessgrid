@@ -1,20 +1,14 @@
 name=agvic
 version=1.4
-release=91
-#svn_revision=r4449
-#svn_revision=r4533
-#svn_revision=r4651
-#svn_revision=r4694
-svn_revision=r4705
+release=96
+svn_revision=r4876
 ffmegversion=r20462
 libswscaleversion=r29824
-x264version=snapshot-20090708-2245
+#x264version=snapshot-20090708-2245
+x264version=snapshot-20091215-2245
 arch=${ARCH:-`uname -m`}
 srcpkg0=mmedia-${svn_revision}.tar.bz2
-#srcpkg1=ffmpeg-r13987.tar.gz
-#srcpkg1=ffmpeg-0.5.tar.bz2
 srcpkg1=ffmpeg-r20462.tar.bz2
-#srcpkg2=libswscale-r27137.tar.gz
 srcpkg2=libswscale-r29824.tar.bz2
 srcpkg3=x264-${x264version}.tar.bz2
 TMP=${TMP:-/var/tmp}
@@ -50,19 +44,12 @@ ARCH_CONFIGURE="--libdir=$LIBDIR"
 
 # Add space separated list of prerequsite packages here
 #
-prereqs="tcl yasm libdv libv4l "
+prereqs="tcl yasm libdv v4l-utils decklink-sdk "
 # In particular, x264-snapshot-20090819.2245
 
 here=`pwd`
 
-patch1=${here}/patches/vic-x264.dpatch
-#patch2=${here}/patches/vic-mtrace.dpatch
-patch3=${here}/patches/vic-render-color-swscale.dpatch
-#patch4=${here}/patches/vic-video-grabber-video4linux.dpatch
-patch5=${here}/patches/vic-2.8ucl1.4.0-ttk.patch
-patch6=${here}/patches/vic-webcam-quirk.patch
-patch7=${here}/patches/vic-net-ip_cpp-revert-${svn_revision}.patch
-patch8=${here}/patches/use_localuclmmbase.patch
+patch0=${here}/patches/ignoreXvlibMongrelHeadersError.diff
 
 PATH=/sbin:${PATH}
 . ${functions}
@@ -122,18 +109,19 @@ cd ${builddir}
 (cd vic && tar xvf ${here}/${srcpkg1})	# ; ln -s ffmpeg-0.5 ffmpeg)
 (cd vic/ffmpeg && tar xvf ${here}/${srcpkg2})
 (cd vic && tar xvf ${here}/${srcpkg3}; ln -s x264-${x264version} x264 )
-(cd vic && cp -a ${here}/decklink . )
+#(cd vic && cp -a ${here}/decklink . )
+# Obtain latest decklink files from decklink-sdk installation.
+#
+mkdir ${builddir}/vic/decklink
+cp -p /usr/include/decklink/* ${builddir}/vic/decklink/
+cp -p /usr/share/decklink/DeckLinkAPIDispatch.cpp ${builddir}/vic/decklink/
+
 
 # Apply patches
 # like this: do_patch ${patch0}
 #
-##do_patch ${patch1}
-#do_patch ${patch2}
-do_patch ${patch3}
-#do_patch ${patch4}
-#do_patch ${patch6}
-#do_patch ${patch7}
-do_patch ${patch8}
+# or do all the patches listed in 00list
+do_patches
 
 echo -n "Post patch sleep ..."
 sleep 3
@@ -143,13 +131,19 @@ sleep 3
   echo "Couldn't configure"
   exit 1
 }
-(cd vic && autoconf -f \
-    && LDFLAGS=-L../common/src ./configure --prefix=${prefix} \
-    --enable-ipv6 \
-    --enable-dvdecode \
-    --enable-gpl \
-    --with-decklink=decklink/ \
-    && make ) || {
+( cd vic
+  autoconf -f
+  do_patch ${patch0}
+  sleep 3
+  LDFLAGS=-L../common/src ./configure \
+	--prefix=${prefix} \
+	--enable-ipv6 \
+	--enable-dvdecode \
+	--enable-gpl \
+	--with-decklink=decklink/ \
+	--with-x264ver=x264ver-${x264version} \
+	--enable-xvideo \
+  && make ) || {
   echo "Couldn't build"
   exit 2
 }
@@ -186,16 +180,19 @@ cp -a html CHANGES.html FILES README README.WIN32 VERSION \
 # Include build script
 mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
 ( cd ${here}
-    for bfd in Slack.build slack-* doinst.sh decklink
+    #for bfd in Slack.build slack-* doinst.sh decklink # OLD
+    for bfd in Slack.build slack-* doinst.sh
     do
         [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
     done
 
-    # Don't want .svn entries
     [ -e patches ] && {
         mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches
         cp -a patches/* ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches/
     }
+
+    # Don't want .svn entries
+    find ${pkgdir}/ -name ".svn" |xargs rm -rf
 )
 
 # Package it 
@@ -231,6 +228,23 @@ fi
 
 
 # Changelog
+#
+# 20100812 CKW - release 96
+#  - new upstreams svn version #4876
+#  - make decklink-sdk a prereq and use its files blackmagic-design cards
+#
+# 20100518 CKW - release 95
+#  - use v4l-utils instead of libv4l
+#
+# 20100413 CKW - release 94
+#  - new x264 version (snapshot-20091215-2245)
+#
+# 20100412 CKW - release 93
+#  - enable xvideo rendering
+#  - clean up build script
+#
+# 20100412 CKW - release 92
+#  - new svn release 4773
 #
 # 20100322 CKW - release 91
 #  - new svn rlease 4705

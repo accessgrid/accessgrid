@@ -9,7 +9,8 @@ builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 tag=${TAG:-_uqv}
-pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+pkgname=${name}-${version}-${arch}-${release}${tag}.tgz
+#pkgname=${name}-${version}-${arch}-${release}${tag}.txz
 distro=slackware
 
 functions=/usr/lib/slackbuilds/functions
@@ -126,7 +127,7 @@ cd ${here}
 echo -n "Cleaning up ... "
 [ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
 [ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
-#rm -f ${srcpkg}
+rm -f ${srcpkg}
 echo
 
 

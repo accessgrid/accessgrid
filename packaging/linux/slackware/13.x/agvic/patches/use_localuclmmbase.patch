@@ -1,11 +1,11 @@
---- vic/Makefile.in.orig	2010-02-26 21:52:06.000000000 +1000
-+++ vic/Makefile.in	2010-03-09 22:23:58.858256577 +1000
-@@ -93,7 +93,7 @@
+--- vic/Makefile.in.orig	2010-08-11 05:36:24.000000000 +1000
++++ vic/Makefile.in	2010-08-12 21:24:18.101586280 +1000
+@@ -82,7 +82,7 @@
  CODEC_LIB = @V_CODEC_LIB@ codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
  
  LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
--	-luclmmbase -lm -lz -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
-+	-L../common/src -luclmmbase -lm -lz -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ 
+-	-luclmmbase -lm -lz @V_LIB_FFMPEG@ @V_LIB_X264@ @LIBS@
++	-L../common/src -luclmmbase -lm -lz @V_LIB_FFMPEG@ @V_LIB_X264@ @LIBS@
  
  
  INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \

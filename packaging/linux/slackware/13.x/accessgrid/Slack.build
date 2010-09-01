@@ -1,7 +1,6 @@
 name=accessgrid3.2
 version=3.2
-svnversion=6771
-release=0${svnversion}
+release=1
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
 srcpkg0=AccessGrid-${version}-${release}.tar.gz
@@ -12,7 +11,7 @@ builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 tag=${TAG:-_uqv}
-pkgname=${name}-${version}-${arch}-${release}0${tag}.txz
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
 functions=/usr/lib/slackbuilds/functions
 XDG_MERGEDIR=etc/xdg/menus/applications-merged
 #AGTKDATABASE=/usr/share
@@ -52,7 +51,9 @@ set -e
 check_prereqs ${prereqs} || exit
 
 get_srcpkg ${srcpkg0}
+check_md5sum  ${srcpkg0}.md5sum
 get_srcpkg ${srcpkg1}
+check_md5sum  ${srcpkg1}.md5sum
 
 
 #
@@ -186,7 +187,9 @@ exit
 
 # Changelog
 #
-# 20100409 CKW - release of 3.2 svn r6771 (067710)
+# 20100902 CKW - release 1 of 3.2 final
+#
+# 20100409 CKW - release of 3.2 svn r6772 (067720)
 #  - use latest svn
 #
 # 20090904 CKW - release of 3.2 svn r6754 (067541)

@@ -1,7 +1,7 @@
 name=wxPythonGTK
 version=2.8.10.1
 ver2=2.8
-release=2
+release=5
 arch=${ARCH:-`uname -m`}
 srcpkg=wxPython-src-${version}.tar.bz2
 TMP=${TMP:-/var/tmp}
@@ -116,13 +116,19 @@ CFLAGS="$SLKCFLAGS" \
     --enable-graphics_ctx \
     --build=${arch}-${distro}-linux 
 
+#make \
+#    && make -C contrib/src/gizmos \
+#    && make -C contrib/src/stc
 make \
-    && make -C contrib/src/gizmos \
-    && make -C contrib/src/stc
+    && make -C contrib/src \
+    && make -C utils/wxrc
 
+#make install prefix=${wxpref} DESTDIR=${pkgdir} \
+#    && make -C contrib/src/gizmos prefix=${wxpref} install DESTDIR=${pkgdir} \
+#    && make -C contrib/src/stc prefix=${wxpref} install DESTDIR=${pkgdir}
 make install prefix=${wxpref} DESTDIR=${pkgdir} \
-    && make -C contrib/src/gizmos prefix=${wxpref} install DESTDIR=${pkgdir} \
-    && make -C contrib/src/stc prefix=${wxpref} install DESTDIR=${pkgdir}
+    && make -C contrib/src prefix=${wxpref} install DESTDIR=${pkgdir} \
+    && make -C utils/wxrc prefix=${wxpref} install DESTDIR=${pkgdir}
 
 # Now build wxPython
 cd $WXDIR/wxPython
@@ -155,6 +161,32 @@ ${python} setup.py \
 
 strip ${pkgdir}/${prefix}/lib*/python${pyver}/*-packages/wx-${ver2}*-${port}-${chartype}/wx/*.so
 
+# Since I want this package to be as generic as possible I won't let
+# distutils copy the scripts (NO_SCRIPTS=1 above) since it will mangle
+# the #! line to use the real python pathname.  Since some distros
+# install python 2.2 as python2 and others as python I can't let
+# distutils do that otherwise the dependencies will be fouled up.
+# Copy them manually instead, leaving the #!/usr/bin/env line intact. 
+#
+cd $WXDIR/wxPython
+mkdir -p ${pkgdir}/${prefix}/bin
+for s in \
+        editra \
+	helpviewer \
+	img2png \
+	img2py \
+	img2xpm \
+	pyalacarte \
+	pyalamode \
+	pycrust \
+	pywrap \
+	pyshell \
+	pywxrc \
+	xrced; do
+    cp scripts/$s ${pkgdir}/${prefix}/bin
+done
+
+
 # Install GNOME menu items
 mkdir -p ${pkgdir}/usr/share/applications
 for d in distrib/*.desktop; do
@@ -173,11 +205,11 @@ install -m 644 wx/tools/XRCed/XRCed_32.png ${pkgdir}/usr/share/pixmaps/XRCed.png
 
 # Juggle some build product locations
 mv ${pkgdir}/${wxpref}/share/* ${pkgdir}/usr/share/ && rmdir ${pkgdir}/${wxpref}/share
-mv ${pkgdir}/${wxpref}/bin ${pkgdir}/usr/
+mv ${pkgdir}/${wxpref}/bin/* ${pkgdir}/${prefix}/bin/
 mkdir ${pkgdir}/usr/include
 (cd ${pkgdir}/usr/include && ln -s ${wxpref}/include/wx-${ver2})
 
-# For some reason, these wxPython include files are in thr wrong place
+# For some reason, these wxPython include files are in the wrong place
 [ -d ${pkgdir}/include ] && {
     mv ${pkgdir}/include/wx-${ver2}/wx/wxPython ${pkgdir}/${wxpref}/include/wx-${ver2}/wx/
     rm -rf ${pkgdir}/include
@@ -205,6 +237,9 @@ mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
     do
         [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
     done
+
+    # Don't want .svn entries
+    find ${pkgdir}/ -name ".svn" |xargs rm -rf
 )
 
 # Package it 
@@ -239,6 +274,16 @@ fi
 
 
 # Changelog
+#
+# 20100430 CKW - release 5 of 2.8.10.1
+#  - added patch for plot lib
+#
+# 20100421 CKW - release 4 of 2.8.10.1
+#  - install various scripts previously missed
+#  - add editra patch, courtesy salixos.org
+#
+# 20100420 CKW - release 3 of 2.8.10.1
+#  - try building more of the contrib stuff
 #
 # 20100309 CKW
 #  - rebuild for 13.1

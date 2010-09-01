@@ -10,7 +10,8 @@ buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
-pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+#pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+pkgname=${name}-${version}-${arch}-${release}${tag}.tgz
 releasedir=${RELEASEDIR:-/tmp}
 functions=/usr/lib/slackbuilds/functions
 
