@@ -499,6 +499,12 @@ class AppDb:
                 try:
                     srcf = os.path.join(srcPath, appFile)
                     dstf = os.path.join(dstPath, appFile)
+
+                    # Create any destination subdirs
+                    dstd = os.path.dirname(dstf)
+                    if not os.path.exists(dstd):
+                        os.makedirs(dstd)
+
                     shutil.copy(srcf, dstf)
                     success = 1
                                     
