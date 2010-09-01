@@ -8,10 +8,14 @@ here=`pwd`
 #workdir=mmedia-r4449
 #workdir=mmedia-r4533
 #workdir=mmedia-r4651
-workdir=mmedia-r4694
+#workdir=mmedia-r4694
+workdir=mmedia-r4773
 #site0=http://www.vislab.uq.edu.au/ag3/distfiles
 srcpkg0=
 
+# Now  that we support Blackmagic-Design capture cards,
+# we need some files from the decklink-sdk
+DECKLINK_SDK_VERSION=7.7.3
 
 # Load up the default build script
 . ../../ag-vic.build

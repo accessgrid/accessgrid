@@ -5,7 +5,8 @@ DOCLEANUP=1
 USEEXISTING=0
 
 PKGNAME=m2crypto
-PKGVERSION=0.19.1
+#PKGVERSION=0.19.1
+PKGVERSION=0.18.2
 
 # Ensure some basics are set
 [ -z ${PKGNAME} ] && { echo "PKGNAME needs to be set. Exiting now!"

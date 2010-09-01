@@ -1,6 +1,4 @@
 use_localuclmmbase
-webcam-quirk
 vic-render-color-swscale
 vic-debug
-vic-net-ip_cpp-revert-r4694
 

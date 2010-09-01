@@ -1,3 +1,15 @@
+ag-vic2.8ucl (1.4-0ubuntuag9) lucid; urgency=low
+
+  * New upstream code (svn r4876)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 13 Aug 2010 10:24:57 +1000
+
+ag-vic2.8ucl (1.4-0ubuntuag8) lucid; urgency=low
+
+  * New upstream code (svn r4773)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 12 Apr 2010 13:59:46 +1000
+
 ag-vic2.8ucl (1.4-0ubuntuag7) lucid; urgency=low
 
   * New build for Lucid Lynx

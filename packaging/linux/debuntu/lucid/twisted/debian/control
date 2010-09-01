@@ -13,8 +13,8 @@ Architecture: all
 Depends: ${python:Depends}, python-twisted-bin (>= ${source:Version}), python-zope.interface (>= 3.5), python (>= 2.3.5-9), ${misc:Depends}
 Suggests: python-tk, python-gtk2, python-glade2, python-qt3, python-wxgtk2.8 | python-wxgtk2.6, python-profiler
 Recommends: python-openssl, python-pam, python-serial
-Conflicts: python2.3-twisted (<< 2.1.0-4), python2.4-twisted (<< 2.1.0-4), python-twisted (<< 2.1.0-4), python2.3-twisted-core, python2.4-twisted-core
-Replaces: python2.3-twisted (<< 2.1.0-4), python2.4-twisted (<< 2.1.0-4), python-twisted (<< 2.1.0-4), python2.3-twisted-core, python2.4-twisted-core
+Conflicts: python2.3-twisted (<< 2.1.0-4), python2.4-twisted (<< 2.1.0-4), python-twisted (<< 2.1.0-4), python2.3-twisted-core, python2.4-twisted-core, python-twisted-core (< 10.0.0-2ubuntuag1)
+Replaces: python2.3-twisted (<< 2.1.0-4), python2.4-twisted (<< 2.1.0-4), python-twisted (<< 2.1.0-4), python2.3-twisted-core, python2.4-twisted-core, python-twisted-core (< 10.0.0-2ubuntuag1)
 Provides: ${python:Provides}
 XB-Python-Version: ${python:Versions}
 Description: Event-based framework for internet applications
