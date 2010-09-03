@@ -3,5 +3,5 @@ packaging-agversion.py
 servicesNoBuild
 servicesH264
 ZSI-Server.py
-#Platform-unix-Config.py
+Platform-unix-Config.py
 SharedBrowser.py

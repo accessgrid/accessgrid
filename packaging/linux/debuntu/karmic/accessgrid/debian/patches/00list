@@ -2,7 +2,7 @@ packaging-BuildSnapshot.py
 packaging-agversion.py
 servicesNoBuild
 ZSI-Server.py
+Platform-unix-Config.py
 datapath-Configs
 v32servicesH264
 WebkitBrowser
-orderMyVenues

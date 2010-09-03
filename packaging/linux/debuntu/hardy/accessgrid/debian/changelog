@@ -1,3 +1,9 @@
+accessgrid3.2 (3.2-1) hardy; urgency=low
+
+  * Update to 3.2 final
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 02 Sep 2010 16:06:01 +1000
+
 accessgrid3.2 (3.2-0r67350) hardy; urgency=low
 
   * New 3.2 beta using svn release 6735 (includes dbus/avahi fix)

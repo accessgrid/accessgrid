@@ -3,5 +3,6 @@ packaging-agversion.py
 servicesNoBuild
 v32servicesH264
 ZSI-Server.py
+Platform-unix-Config.py
 SharedBrowser.py
 datapath-Configs

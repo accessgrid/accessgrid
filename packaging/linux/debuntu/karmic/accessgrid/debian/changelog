@@ -1,3 +1,9 @@
+accessgrid3.2 (3.2-1) karmic; urgency=low
+
+  * 3.2 Final
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 02 Sep 2010 11:48:36 +1000
+
 accessgrid3.2 (3.2-0r67543) karmic; urgency=low
 
   * Rebuild with agzsi-2.0.r1385
