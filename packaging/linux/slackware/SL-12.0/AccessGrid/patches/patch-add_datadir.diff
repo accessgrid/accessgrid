@@ -1,0 +1,121 @@
+Index: Platform/win32/Config.py
+===================================================================
+--- AccessGrid/Platform/win32/Config.py	(revision 6726)
++++ AccessGrid/Platform/win32/Config.py	(working copy)
+@@ -105,6 +105,12 @@
+             raise IOError("AGTkConfig: doc dir does not exist %s."%self.docDir)
+ 
+         return self.docDir
++        
++    def GetDataDir(self):
++        if self.dataDir is None:
++            self.dataDir = self.GetBaseDir()
++            
++        return self.dataDir
+ 
+ class UserConfig(Config.UserConfig):
+     """
+Index: Platform/unix/Config.py
+===================================================================
+--- AccessGrid/Platform/unix/Config.py	(revision 6726)
++++ AccessGrid/Platform/unix/Config.py	(working copy)
+@@ -48,6 +48,10 @@
+     else:
+         AGTkBasePath = "/etc/AccessGrid3"
+ 
++    # New location for AGTk Services, NodeServices,
++    # SharedApplications & Pluguns directories.
++    AGTkDataPath = "/usr/share/AccessGrid3"
++
+     def instance(initIfNeeded=0):
+         if Config.AGTkConfig.theAGTkConfigInstance == None:
+             AGTkConfig(initIfNeeded)
+@@ -119,6 +123,22 @@
+     #
+         return self.docDir
+ 
++    def GetDataDir(self):
++
++        self.dataDir = self.AGTkDataPath
++
++        # Check dir and make it if needed.
++        if self.initIfNeeded:
++            if self.dataDir is not None and \
++                   not os.path.exists(self.dataDir):
++                os.mkdir(self.dataDir)
++
++        # Check the installation
++        if self.dataDir is not None and not os.path.exists(self.dataDir):
++            raise Exception, "AGTkConfig: data dir does not exist."
++
++        return self.dataDir 
++
+ class UserConfig(Config.UserConfig):
+     """
+     A user config object encapsulates all of the configuration data for
+Index: Config.py
+===================================================================
+--- AccessGrid/Config.py	(revision 6727)
++++ AccessGrid/Config.py	(working copy)
+@@ -77,6 +77,7 @@
+     def _Initialize(self):
+         self.GetBaseDir()
+         self.GetInstallDir()
++        self.GetDataDir()
+         self.GetConfigDir()
+         #self.GetDocDir()
+         self.GetSharedAppDir()
+@@ -93,6 +94,7 @@
+         tmpstr = "Access Grid Toolkit Configuration:\n"
+         tmpstr += "Version: %s\n" % self.GetVersion()
+         tmpstr += "InstallDir: %s\n" % self.GetInstallDir()
++        tmpstr += "DataDir: %s\n" % self.GetDataDir()
+         #tmpstr += "DocDir: %s\n" % self.GetDocDir()
+         tmpstr += "ConfigDir: %s\n" % self.GetConfigDir()
+         tmpstr += "SharedAppDir: %s\n" % self.GetSharedAppDir()
+@@ -114,6 +116,9 @@
+     def GetInstallDir(self):
+         raise Exception, "This method is abstract and should be overridden by subclasses."
+ 
++    def GetDataDir(self):
++        raise Exception, "This method is abstract and should be overridden by subclasses."
++
+     #def GetDocDir(self):
+     #    raise Exception, "This method is abstract and should be overridden by subclasses."
+ 
+@@ -133,7 +138,7 @@
+ 
+     def GetSharedAppDir(self):
+         if self.appDir == None:
+-            ucd = self.GetBaseDir()
++            ucd = self.GetDataDir()
+             self.appDir = os.path.join(ucd, "SharedApplications")
+ 
+         # Check dir and create it if needed.
+@@ -152,7 +157,7 @@
+ 
+     def GetPluginDir(self):
+         if self.pluginDir == None:
+-            ucd = self.GetBaseDir()
++            ucd = self.GetDataDir()
+             self.pluginDir = os.path.join(ucd, "Plugins")
+             
+         # Check dir and create it if needed.
+@@ -172,7 +177,7 @@
+     def GetNodeServicesDir(self):
+     
+         if self.nodeServicesDir == None:
+-            ucd = self.GetBaseDir()
++            ucd = self.GetDataDir()
+             self.nodeServicesDir = os.path.join(ucd, "NodeServices")
+ 
+         # Check dir and create it if needed.
+@@ -214,7 +219,7 @@
+     def GetServicesDir(self):
+     
+         if self.servicesDir == None:
+-            ucd = self.GetBaseDir()
++            ucd = self.GetDataDir()
+             self.servicesDir = os.path.join(ucd, "Services")
+ 
+         # Check dir and create it if needed.

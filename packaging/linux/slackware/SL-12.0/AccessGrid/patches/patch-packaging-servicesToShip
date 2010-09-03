@@ -1,0 +1,9 @@
+--- packaging/servicesToShip.orig	2004-05-21 06:57:25.000000000 +1000
++++ packaging/servicesToShip	2008-03-18 15:04:27.032626000 +1000
+@@ -2,3 +2,6 @@
+ AudioService
+ VideoProducerService
+ VideoConsumerService
++VideoServiceH264
++VideoProducerServiceH264
++VideoConsumerServiceH264

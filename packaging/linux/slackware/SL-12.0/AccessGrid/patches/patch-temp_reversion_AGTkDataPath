@@ -1,0 +1,11 @@
+--- AccessGrid/Platform/unix/Config.py.orig	2008-09-14 14:16:42.000000000 +1000
++++ AccessGrid/Platform/unix/Config.py	2008-10-22 16:14:45.195438000 +1000
+@@ -50,7 +50,7 @@
+ 
+     # New location for AGTk Services, NodeServices,
+     # SharedApplications & Pluguns directories.
+-    AGTkDataPath = "/usr/share/AccessGrid3"
++    AGTkDataPath = "/etc/AccessGrid3"
+ 
+     def instance(initIfNeeded=0):
+         if Config.AGTkConfig.theAGTkConfigInstance == None:

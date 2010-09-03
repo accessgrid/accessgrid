@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Install SharedApplications
+#
+su -c "agpm3.py --post-install"
+
+# Add AG menus for XFCE
+#
+patchfile=install/XFCEMENU
+cat ${patchfile} |patch -p0 -Ns --dry-run >/dev/null
+if [ $? -eq 0 ]; then
+  cat ${patchfile} |patch -p0 -Ns
+fi
+if [ -e etc/xfce/xdg/xfce4/desktop/menu.xml ]; then
+  touch etc/xfce/xdg/xfce4/desktop/menu.xml
+fi
+
+rm -f ${patchfile}
+

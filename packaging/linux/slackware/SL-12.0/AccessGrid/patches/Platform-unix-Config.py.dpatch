@@ -1,0 +1,12 @@
+diff -urNad AccessGrid/Platform/unix/Config.py AccessGrid/Platform/unix/Config.py
+--- AccessGrid/Platform/unix/Config.py	2007-07-21 23:36:43.000000000 +1000
++++ AccessGrid/Platform/unix/Config.py	2008-03-26 09:24:25.393777245 +1000
+@@ -103,7 +103,7 @@
+             self.docDir = os.path.join(self.GetInstallDir(), "doc")
+         else:
+             self.docDir = os.path.join(self.GetInstallDir(), "share", "doc",
+-                                       "AccessGrid-" + str(GetVersion()))
++                                       "accessgrid" + str(GetVersion()) + "-" + str(GetVersion()) )
+     #    # Check dir and make it if needed.
+     #    if self.initIfNeeded:
+     #        if self.docDir is not None and \
