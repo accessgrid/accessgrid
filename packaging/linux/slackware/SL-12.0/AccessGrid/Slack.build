@@ -1,7 +1,6 @@
 name=accessgrid3.2
 version=3.2
-svnversion=6754
-release=0${svnversion}
+release=1
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
 srcpkg0=AccessGrid-${version}-${release}.tar.gz
@@ -12,7 +11,7 @@ builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 tag=${TAG:-_uqv}
-pkgname=${name}-${version}-${arch}-${release}0${tag}.tgz
+pkgname=${name}-${version}-${arch}-${release}${tag}.tgz
 functions=/scratch/PKG/functions
 XDG_MERGEDIR=etc/xdg/menus/applications-merged
 #AGTKDATABASE=/usr/share
@@ -49,6 +48,7 @@ patch4=${here}/patches/patch-add_datadir.diff
 patch5=${here}/patches/patch-temp_reversion_AGTkDataPath
 #patch6=${here}/patches/patch-mcast_output
 #patch7=${here}/patches/diff-trunk_AccessGrid_ServiceDiscovery.py-from-r6334-to-r6735.diff
+patch8=${here}/patches/Platform-unix-Config.py.dpatch
 
 patch10=${here}/patches/patch-services-node-AudioService-AudioService.build.py
 patch11=${here}/patches/patch-services-node-VideoService-VideoService.build.py
@@ -103,6 +103,7 @@ do_patch ${patch1}
 #do_patch ${patch3}
 do_patch ${patch4}
 do_patch ${patch5}
+do_patch ${patch8}
 
 do_patch ${patch10}
 do_patch ${patch11}
@@ -218,6 +219,8 @@ fi
 exit
 
 # Changelog
+#
+# 20100903 CKW - release 1 of 3.2 final
 #
 # 20090625 CKW - release of 3.2 svn r6754 (067540)
 #  - Use latest svn
