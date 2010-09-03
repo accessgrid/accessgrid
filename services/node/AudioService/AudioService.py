@@ -78,6 +78,12 @@ class AudioService( AGService ):
             self.rat_media = ratmedia
             self.rat_ui = ratui
             self.rat_kill = ratkill
+            # For some reason, a full path is need for ratkill
+            for dir in os.getenv("PATH").split(":"):
+                ratkill_fullpath = os.path.join(dir, ratkill)
+                if os.access(ratkill_fullpath, os.X_OK):
+                    self.rat_kill = ratkill_fullpath
+                    break
 
         self.sysConf = SystemConfig.instance()
 
@@ -316,18 +322,6 @@ class AudioService( AGService ):
         try:
             self.log.info("Stop service")
 
-            # we've found rat-kill in __init__, so needn't do it here
-            """
-            # See if we have rat-kill.
-            if Platform.isWindows():
-                rk = "rat-kill.exe"
-            else:
-                rk = "rat-kill"
-
-            ratKillExe = os.path.join('.', rk)
-            if not os.path.isfile(ratKillExe) and not Platform.isWindows():
-                ratKillExe = "/usr/bin/rat-kill"
-            """
             ratKillExe = self.rat_kill
             if os.access(ratKillExe, os.X_OK):
                 self.log.info("Executing rat-kill")
