@@ -1,0 +1,33 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## align_splash_text.dpatch by  <chris@v2>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad accessgrid3.2-3.2~/AccessGrid/AccessGrid/UIUtilities.py accessgrid3.2-3.2/AccessGrid/AccessGrid/UIUtilities.py
+--- accessgrid3.2-3.2~/AccessGrid/AccessGrid/UIUtilities.py	2009-07-01 12:33:05.000000000 +1000
++++ accessgrid3.2-3.2/AccessGrid/AccessGrid/UIUtilities.py	2010-09-06 09:00:39.834928853 +1000
+@@ -25,6 +25,7 @@
+     pass
+ 
+ import wx
++from wx.lib.stattext import GenStaticText as StaticText
+ 
+ from AccessGrid import icons
+ from AccessGrid.Utilities import SubmitBug, VENUE_CLIENT_LOG
+@@ -192,11 +193,12 @@
+         self.SetBackgroundColour(wx.WHITE)
+         
+         self.bitmapCtrl = wx.StaticBitmap(self, -1, bmp, wx.Point(0, 0), wx.Size(width, height))
+-        self.versionTextCtrl = wx.StaticText(self,-1,versionText,
++        self.versionTextCtrl = StaticText(self,-1,versionText,
+                                     size=wx.Size(width,-1),
+                                     style = wx.ALIGN_CENTRE)
++        self.versionTextCtrl.SetBackgroundColour(wx.WHITE)
+         self.lineCtrl = wx.StaticLine(self,-1,size=wx.Size(width,-1))
+-        self.progressText = wx.StaticText(self, -1, "",  
++        self.progressText = StaticText(self, -1, "",  
+                                 size=wx.Size(width, msgHeight),
+                                 style=wx.ALIGN_CENTRE | wx.ST_NO_AUTORESIZE)
+         self.progressText.SetBackgroundColour(wx.WHITE)
