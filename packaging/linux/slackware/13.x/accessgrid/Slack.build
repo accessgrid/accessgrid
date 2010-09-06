@@ -1,9 +1,9 @@
 name=accessgrid3.2
 version=3.2
-release=1
+release=2
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
-srcpkg0=AccessGrid-${version}-${release}.tar.gz
+srcpkg0=AccessGrid-${version}-1.tar.gz
 srcpkg1=sharedwebkitbrowser-0.8.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
@@ -186,6 +186,9 @@ fi
 exit
 
 # Changelog
+#
+# 20100904 CKW - release 2
+#  - patch to align splash screen text
 #
 # 20100902 CKW - release 1 of 3.2 final
 #

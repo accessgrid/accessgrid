@@ -1,3 +1,9 @@
+accessgrid3.2 (3.2-2) jaunty; urgency=low
+
+  * Include patch to correctly align splash screen text
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 06 Sep 2010 10:25:55 +1000
+
 accessgrid3.2 (3.2-1) jaunty; urgency=low
 
   * Updated to 3.2 final

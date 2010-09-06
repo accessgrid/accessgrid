@@ -1,3 +1,9 @@
+accessgrid3.2 (3.2-2) karmic; urgency=low
+
+  * Patch to fix alignment of text in the splash screen
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sat, 04 Sep 2010 18:02:55 +1000
+
 accessgrid3.2 (3.2-1) karmic; urgency=low
 
   * 3.2 Final
