@@ -68,7 +68,10 @@ def NewServiceCallback(interface, protocol, serviceName, regtype, replyDomain, f
         if txtparts and len(txtparts) > 1 and txtparts[0] == 'url':
             url = txtparts[1]
             print "+%s=%s" % (serviceName, url)
-            sys.stdout.flush() # avoids blocking in ServiceDiscovery.py
+            try:
+                sys.stdout.flush() # avoids blocking in ServiceDiscovery.py
+            except IOError, e:
+                pass
 
 def RemoveServiceCallback(interface, protocol, serviceName, regtype, replyDomain, flags):
     print "-%s" % serviceName
