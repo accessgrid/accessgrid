@@ -72,7 +72,10 @@ def NewServiceCallback(interface, protocol, serviceName, regtype, replyDomain, f
 
 def RemoveServiceCallback(interface, protocol, serviceName, regtype, replyDomain, flags):
     print "-%s" % serviceName
-    sys.stdout.flush() # avoids blocking in ServiceDiscovery.py
+    try:
+        sys.stdout.flush() # avoids blocking in ServiceDiscovery.py
+    except IOError, e:
+        pass
 
 def QuitCallback():
     global mainloop
