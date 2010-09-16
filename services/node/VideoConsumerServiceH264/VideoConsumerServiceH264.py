@@ -2,17 +2,21 @@
 # Name:        VideoConsumerServiceH264.py
 # Purpose:
 # Created:     2003/06/02
-# RCS-ID:      $Id: VideoConsumerServiceH264.py,v 1.17 2007/09/12 07:01:56 douglask Exp $
+# RCS-ID:      $Id$
 # Copyright:   (c) 2002
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
 import sys, os
+import wx
 try:    import _winreg
 except: pass
 
-import agversion
-agversion.select(3)
+import subprocess
+import xml.dom.minidom
+
 from AccessGrid import Toolkit
+import socket
+import select
 
 from AccessGrid.Descriptions import Capability
 from AccessGrid.AGService import AGService
@@ -20,6 +24,7 @@ from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangePara
 from AccessGrid.Platform import IsWindows, IsLinux, IsFreeBSD, IsOSX
 from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
 from AccessGrid.NetworkLocation import MulticastNetworkLocation
+from AccessGrid.UIUtilities import GetScreenWidth
 
 class VideoConsumerServiceH264( AGService ):
 
@@ -27,23 +32,6 @@ class VideoConsumerServiceH264( AGService ):
 
     def __init__( self ):
         AGService.__init__( self )
-        self.capabilities = [  #Capability( Capability.CONSUMER,
-                               #           Capability.VIDEO,
-                               #           "H261",
-                               #           90000, self.id) ,
-                                Capability( Capability.CONSUMER,
-                                          Capability.VIDEO,
-                                          "H264",
-                                          90000, self.id),
-                                Capability( Capability.CONSUMER,
-                                          Capability.VIDEO,
-                                          "MPEG4",
-                                          90000, self.id),
-                                Capability( Capability.CONSUMER,
-                                          Capability.VIDEO,
-                                          "H261AS",
-                                          90000, self.id) 
-                                          ]
 
         if IsWindows():
             vic = "vic.exe"
@@ -54,16 +42,38 @@ class VideoConsumerServiceH264( AGService ):
         if not os.path.isfile(self.executable):
             self.executable = vic
 
+        proc = subprocess.Popen([self.executable, '-Q'],
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+        deviceDOM = xml.dom.minidom.parse(proc.stdout)
+
+        self.capabilities = []
+        codecs = deviceDOM.getElementsByTagName("codec")
+        for codec in codecs:
+            if codec.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
+                if codec.childNodes[0].data in ['h263', 'h263+', 'raw', 'pvh']:
+                    continue
+                self.capabilities.append(Capability( Capability.CONSUMER,
+                                          Capability.VIDEO,
+                                          codec.childNodes[0].data.upper(),
+                                          90000, self.id))
+        deviceDOM.unlink()
+
         self.sysConf = SystemConfig.instance()
 
         self.profile = None
+        self.windowGeometry = None
 
         self.startPriority = '7'
         self.startPriorityOption.value = self.startPriority
 
         # Set configuration parameters
-        self.tiles = OptionSetParameter( "Thumbnail Columns", "2", VideoConsumerServiceH264.tileOptions )
+        self.tiles = OptionSetParameter( "Thumbnail Columns", "4", VideoConsumerServiceH264.tileOptions )
+        self.positionWindow = OptionSetParameter( 'Position Window', 'Justify Left', ['Off', 'Justify Left', 'Justify Right'])
+        
         self.configuration.append( self.tiles )
+        self.configuration.append( self.positionWindow)
 
         if IsWindows():
             try:
@@ -187,8 +197,35 @@ class VideoConsumerServiceH264( AGService ):
             options.append('-XrecvOnly=1')
             # - set drop time to something reasonable
             options.append('-XsiteDropTime=5')
-            # - set vic window geometry
-            options.append('-Xgeometry=500x500')
+
+            if not self.positionWindow.value == 'Off':
+                # - set vic window geometry
+                try:
+                    
+                    if not self.windowGeometry:
+                        h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+                        w_sys = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
+                        try:
+                            w = GetScreenWidth(w_sys,h)
+                        except ValueError:
+                            self.log.debug('Error computing screen width; using system screen width %d', w_sys)
+                            w = w_sys
+                        window_width = w-300
+                        window_height = 300
+                        window_x = 300
+                        window_y = h-375
+                        border_w = wx.SystemSettings_GetMetric(wx.SYS_FRAMESIZE_X)
+                        if border_w > 0:
+                            window_width -= 4*border_w
+                            window_x += 2*border_w
+                        self.windowGeometry = (window_width,window_height,window_x,window_y)
+                    if self.positionWindow.value == 'Justify Left':
+                        options.append('-Xgeometry=%dx%d+%d+%d' % self.windowGeometry)
+                    else:
+                        options.append('-Xgeometry=%dx%d-%d+%d' % self.windowGeometry)
+                except:
+                    self.log.exception('Error calculating window placement')
+
             # - set number of columns of thumbnails to display
             options.append('-Xtile=%s' % self.tiles.value)
                     
@@ -196,6 +233,29 @@ class VideoConsumerServiceH264( AGService ):
             # add options beyond here)
             options.append( '%s/%d' % (self.streamDescription.location.host,
                                        self.streamDescription.location.port))
+
+            # Create a socket, send some data out, and listen for incoming data
+            try:
+                host = self.streamDescription.location.host
+                port = self.streamDescription.location.port
+                timeout = 1
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                if IsOSX():
+                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+                s.bind(('', port))
+                s.sendto('qwe',(host,port))
+                fdList = []
+                while not fdList:
+                    fdList = select.select([s.fileno()],[],[],timeout)
+                s.close()
+                s = None
+            except:
+                self.log.warn("Failed attempt to open firewall by sending data out on video port; continuing anyway")
+                if s:
+                    s.close()
+                    s = None
+
             self.log.info("Starting VideoConsumerServiceH264")
             self.log.info(" executable = %s" % self.executable)
             self.log.info(" options = %s" % options)
