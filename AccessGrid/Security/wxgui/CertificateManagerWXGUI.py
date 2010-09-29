@@ -513,7 +513,7 @@ class CertificateManagerWXGUI(CertificateManager.CertificateManagerUserInterface
         #
 
         if crsServerURL is None:
-            crsServerURL = "http://www-unix.mcs.anl.gov/fl/research/accessgrid/ca/agdev/certReqServer.cgi"
+            crsServerURL = "http://www.mcs.anl.gov/research/projects/accessgrid/ca/agdev/certReqServer.cgi"
         try:
             repo = self.certificateManager.GetCertificateRepository()
 

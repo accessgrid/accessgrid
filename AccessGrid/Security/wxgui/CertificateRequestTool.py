@@ -1065,7 +1065,7 @@ Please contact agdev-ca@mcs.anl.gov if you have questions.""" %(reqType, reqName
 
             crsURL = None
             if self.certInfo.GetType() == "anonymous":
-                crsURL = "http://www-unix.mcs.anl.gov/fl/research/accessgrid/ca/anonymous/anonReqServer.cgi"
+                crsURL = "http://www.mcs.anl.gov/research/projects/accessgrid/ca/anonymous/anonReqServer.cgi"
             success = gui.RequestCertificate(self.certInfo,
                                              self.password,
                                              proxyInfo[0],
