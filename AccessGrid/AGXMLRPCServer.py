@@ -45,6 +45,12 @@ class AsyncAGXMLRPCServer(AGXMLRPCServer):
             except socket.timeout:
                 pass
 
+            # handle_timeout was introduced in python 2.6
+            # in earlier python versions, call handle_timeout here to react to the timeout exception above
+            if sys.version < (2,6):
+                self.handle_timeout()
+
+    def handle_timeout(self):
             try:
                 if self.callback != None:
                     self.callback()
@@ -54,7 +60,6 @@ class AsyncAGXMLRPCServer(AGXMLRPCServer):
                 raise KeyboardInterrupt
             except:
                 traceback.print_exc()
-
 
     def run(self):
         self.running = True
