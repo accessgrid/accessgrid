@@ -319,8 +319,9 @@ class VenueClient:
             if wdmresources:
                 resources = wdmresources
         elif IsLinux() or IsFreeBSD():
-            # on linux, skip the x11 capture device
+            # on linux, skip the V4L and x11 capture devices
             resources = filter( lambda x: x.name != 'x11', resources)
+            resources = filter( lambda x: x.name.startswith('V4L:') == False, resources)
             
         profile = self.preferences.GetProfile()
         
