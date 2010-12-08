@@ -807,9 +807,9 @@ class VenueServer:
         try:
             self.eventService.shutdown()
         except IOError, e:
-            log.exception("Exception shutting down event client.", e)
+            log.exception("Exception shutting down event service.", e)
         except:
-            log.exception("Exception shutting down event client.")
+            log.exception("Exception shutting down event service.")
         
         try:
             self.hostingEnvironment.Stop()
