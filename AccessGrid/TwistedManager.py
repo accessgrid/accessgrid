@@ -6,6 +6,8 @@ import time
 from twisted.internet import reactor
 from itertools import count
 from twisted.python.runtime import seconds
+from twisted.internet.defer import Deferred
+from twisted.python.failure import Failure
 
 class TwistedManager(object):
     def __init__(self):
@@ -58,6 +60,16 @@ class TwistedManager(object):
             callback = self.twistedQueue.get()
             callback()
         return self.results.pop(key)
+
+
+def fakeDeferred(msg):
+    d = Deferred()
+    def cb():
+        print "deferred called back"
+        d.callback(msg)
+    reactor.callLater(0.05, cb)
+    return d
+
 
 #### pygame dependent version
 # works, good for comparison testing/debugging with above method.

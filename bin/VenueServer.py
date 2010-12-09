@@ -129,11 +129,19 @@ def main():
         # with Twisted 8, threadedselectreactor is not a directly usable
         #   reactor; it is only meant to help in writing other reactors
         #   http://twistedmatrix.com/trac/ticket/2126
-        from AccessGrid.TwistedManager import TwistedManager
+        from AccessGrid.TwistedManager import TwistedManager, fakeDeferred
         m = TwistedManager()
         m.start()
-        while reactor.running:
-            m.poll(0.05)
+        
+        #while server.IsRunning():
+        #    m.poll(0.05)
+
+        #while server.IsRunning():
+        #    res = m.getDeferred(fakeDeferred("got it!"))
+
+        while server.IsRunning():
+            time.sleep(0.05)
+
              
     log.debug("After main loop!")
 
