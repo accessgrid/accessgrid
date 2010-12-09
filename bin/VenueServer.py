@@ -28,6 +28,7 @@ try:
 except:
     from twisted.internet import threadedselectreactor
 threadedselectreactor.install()
+import twisted
 from twisted.internet import reactor
 from AccessGrid.Toolkit import Service, MissingDependencyError
 from AccessGrid.VenueServer import VenueServer
@@ -121,7 +122,18 @@ def main():
     # We start the execution
     server.RunInThread()
 
-    reactor.run()
+    
+    if twisted.version.major < 8:
+        reactor.run()
+    else:
+        # with Twisted 8, threadedselectreactor is not a directly usable
+        #   reactor; it is only meant to help in writing other reactors
+        #   http://twistedmatrix.com/trac/ticket/2126
+        from AccessGrid.TwistedManager import TwistedManager
+        m = TwistedManager()
+        m.start()
+        while reactor.running:
+            m.poll(0.05)
              
     log.debug("After main loop!")
 
