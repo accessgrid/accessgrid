@@ -4699,12 +4699,16 @@ class ContentListPanel(wx.Panel):
 
         if val == wx.ID_YES:
             # do the find a file thing
-            wildcard = "All Files (*.*)|*.*|"\
-                       "Executables (*.exe)|*.exe|"\
-                       "Compiled Python Scripts (*.pyc)|*.pyc|"\
-                       "Python Source Files (*.py)|*.py|"\
-                       "Batch Files (*.bat)|*.bat"
-            
+            if IsWindows():
+                wildcard = "All Files (*.*)|*.*|"\
+                           "Executables (*.exe)|*.exe|"\
+                           "Compiled Python Scripts (*.pyc)|*.pyc|"\
+                           "Python Source Files (*.py)|*.py|"\
+                           "Batch Files (*.bat)|*.bat"
+            else:
+                wildcard = "All Files (*)|*|"\
+                           "Compiled Python Scripts (*.pyc)|*.pyc|"\
+                           "Python Source Files (*.py)|*.py"
             dlg = wx.FileDialog(None, "Choose the program", "",
                                "", wildcard, wx.OPEN)
             if dlg.ShowModal() == wx.ID_OK:
