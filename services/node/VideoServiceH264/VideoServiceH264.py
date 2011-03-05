@@ -136,8 +136,8 @@ class VideoServiceH264( AGService ):
         self.encoding = OptionSetParameter( "Encoding", "mpeg4", self.encodingOptions )
         self.standard = TextParameter( "standard", "" )
         self.tiles = OptionSetParameter( "Thumbnail Columns", "4", VideoServiceH264.tileOptions )
-        self.bandwidth = RangeParameter( "Bandwidth", 3000, 0, 10240 )
-        self.framerate = RangeParameter( "Frame Rate", 30, 1, 30 )
+        self.bandwidth = RangeParameter( "Bandwidth", 2500, 0, 10240 )
+        self.framerate = RangeParameter( "Frame Rate", 24, 1, 30 )
         self.quality = RangeParameter( "Quality", 75, 1, 100 )
         self.transmitOnStart = OptionSetParameter( "Transmit on Startup", "On", VideoServiceH264.onOffOptions )
         self.muteSources = OptionSetParameter( "Mute Sources", "Off", VideoServiceH264.onOffOptions )
@@ -571,7 +571,7 @@ class VideoServiceH264( AGService ):
                                                  self.resource[3] )
         else:
             if ("Medium" in self.resource[3]):
-                self.inputsize = OptionSetParameter( "Capture Size", "Large",
+                self.inputsize = OptionSetParameter( "Capture Size", "Medium",
                                                      self.resource[3] )
             else:
                 self.inputsize = OptionSetParameter( "Capture Size", self.resource[3][0],
