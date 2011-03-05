@@ -4,7 +4,7 @@ description = Vic-based video service using h264 and mpeg4
 capabilities = Capability1
 executable = VideoProducerServiceH264.py
 platform = neutral
-version = 3.3
+version = 3.4
 inlineClass = VideoProducerServiceH264
 resourceNeeded = 1
 

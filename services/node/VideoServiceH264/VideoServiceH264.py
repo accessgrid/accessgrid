@@ -40,7 +40,7 @@ option add Vic.defaultTTL 127 startupFile
 option add Vic.rtpName \"%s\" startupFile
 option add Vic.rtpEmail \"%s\" startupFile
 option add Vic.useDeinterlacerComp %s startupFile
-option add Vic.scalerCompResolution \"%s\" startupFile
+option add Vic.largeSizeResolution \"%s\" startupFile
 proc user_hook {} {
     global videoDevice inputPort transmitButton transmitButtonState inputSize
 
@@ -127,7 +127,7 @@ class VideoServiceH264( AGService ):
         self.startPriorityOption.value = self.startPriority
         self.id = str(GUID())
 
-        self.scaler = None
+        self.resolution = None
 
         # Set configuration parameters
         # note: the datatype of the port, standard and inputsize parameters change when a resource is set!
@@ -136,8 +136,8 @@ class VideoServiceH264( AGService ):
         self.encoding = OptionSetParameter( "Encoding", "mpeg4", self.encodingOptions )
         self.standard = TextParameter( "standard", "" )
         self.tiles = OptionSetParameter( "Thumbnail Columns", "4", VideoServiceH264.tileOptions )
-        self.bandwidth = RangeParameter( "Bandwidth", 800, 0, 10240 )
-        self.framerate = RangeParameter( "Frame Rate", 24, 1, 30 )
+        self.bandwidth = RangeParameter( "Bandwidth", 3000, 0, 10240 )
+        self.framerate = RangeParameter( "Frame Rate", 30, 1, 30 )
         self.quality = RangeParameter( "Quality", 75, 1, 100 )
         self.transmitOnStart = OptionSetParameter( "Transmit on Startup", "On", VideoServiceH264.onOffOptions )
         self.muteSources = OptionSetParameter( "Mute Sources", "Off", VideoServiceH264.onOffOptions )
@@ -333,10 +333,10 @@ class VideoServiceH264( AGService ):
             else:
                 inputsize = 2
 
-            if self.scaler != None:
-                scalerResolution = self.scaler.value
+            if self.resolution != None:
+                resolution = self.resolution.value
             else:
-                scalerResolution = "none"
+                resolution = "none"
 
             name=email="Participant"
             if self.profile:
@@ -358,7 +358,7 @@ class VideoServiceH264( AGService ):
                                     "%s(%s)" % (name,self.streamname.value),
                                     email,
                                     OnOff(self.encodingDeinterlacer.value),
-                                    scalerResolution,
+                                    resolution,
                                     email,
                                     OnOff(self.transmitOnStart.value),
                                     portstr,
@@ -571,7 +571,7 @@ class VideoServiceH264( AGService ):
                                                  self.resource[3] )
         else:
             if ("Medium" in self.resource[3]):
-                self.inputsize = OptionSetParameter( "Capture Size", "Medium",
+                self.inputsize = OptionSetParameter( "Capture Size", "Large",
                                                      self.resource[3] )
             else:
                 self.inputsize = OptionSetParameter( "Capture Size", self.resource[3][0],
@@ -586,33 +586,33 @@ class VideoServiceH264( AGService ):
             self.configuration.append(self.inputsize)
 
         if len(self.resource[4]) > 0:
-            # Find the config element that refers to "scaler"
+            # Find the config element that refers to "resolution"
             try:
-                index = self.configuration.index(self.scaler)
+                index = self.configuration.index(self.resolution)
                 found = 1
             except ValueError:
                 found = 0
             except AttributeError:
                 found = 0
 
-            # Create the scaler parameter as an option set parameter, now
-            # that we have multiple possible values for "scaler"
-            # If self.scaler is valid, keep it instead of setting the default value.
-            if (( isinstance(self.scaler, TextParameter) or isinstance(self.scaler, ValueParameter) )
-                and self.scaler.value != "" and self.scaler.value in self.resource[4]):
-                self.scaler = OptionSetParameter( "Encoding Scaler Resolution", self.scaler.value,
+            # Create the resolution parameter as an option set parameter, now
+            # that we have multiple possible values for "resolution"
+            # If self.resolution is valid, keep it instead of setting the default value.
+            if (( isinstance(self.resolution, TextParameter) or isinstance(self.resolution, ValueParameter) )
+                and self.resolution.value != "" and self.resolution.value in self.resource[4]):
+                self.resolution = OptionSetParameter( "Large Size/Scaler Resolution", self.resolution.value,
                                                   self.resource[4] )
             else:
-                self.scaler = OptionSetParameter( "Encoding Scaler Resolution", self.resource[4][0],
+                self.resolution = OptionSetParameter( "Large Size/Scaler Resolution", self.resource[4][0],
                                                   self.resource[4] )
 
-            self.log.info('scaler = %s', self.scaler.value)
+            self.log.info('resolution = %s', self.resolution.value)
 
-            # Replace or append the "scaler" element
+            # Replace or append the "resolution" element
             if found:
-                self.configuration[index] = self.scaler
+                self.configuration[index] = self.resolution
             else:
-                self.configuration.append(self.scaler)
+                self.configuration.append(self.resolution)
 
         # If the stream name has not been set, set it to the resource name
         if not self.streamname.value:
@@ -669,15 +669,15 @@ class VideoServiceH264( AGService ):
                         sizeList.append("Medium")
                     else:
                         sizeList.append(size.childNodes[0].data.capitalize())
-            scaleList = [] # scaler resolutions supported by device
-            scaleResolutions = device.getElementsByTagName("scale")
-            for scale in scaleResolutions:
-                if scale.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
-                    scaleList.append(scale.childNodes[0].data.capitalize())
+            resolutionList = [] # resolutions supported by device
+            resolutions = device.getElementsByTagName("large_size_resolution")
+            for res in resolutions:
+                if res.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
+                    resolutionList.append(res.childNodes[0].data.capitalize())
 
             typeList.sort()
             sizeList.sort()
-            self.resources.append([deviceName, portList, typeList, sizeList, scaleList])
+            self.resources.append([deviceName, portList, typeList, sizeList, resolutionList])
 
         return self.resources
 
