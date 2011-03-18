@@ -65,10 +65,10 @@ class TimeoutTransport(xmlrpclib.Transport):
         host, extra_headers, x509 = self.get_host_info(host)
         if self.httpconn:
             self.freeconn()
-        if hasattr(xmlrpclib.Transport, 'getresponse'):
-            self.httpconn = TimeoutHTTP(host,timeout=self.timeout)
-        else:
+        if hasattr(xmlrpclib.Transport, 'single_request'):
             self.httpconn = TimeoutHTTPConnection(host,timeout=self.timeout)
+        else:
+            self.httpconn = TimeoutHTTP(host,timeout=self.timeout)
         return self.httpconn
             
     def freeconn(self):
@@ -128,10 +128,10 @@ class UrllibTransport(xmlrpclib.Transport):
 
     def make_connection(self, host):
         host, extra_headers, x509 = self.get_host_info(host)
-        if hasattr(xmlrpclib.Transport, 'getresponse'):
-            self.httpconn = TimeoutHTTP(host,timeout=self.timeout)
-        else:
+        if hasattr(xmlrpclib.Transport, 'single_request'):
             self.httpconn = TimeoutHTTPConnection(host,timeout=self.timeout)
+        else:
+            self.httpconn = TimeoutHTTP(host,timeout=self.timeout)
         return self.httpconn
         
     def freeconn(self):
