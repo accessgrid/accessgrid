@@ -19,10 +19,13 @@ patch_xfce_menu () {
   rm -f ${patchfile}
 }
 
-haveAGmenu=`grep AccessGridMarker etc/xfce/xdg/menus/xfce-applications.menu`
-[ $? -ne 0 ] && {
+haveAGmenu=`grep AccessGridMarker etc/xfce/xdg/menus/xfce-applications.menu 1>/dev/null 2>/dev/null`
+# 0 return codes from grep means the file was previously patched
+# 1 return codes from grep means the file was NOT previously patched i.e. do it
+# 2 return codes from grep means the file wasn't found i.e. xfce not installed?
+[ $? -eq 1 ] && {
   echo "Patching XFCE main menu"
   patch_xfce_menu
 }
 
-echo "All done"
+#echo "All done"

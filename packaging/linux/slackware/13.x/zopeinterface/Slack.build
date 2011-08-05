@@ -36,7 +36,7 @@ PATH=/sbin:${PATH}
 check_prereqs ${prereqs} || exit
 
 get_srcpkg ${srcpkg}
-
+check_md5sum
 
 #
 #
@@ -66,9 +66,21 @@ cp README.txt \
 
 # Include build script
 mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
-cp -a ${here}/Slack.build ${here}/slack-* ${here}/doinst.sh ${here}/patches \
-    ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+( cd ${here}
+    #for bfd in Slack.build slack-* doinst.sh decklink # OLD
+    for bfd in Slack.build slack-* doinst.sh
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
 
+    [ -e patches ] && {
+        mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches
+        cp -a patches/* ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches/
+    }
+
+    # Don't want .svn entries
+    find ${pkgdir}/ -name ".svn" |xargs rm -rf
+)
 
 # Package it 
 #

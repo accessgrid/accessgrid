@@ -1,0 +1,11 @@
+--- src/net_udp.c.orig	2010-09-07 15:16:30.000000000 +1000
++++ src/net_udp.c	2011-06-04 10:35:53.827412157 +1000
+@@ -288,7 +288,7 @@
+ 
+ static socket_udp *udp_init4(const char *addr, const char *iface, uint16_t rx_port, uint16_t tx_port, int ttl)
+ {
+-	int                 	 reuse = 1, udpbufsize=131072;
++	int                 	 reuse = 1, udpbufsize=1048576;
+ 	struct sockaddr_in  	 s_in;
+ 
+ #ifdef WIN32

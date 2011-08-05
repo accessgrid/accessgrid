@@ -1,16 +1,14 @@
 name=vpcscreen
-version=0.2
-release=7
+version=0.2.1
+release=1
+svnversion=0r993
 arch=${ARCH:-`uname -m`}
-srcpkg0=VPCScreen-0.2.tar.gz
-srcpkg1=VPMedia-0.1-r5.tar.gz
-srcpkg2=VPC-0.1-r5.tar.gz
-srcpkg3=common-1.1.16-r5.tar.gz
+srcpkg=if-media-snapshot-${svnversion}.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
-docdir=${pkgdir}/usr/doc/VPCScreen-${version}
+docdir=${pkgdir}/usr/doc/vpcscreen-${version}
 tag=${TAG:-_uqv}
 pkgname=${name}-${version}-${arch}-${release}${tag}.txz
 functions=/usr/lib/slackbuilds/functions
@@ -45,30 +43,24 @@ ARCH_CONFIGURE="--libdir=$LIBDIR"
 
 # Add space separated list of prerequsite packages here
 #
-prereqs="pkgtools scons wxPythonGTK libdv"
+#prereqs="pkgtools scons wxPythonGTK libdv vpmedia-snapshot vpc-snapshot "
+prereqs="pkgtools scons wxPythonGTK libdv ffmpeg libvpmedia libvpc "
 
 here=`pwd`
-patch0=${here}/patches/VPCScreen-0.2-scons.patch
-patch1=${here}/patches/VPCScreen-0.2-filepaths.patch
-patch2=${here}/patches/VPCScreen-0.2-64bit.patch
-patch3=${here}/patches/VPCScreen-0.2-debug.patch
-patch4=${here}/patches/patch-VPCScreen-0.2-VPCScreenProducerService.py
-patch5=${here}/patches/patch-VPMedia-types
-patch6=${here}/patches/patch-VPC-131fixes.patch
-patch7=${here}/patches/patch-VLPMedia-extradebugging.patch
-patch8=${here}/patches/vpmedia-ttlhack.patch
 
-set -e
+cat patches/xrc.diff.in | sed "s:DOCDIR:/usr/doc/${name}-${version}:g" >patches/xrc.diff
+patch0=${here}/patches/xrc.diff
+patch1=${here}/patches/VPCScreen2-VPCScreenProducerService_py.diff
+patch2=${here}/patches/sconstruct_vpcscreen.diff
+
+#set -e
 
 PATH=/sbin:${PATH}
 . ${functions}
 
 check_prereqs ${prereqs} || exit
 
-get_srcpkg ${srcpkg0}
-get_srcpkg ${srcpkg1}
-get_srcpkg ${srcpkg2}
-get_srcpkg ${srcpkg3}
+get_srcpkg ${srcpkg}
 
 
 #
@@ -76,15 +68,15 @@ get_srcpkg ${srcpkg3}
 [ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
 [ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
 mkdir -p ${pkgdir}
-mkdir -p ${builddir}
 
 #
 #
+cd ${buildroot}
+tar zxvf ${here}/${srcpkg}
+mv if-media-snapshot-${svnversion} ${builddir}
 cd ${builddir}
-tar zxvf ${here}/${srcpkg0}
-tar zxvf ${here}/${srcpkg1}
-tar zxvf ${here}/${srcpkg2}
-tar zxvf ${here}/${srcpkg3}
+#cp -p VPCScreen2/SConstruct VPCScreen2/SConstruct.orig
+#tr -d "\r" <VPCScreen2/SConstruct.orig >VPCScreen2/SConstruct
 
 # Apply patches
 # like this: do_patch ${patch0}
@@ -92,48 +84,28 @@ tar zxvf ${here}/${srcpkg3}
 do_patch ${patch0}
 do_patch ${patch1}
 do_patch ${patch2}
-do_patch ${patch3}
-do_patch ${patch4}
-do_patch ${patch5}
-if [ ! "$slversion" = "13.0" ]; then
-  # only for (and, presumably greater than) 13.1 #
-  do_patch ${patch6}
-fi
-do_patch ${patch7}
-do_patch ${patch8}
 
 echo "Post patch sleep ..."
 sleep 5
 
 # Build & install
 #
-( cd common && \
-scons configure && \
-scons
-)
-( cd VPMedia && \
-scons TOP_DIR=${builddir} configure && \
-scons TOP_DIR=${builddir}
-)
-( cd VPC && \
-scons TOP_DIR=${builddir}
-)
-( cd VPCScreen-${version} && \
-scons TOP_DIR=${builddir}
-zip -0 VPCScreenProducerService.zip VPCScreenProducerService.py VPCScreenProducerService.svc
+( cd VPCScreen2
+  LIBTYPE=${LIBTYPE} scons
+  zip -0 VPCScreenProducerService.zip VPCScreenProducerService.py VPCScreenProducerService.svc
 )
 
 install -d ${pkgdir}/usr/bin
 install -d ${pkgdir}/usr/share/VPCScreen
 install -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices
-install -m 0755 -s VPCScreen-${version}/VPCScreenCapture ${pkgdir}/usr/bin/
-install -m 0644 VPCScreen-${version}/VPCScreenCapture.xrc ${pkgdir}/usr/share/VPCScreen/
-install -m 0644 VPCScreen-${version}/VPCScreenProducerService.zip ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/
+install -m 0755 -s VPCScreen2/VPCScreenCapture ${pkgdir}/usr/bin/
+install -m 0644 VPCScreen2/VPCScreenCapture.xrc ${pkgdir}/usr/share/VPCScreen/
+install -m 0644 VPCScreen2/VPCScreenProducerService.zip ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/
 
 # Docs
 #
 mkdir -p ${docdir}
-cp VPCScreen-${version}/vpc-about.html VPCScreen-${version}/vpc-help.html \
+cp VPCScreen2/vpc-about.html VPCScreen2/vpc-help.html \
 	${docdir}/
 
 # Include build script
@@ -148,6 +120,7 @@ mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
 # Package it 
 #
 mkdir -p ${pkgdir}/install
+autogen_slack_required
 for pkgfile in slack-required slack-conflicts slack-suggests slack-desc doinst.sh
 do
   [ -f ${here}/${pkgfile} ] && cat ${here}/${pkgfile} >> ${pkgdir}/install/${pkgfile}
@@ -165,9 +138,6 @@ cd ${here}
 [ -d ${builddir} -a ${builddir} != / ] && rm -rf ${builddir}
 [ -d ${pkgdir} -a ${pkgdir} != / ] && rm -rf ${pkgdir}
 rm -f ${srcpkg0}
-rm -f ${srcpkg1}
-rm -f ${srcpkg2}
-rm -f ${srcpkg3}
 
 
 # Install immediately?
@@ -178,6 +148,12 @@ fi
 
 
 # Changelog
+#
+# 20110509 CKW - release 1 of 0.2.1
+#  - build with new libvpmedia and libvpc packages
+#
+# 20110505 CKW - release 8
+#  - build from separate libuclmmbase, vpmedia & vpc packages
 #
 # 20100402 CKW - release 7
 #  - testing ttl stuff

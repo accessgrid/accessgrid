@@ -1,6 +1,6 @@
 #(elementtree)
 bajjer
-feedparser
+#feedparser
 #pyxml
 zopeinterface
 ag-zsi

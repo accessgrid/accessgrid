@@ -1,7 +1,12 @@
 name=agvic
 version=1.4
-release=96
-svn_revision=r4876
+release=992
+#svn_revision=r4876
+#svn_revision=r4883
+#svn_revision=r4890
+#svn_revision=r4891
+svn_revision=r4901
+DECKLINK_SDK_VERSION=7.8.1
 ffmegversion=r20462
 libswscaleversion=r29824
 #x264version=snapshot-20090708-2245
@@ -11,6 +16,7 @@ srcpkg0=mmedia-${svn_revision}.tar.bz2
 srcpkg1=ffmpeg-r20462.tar.bz2
 srcpkg2=libswscale-r29824.tar.bz2
 srcpkg3=x264-${x264version}.tar.bz2
+srcpkg4=DeckLink_SDK_${DECKLINK_SDK_VERSION}.zip
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
@@ -44,7 +50,7 @@ ARCH_CONFIGURE="--libdir=$LIBDIR"
 
 # Add space separated list of prerequsite packages here
 #
-prereqs="tcl yasm libdv v4l-utils decklink-sdk "
+prereqs="tcl yasm libdv v4l-utils libuclmmbase "
 # In particular, x264-snapshot-20090819.2245
 
 here=`pwd`
@@ -89,10 +95,12 @@ get_srcpkg ${srcpkg0}
 get_srcpkg ${srcpkg1}
 get_srcpkg ${srcpkg2}
 get_srcpkg ${srcpkg3}
+get_srcpkg ${srcpkg4}
 check_md5sum ${srcpkg0}.md5sum
 check_md5sum ${srcpkg1}.md5sum
 check_md5sum ${srcpkg2}.md5sum
 check_md5sum ${srcpkg3}.md5sum
+check_md5sum ${srcpkg4}.md5sum
 
 #
 #
@@ -109,13 +117,12 @@ cd ${builddir}
 (cd vic && tar xvf ${here}/${srcpkg1})	# ; ln -s ffmpeg-0.5 ffmpeg)
 (cd vic/ffmpeg && tar xvf ${here}/${srcpkg2})
 (cd vic && tar xvf ${here}/${srcpkg3}; ln -s x264-${x264version} x264 )
-#(cd vic && cp -a ${here}/decklink . )
-# Obtain latest decklink files from decklink-sdk installation.
-#
-mkdir ${builddir}/vic/decklink
-cp -p /usr/include/decklink/* ${builddir}/vic/decklink/
-cp -p /usr/share/decklink/DeckLinkAPIDispatch.cpp ${builddir}/vic/decklink/
 
+mkdir ${builddir}/vic/decklink
+( 
+  unzip -o ${here}/${srcpkg4}
+  cp -p Blackmagic\ DeckLink\ SDK\ ${DECKLINK_SDK_VERSION}/Linux/include/* ${builddir}/vic/decklink/
+)
 
 # Apply patches
 # like this: do_patch ${patch0}
@@ -127,10 +134,10 @@ echo -n "Post patch sleep ..."
 sleep 3
 
 # Build with system tcl & tk
-(cd common && autoconf -f && ./configure && make) || {
-  echo "Couldn't configure"
-  exit 1
-}
+#(cd common && autoconf -f && ./configure && make) || {
+#  echo "Couldn't configure"
+#  exit 1
+#}
 ( cd vic
   autoconf -f
   do_patch ${patch0}
@@ -218,6 +225,7 @@ rm -f ${srcpkg0}
 rm -f ${srcpkg1}
 rm -f ${srcpkg2}
 rm -f ${srcpkg3}
+rm -f ${srcpkg4}
 
 
 # Install immediately?
@@ -229,8 +237,22 @@ fi
 
 # Changelog
 #
+# 20110504 CKW - release 992
+#  - new upstream svn version #4901
+#
+# 20101006 CKW - release 991
+#  - new upstream svn version #4891
+#    (includes patch for "oversize" mpeg4 packets)
+#
+# 20101005 CKW - release 98
+#  - new upstream svn version #4890
+#
+# 20100907 CKW - release 97
+#  - new upstream svn version #4883
+#  - includes changes for new decklink API
+# 
 # 20100812 CKW - release 96
-#  - new upstreams svn version #4876
+#  - new upstream svn version #4876
 #  - make decklink-sdk a prereq and use its files blackmagic-design cards
 #
 # 20100518 CKW - release 95

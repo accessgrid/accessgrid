@@ -1,10 +1,10 @@
 name=agrat
 version=4.4.01
-#svnversion=r4393
-svnversion=r4651
-release=6
+#svnversion=r4651
+svnversion=r4891
+release=7
 arch=${ARCH:-`uname -m`}
-srcpkg=mmedia-${svnversion}.tar.gz
+srcpkg=mmedia-${svnversion}.tar.bz2
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
@@ -65,7 +65,7 @@ mkdir -p ${pkgdir}
 #
 #
 cd ${buildroot}
-tar zxvf ${here}/${srcpkg}
+tar xvf ${here}/${srcpkg}
 mv mmedia-${svnversion} ${name}-${version}
 cd ${builddir}
 
@@ -118,10 +118,19 @@ cp COPYRIGHT INSTALL.TXT MODS README README.HPUX10 README.IXJ \
 # Include build script
 mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
 ( cd ${here}
-    for bfd in Slack.build slack-* doinst.sh patches
+    #for bfd in Slack.build slack-* doinst.sh decklink # OLD
+    for bfd in Slack.build slack-* doinst.sh
     do
         [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
     done
+
+    [ -e patches ] && {
+        mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches
+        cp -a patches/* ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches/
+    }
+
+    # Don't want .svn entries
+    find ${pkgdir}/ -name ".svn" |xargs rm -rf
 )
 
 # Package it 
@@ -155,7 +164,10 @@ fi
 
 # Changelog
 #
-# 20200309 CKW release 6
+# 20101021 CKW release 7
+#  - use updated svn release 4891
+#
+# 20100309 CKW release 6
 #  - use updated svn release 4651
 #
 # 20090522 CKW release 5

@@ -51,6 +51,8 @@ set -e
 PATH=/sbin:${PATH}
 . ${functions}
 
+check_prereqs ${prereqs} || exit
+
 get_srcpkg ${srcpkg0}
 get_srcpkg ${srcpkg1}
 

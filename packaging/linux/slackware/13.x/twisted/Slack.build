@@ -1,5 +1,5 @@
 name=twisted
-version=10.0.0
+version=8.2.0
 release=1
 arch=${ARCH:-`uname -m`}
 srcpkg=Twisted-${version}.tar.bz2
@@ -8,13 +8,14 @@ builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 tag=${TAG:-_uqv}
-pkgname=${name}-${version}-${arch}-${release}${tag}.tgz
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
 releasedir=${RELEASEDIR:-/tmp}
 functions=/usr/lib/slackbuilds/functions
 
-master_sites=http://tmrc.mit.edu/mirror/twisted/Twisted/2.5/
-master_sites=http://tmrc.mit.edu/mirror/twisted/Twisted/10.0/
-master_sites=http://www.vislab.uq.edu.au/ag3/freebsd/distfiles/
+master_sites=http://tmrc.mit.edu/mirror/twisted/Twisted/2.5
+master_sites=http://tmrc.mit.edu/mirror/twisted/Twisted/10.0
+master_sites=http://tmrc.mit.edu/mirror/twisted/Twisted/8.2
+master_sites=http://www.vislab.uq.edu.au/ag3/freebsd/distfiles
 distdir=/nfs/distfiles/
 
 if [ "${arch}" = "i386" ]; then
@@ -67,9 +68,21 @@ cp CREDITS ChangeLog.Old INSTALL LICENSE NEWS README \
 
 # Include build script
 mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
-cp -a ${here}/Slack.build ${here}/slack-* ${here}/doinst.sh ${here}/patches \
-${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+( cd ${here}
+    #for bfd in Slack.build slack-* doinst.sh decklink # OLD
+    for bfd in Slack.build slack-* doinst.sh
+    do
+        [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
+    done
 
+    [ -e patches ] && {
+        mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches
+        cp -a patches/* ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches/
+    }
+
+    # Don't want .svn entries
+    find ${pkgdir}/ -name ".svn" |xargs rm -rf
+)
 
 # Package it 
 #
@@ -81,6 +94,7 @@ done
 chmod 0644 ${pkgdir}/install/slack-*
 
 cd ${pkgdir}
+[ "${EUID}" = "0" ] && chown -R root:root ${pkgdir}
 /sbin/makepkg -c n -l y ${releasedir}/${pkgname}
 cd ${here}
 
@@ -98,8 +112,6 @@ fi
 
 
 ## Changelog
-#
-# 20100309 - release 1 0f 10.0.0
 #
 # 20090522 - release 1 of 8.2
 #  - new upstream release

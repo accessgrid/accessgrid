@@ -1,6 +1,6 @@
 name=accessgrid3.2
 version=3.2
-release=2
+release=4
 arch=${ARCH:-noarch}
 prefix=${PREFIX:-/usr}
 srcpkg0=AccessGrid-${version}-1.tar.gz
@@ -186,6 +186,12 @@ fi
 exit
 
 # Changelog
+#
+# 20110503 CKW - release 4
+#  - patch to use latest H264 services (H264services-r6829.diff)
+#
+# 20111015 CKW - release 3
+#  - patch to fix "disappearing bridges" (AGXMLRPCServer.py)
 #
 # 20100904 CKW - release 2
 #  - patch to align splash screen text

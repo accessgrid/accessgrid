@@ -9,7 +9,8 @@ patch-services-node-AudioService-AudioService.build.py
 patch-services-node-VideoService-VideoService.build.py
 patch-services-node-VideoProducerService-VideoProducerService.build.py
 patch-services-node-VideoConsumerService-VideoConsumerService.build.py
-patch-services-node-VideoProducerServiceH264-VideoProducerServiceH264.py
+#patch-services-node-VideoProducerServiceH264-VideoProducerServiceH264.py
 patch-services-node-VideoServiceH264-VideoServiceH264.build.py
+H264services-r6829.diff
 
 patch-packaging-servicesToShip

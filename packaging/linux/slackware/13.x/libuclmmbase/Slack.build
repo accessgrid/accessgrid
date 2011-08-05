@@ -1,21 +1,20 @@
-name=m2crypto
-version=0.20.2
-release=1
+name=libuclmmbase
+version=1.2.18
+release=2
 arch=${ARCH:-`uname -m`}
-srcpkg=M2Crypto-${version}.tar.gz
+svn_revision=r4891
+srcpkg=mmedia-${svn_revision}.tar.bz2
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
 pkgdir=${buildroot}/${name}-${version}-pkg
 docdir=${pkgdir}/usr/doc/${name}-${version}
 tag=${TAG:-_uqv}
-pkgname=${name}-${version}-${arch}-${release}${tag}.tgz
-#pkgname=${name}-${version}-${arch}-${release}${tag}.txz
+pkgname=${name}-${version}-${arch}-${release}${tag}.txz
 distro=slackware
 
 functions=/usr/lib/slackbuilds/functions
 
-master_sites=http://pypi.python.org/packages/source/M/M2Crypto
 master_sites=http://www.vislab.uq.edu.au/ag3/distfiles/
 distdir=/nfs/linux/distfiles/
 releasedir=${RELEASEDIR:-/tmp}
@@ -39,10 +38,11 @@ ARCH_CONFIGURE="--libdir=$LIBDIR"
 # Add space separated list here 
 # of prerequsite packages _for building_
 #
-prereqs="slackbuilds swig python openssl"
+prereqs="slackbuilds "
 
 here=`pwd`
 #patch0=${here}/patches/patch-something.c
+patch0=${here}/patches/udp_buffersize.diff
 
 PATH=/sbin:${PATH}
 . ${functions}
@@ -64,24 +64,34 @@ mkdir -p ${pkgdir}
 #
 #
 cd ${buildroot}
-tar zxvf ${here}/${srcpkg}
-mv M2Crypto-${version} ${builddir}
-cd ${builddir}
+tar xvf ${here}/${srcpkg}
+mv mmedia-${svn_revision} ${name}-${version}
+cd ${builddir}/common
 
 # Apply patches in 00list:
 #       do_patches
 # individually:
 #       do_patch ${patch0}
 #
+do_patch ${patch0}
 
-#echo -n "Post patch sleep 5 ..."
-#sleep 5
-#echo
+echo -n "Post patch sleep 5 ..."
+sleep 5
+echo
 
 # Build & install
 #
-python setup.py build
-python setup.py install --root=${pkgdir}
+CFLAGS="$SLKCFLAGS" \
+./configure     \
+	--prefix=${prefix}   \
+	--mandir=${prefix}/man \
+	--docdir=${prefix}/doc/${name}-${version} \
+	${ARCH_CONFIGURE}     \
+	--build=${arch}-${distro}-linux \
+	--enable-static \
+	--enable-shared \
+&& make \
+&& make install DESTDIR=${pkgdir} || exit 1
 
 # Compress and fix manpage links.
 #
@@ -95,25 +105,18 @@ python setup.py install --root=${pkgdir}
 # Docs
 #
 mkdir -p ${docdir}
-cp CHANGES INSTALL LICENCE README \
+cp COPYRIGHT MODS README VERSION \
 	${docdir}/
+
+# ldsoconfd_entry
 
 # Include build script
 mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
 ( cd ${here}
-    #for bfd in Slack.build slack-* doinst.sh decklink # OLD
-    for bfd in Slack.build slack-* doinst.sh
+    for bfd in Slack.build slack-* doinst.sh patches
     do
         [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
     done
-
-    [ -e patches ] && {
-        mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches
-        cp -a patches/* ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches/
-    }
-
-    # Don't want .svn entries
-    find ${pkgdir}/ -name ".svn" |xargs rm -rf
 )
 
 # Package it 
@@ -127,6 +130,7 @@ done
 chmod 0644 ${pkgdir}/install/slack-*
 
 
+[ "${EUID}" = "0" ] && chown -R root:root ${pkgdir} ; # Maybe you want this ...
 cd ${pkgdir}
 /sbin/makepkg -p -c n -l y ${releasedir}/${pkgname}
 cd ${here}
@@ -149,5 +153,8 @@ fi
 
 # Changelog
 #
-# 20100130 CKW - release 1 of 0.20.2
+# 20110604 CKW - release 2
+#  - add patch for bigger UDP buffer size
+#
+# 20101021 CKW - release 1 of 1.2.18
 #

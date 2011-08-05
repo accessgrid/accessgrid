@@ -1,8 +1,8 @@
 name=quickbridge
-version=3.0.2
-release=3
+version=3.2
+release=1
 arch=${ARCH:-`uname -m`}
-srcpkg=AccessGrid-${version}.src.tar.gz
+srcpkg=AccessGrid-${version}-1.tar.gz
 TMP=${TMP:-/var/tmp}
 buildroot=${TMP}
 builddir=${buildroot}/${name}-${version}
@@ -49,6 +49,7 @@ PATH=/sbin:${PATH}
 check_prereqs ${prereqs} || exit
 
 get_srcpkg ${srcpkg}
+check_md5sum
 
 
 #
@@ -86,10 +87,19 @@ mkdir -p ${docdir}
 # Include build script
 mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}
 ( cd ${here}
-    for bfd in Slack.build slack-* doinst.sh patches
+    #for bfd in Slack.build slack-* doinst.sh decklink # OLD
+    for bfd in Slack.build slack-* doinst.sh
     do
         [ -e ${bfd} ] && cp -a ${bfd} ${pkgdir}/usr/src/slackbuilds/${name}-${version}/
     done
+
+    [ -e patches ] && {
+        mkdir -p ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches
+        cp -a patches/* ${pkgdir}/usr/src/slackbuilds/${name}-${version}/patches/
+    }
+
+    # Don't want .svn entries
+    find ${pkgdir}/ -name ".svn" |xargs rm -rf
 )
 
 # Package it 
