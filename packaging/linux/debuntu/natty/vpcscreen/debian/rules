@@ -1,0 +1,63 @@
+#!/usr/bin/make -f
+
+PACKAGE = vpcscreen
+version = 0.2
+docdir = debian/tmp/usr/share/doc/$(PACKAGE)
+pkgdir = debian/tmp
+here=`pwd`
+AGTKDATABASE=/usr/share
+
+include /usr/share/quilt/quilt.make
+
+
+configure: configure-stamp
+configure-stamp: $(QUILT_STAMPFN)
+	dh_testdir
+
+build: configure
+	dh_testdir
+	scons
+	zip -0 VPCScreenProducerService.zip VPCScreenProducerService.py VPCScreenProducerService.svc
+
+clean:	unpatch
+	dh_testdir
+	rm -f build patched
+	rm -rf *~ debian/tmp debian/*~ debian/files* debian/substvars
+	dh_prep
+
+binary-indep:   build
+	dh_testdir
+
+binary-arch:    build
+	dh_testdir
+	dh_prep
+
+	install -d debian/tmp/DEBIAN $(docdir)
+	install -d ${pkgdir}/usr/bin
+	install -d ${pkgdir}/usr/share/VPCScreen
+	install -d ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices
+	install -m 0755 -s VPCScreenCapture ${pkgdir}/usr/bin/
+	install -m 0644 VPCScreenCapture.xrc ${pkgdir}/usr/share/VPCScreen/
+	install -m 0644 vpc-help.html ${pkgdir}/usr/share/VPCScreen/
+	install -m 0644 vpc-about.html ${pkgdir}/usr/share/VPCScreen/
+	install -m 0644 VPCScreenProducerService.zip ${pkgdir}/${AGTKDATABASE}/AccessGrid3/NodeServices/
+
+	dh_installdocs
+	dh_install --sourcedir=debian/tmp
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_makeshlibs
+	dh_shlibdeps
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+
+
+binary: binary-indep binary-arch
+
+
+.PHONY: binary binary-arch binary-indep clean

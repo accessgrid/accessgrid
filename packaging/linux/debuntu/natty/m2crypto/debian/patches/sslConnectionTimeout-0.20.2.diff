@@ -1,0 +1,12 @@
+diff -urNad m2crypto-0.20.2.orig/M2Crypto/SSL/Connection.py m2crypto-0.20.2/M2Crypto/SSL/Connection.py
+--- m2crypto-0.20.2.orig/M2Crypto/SSL/Connection.py	2009-10-07 14:24:28.000000000 +1000
++++ m2crypto-0.20.2/M2Crypto/SSL/Connection.py	2010-04-02 23:34:02.671224237 +1000
+@@ -49,6 +49,8 @@
+         self._fileno = self.socket.fileno()
+         
+         self.blocking = self.socket.gettimeout()
++        if self.blocking is None:
++            self.blocking = -1.0
+         
+         self.ssl_close_flag = m2.bio_noclose
+ 

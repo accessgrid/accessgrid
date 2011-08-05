@@ -1,3 +1,9 @@
+ag-vic2.8ucl (1.4-0ubuntu5) jaunty; urgency=low
+
+  * New upstream code (svn r4883) includes decklink support
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 08 Sep 2010 09:27:34 +1000
+
 ag-vic2.8ucl (1.4-0ubuntu4) jaunty; urgency=low
 
   * New upstream realease (SVN r4449)

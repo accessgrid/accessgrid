@@ -16,9 +16,9 @@ the accessgridX.Y package. Otherwise the order is unimportant
 packages in the same order, namely:
     bajjer
     agzsi
-    m2crypto
+    m2crypto (needs swigwx)
     twisted
-    agcommon
+    agcommon ((needs swigwx)
     quickbridge
     ag-vic
     ag-rat

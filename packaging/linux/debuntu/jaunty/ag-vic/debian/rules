@@ -16,13 +16,12 @@ build-pkg:
 	$(checkdir)
 	(cd common && autoconf -f && ./configure && make)
 	(cd vic && autoconf -f && \
-		LDFLAGS=-L../common/src \
 		./configure \
 		--prefix=/usr \
 		--enable-ipv6 \
 		--enable-dvdecode \
+		--with-decklink=decklink/ \
 		--enable-gpl \
-		--build=$(ARCH) \
 	)
 	(cd vic/ffmpeg && make)
 	(cd vic && make)

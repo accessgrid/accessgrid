@@ -1,0 +1,18 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## ftpslib_init.dpatch by Christoph Willing <c.willing@uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad m2crypto-0.18.2~/M2Crypto/ftpslib.py m2crypto-0.18.2/M2Crypto/ftpslib.py
+--- m2crypto-0.18.2~/M2Crypto/ftpslib.py	2006-03-21 05:26:28.000000000 +1000
++++ m2crypto-0.18.2/M2Crypto/ftpslib.py	2009-06-05 23:34:09.111239355 +1000
+@@ -48,6 +48,7 @@
+ 
+     def __init__(self, host=None, ssl_ctx=None):
+         """Initialise the client. If 'host' is supplied, connect to it."""
++        FTP.__init__(self, host)
+         if ssl_ctx is not None:
+             self.ssl_ctx = ssl_ctx
+         else:

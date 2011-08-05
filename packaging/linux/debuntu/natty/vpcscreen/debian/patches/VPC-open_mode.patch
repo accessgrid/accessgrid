@@ -1,0 +1,11 @@
+--- VPC/src/Producer/VPCRTPProducer.cpp.orig	2008-09-16 22:09:28.000000000 +1000
++++ VPC/src/Producer/VPCRTPProducer.cpp	2008-09-18 23:12:27.139918000 +1000
+@@ -206,7 +206,7 @@
+ #ifndef WIN32
+ static void dump_frame( int width, int height, void *data )
+ {
+-  int fd = open( "dumped_frame.pgm", O_CREAT | O_TRUNC | O_WRONLY );
++  int fd = open( "dumped_frame.pgm", O_CREAT | O_TRUNC | O_WRONLY, S_IRWXU );
+   if ( fd < 0 ) {
+     fprintf( stderr, "failed to create file\n" );
+     return;

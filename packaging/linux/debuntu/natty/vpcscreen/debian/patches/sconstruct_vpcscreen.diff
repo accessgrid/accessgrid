@@ -1,0 +1,11 @@
+--- x/SConstruct	2011-04-27 19:56:58.000000000 +1000
++++ y/SConstruct	2011-05-11 08:55:35.502511633 +1000
+@@ -67,7 +67,7 @@
+ elif platform in ['linux']:
+ 	env.ParseConfig('wx-config --cppflags --libs')
+ 	env['LIBS'].extend(['X11','Xmu','VPC', 'VPMedia','dv','uclmmbase'])
+-	env['LIBPATH'].append('/usr/X11R6/lib')
++	env['LIBS'].extend(['X11','Xmu','VPC', 'VPMedia','dv', 'raw1394', 'iec61883', 'uclmmbase', 'avcodec', 'swscale', 'GL', 'GLU'])
+ 	env['CXXFLAGS'].append('-c')
+ elif platform in ['osx']:
+ 	env.ParseConfig('wx-config --cppflags --libs')

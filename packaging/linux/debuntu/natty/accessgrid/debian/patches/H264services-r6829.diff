@@ -1,0 +1,1766 @@
+diff -urN AccessGrid-3.2/AccessGrid/services/node/AudioService/AudioService.py AccessGrid-3.3/AccessGrid/services/node/AudioService/AudioService.py
+--- AccessGrid-3.2/AccessGrid/services/node/AudioService/AudioService.py	2010-09-02 08:43:23.000000000 +1000
++++ AccessGrid-3.3/AccessGrid/services/node/AudioService/AudioService.py	2010-09-03 13:58:44.985978348 +1000
+@@ -78,6 +78,12 @@
+             self.rat_media = ratmedia
+             self.rat_ui = ratui
+             self.rat_kill = ratkill
++            # For some reason, a full path is need for ratkill
++            for dir in os.getenv("PATH").split(":"):
++                ratkill_fullpath = os.path.join(dir, ratkill)
++                if os.access(ratkill_fullpath, os.X_OK):
++                    self.rat_kill = ratkill_fullpath
++                    break
+ 
+         self.sysConf = SystemConfig.instance()
+ 
+@@ -316,18 +322,6 @@
+         try:
+             self.log.info("Stop service")
+ 
+-            # we've found rat-kill in __init__, so needn't do it here
+-            """
+-            # See if we have rat-kill.
+-            if Platform.isWindows():
+-                rk = "rat-kill.exe"
+-            else:
+-                rk = "rat-kill"
+-
+-            ratKillExe = os.path.join('.', rk)
+-            if not os.path.isfile(ratKillExe) and not Platform.isWindows():
+-                ratKillExe = "/usr/bin/rat-kill"
+-            """
+             ratKillExe = self.rat_kill
+             if os.access(ratKillExe, os.X_OK):
+                 self.log.info("Executing rat-kill")
+--- AccessGrid-3.2/AccessGrid/services/node/AudioService/AudioService.svc	2010-09-02 08:43:23.000000000 +1000
++++ AccessGrid-3.3/AccessGrid/services/node/AudioService/AudioService.svc	2010-09-03 13:59:10.305239452 +1000
+@@ -3,7 +3,7 @@
+ name = AudioService
+ capabilities = Capability1 Capability2
+ platform = neutral
+-version = 4.3
++version = 4.4
+ description = Rat-based audio service
+ inlineClass = AudioService
+ 
+--- AccessGrid-3.2/AccessGrid/services/node/VideoConsumerServiceH264/VideoConsumerServiceH264.py	2009-04-29 05:29:47.000000000 +1000
++++ AccessGrid-3.3/AccessGrid/services/node/VideoConsumerServiceH264/VideoConsumerServiceH264.py	2010-10-05 15:41:58.025946145 +1000
+@@ -1,247 +1,307 @@
+-#-----------------------------------------------------------------------------
+-# Name:        VideoConsumerServiceH264.py
+-# Purpose:
+-# Created:     2003/06/02
+-# RCS-ID:      $Id: VideoConsumerServiceH264.py,v 1.17 2007/09/12 07:01:56 douglask Exp $
+-# Copyright:   (c) 2002
+-# Licence:     See COPYING.TXT
+-#-----------------------------------------------------------------------------
+-import sys, os
+-try:    import _winreg
+-except: pass
+-
+-import agversion
+-agversion.select(3)
+-from AccessGrid import Toolkit
+-
+-from AccessGrid.Descriptions import Capability
+-from AccessGrid.AGService import AGService
+-from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
+-from AccessGrid.Platform import IsWindows, IsLinux, IsFreeBSD, IsOSX
+-from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
+-from AccessGrid.NetworkLocation import MulticastNetworkLocation
+-
+-class VideoConsumerServiceH264( AGService ):
+-
+-    tileOptions = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]
+-
+-    def __init__( self ):
+-        AGService.__init__( self )
+-        self.capabilities = [  #Capability( Capability.CONSUMER,
+-                               #           Capability.VIDEO,
+-                               #           "H261",
+-                               #           90000, self.id) ,
+-                                Capability( Capability.CONSUMER,
+-                                          Capability.VIDEO,
+-                                          "H264",
+-                                          90000, self.id),
+-                                Capability( Capability.CONSUMER,
+-                                          Capability.VIDEO,
+-                                          "MPEG4",
+-                                          90000, self.id),
+-                                Capability( Capability.CONSUMER,
+-                                          Capability.VIDEO,
+-                                          "H261AS",
+-                                          90000, self.id) 
+-                                          ]
+-
+-        if IsWindows():
+-            vic = "vic.exe"
+-        else:
+-            vic = "vic"
+-
+-        self.executable = os.path.join(os.getcwd(),vic)
+-        if not os.path.isfile(self.executable):
+-            self.executable = vic
+-
+-        self.sysConf = SystemConfig.instance()
+-
+-        self.profile = None
+-
+-        self.startPriority = '7'
+-        self.startPriorityOption.value = self.startPriority
+-
+-        # Set configuration parameters
+-        self.tiles = OptionSetParameter( "Thumbnail Columns", "2", VideoConsumerServiceH264.tileOptions )
+-        self.configuration.append( self.tiles )
+-
+-        if IsWindows():
+-            try:
+-                import win32api
+-
+-                # get number of processors
+-                systemInfo = win32api.GetSystemInfo()
+-                numprocs = systemInfo[5]
+-                self.allProcsMask = 2**numprocs-1
+-
+-                self.procOptions = ['All']
+-                for i in range(numprocs):
+-                    self.procOptions.append(str(i+1))
+-
+-                self.processorUsage = OptionSetParameter( "Processor usage", self.procOptions[0], self.procOptions )
+-                self.configuration.append( self.processorUsage )
+-            except:
+-                self.log.exception('Error initializing processor usage options')
+-
+-
+-    def __SetRTPDefaults(self, profile):
+-        """
+-        Set values used by rat for identification
+-        """
+-        if profile == None:
+-            self.log.exception("Invalid profile (None)")
+-            raise Exception, "Can't set RTP Defaults without a valid profile."
+-
+-        if IsLinux() or IsOSX() or IsFreeBSD():
+-            try:
+-                rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
+-                rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
+-                                 %s\n*rtpNote: %s\n"
+-                rtpDefaultsFH=open( rtpDefaultsFile,"w")
+-                rtpDefaultsFH.write( rtpDefaultsText % ( profile.name,
+-                                       profile.email,
+-                                       profile.location,
+-                                       profile.phoneNumber,
+-                                       profile.publicId ) )
+-                rtpDefaultsFH.close()
+-            except:
+-                self.log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
+-
+-        elif IsWindows():
+-            try:
+-                # Set RTP defaults according to the profile
+-                k = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
+-                                    r"Software\Mbone Applications\common")
+-
+-                # Vic reads these values (with '*')
+-                _winreg.SetValueEx(k, "*rtpName", 0,
+-                                   _winreg.REG_SZ, profile.name)
+-                _winreg.SetValueEx(k, "*rtpEmail", 0,
+-                                   _winreg.REG_SZ, profile.email)
+-                _winreg.SetValueEx(k, "*rtpPhone", 0,
+-                                   _winreg.REG_SZ, profile.phoneNumber)
+-                _winreg.SetValueEx(k, "*rtpLoc", 0,
+-                                   _winreg.REG_SZ, profile.location)
+-                _winreg.SetValueEx(k, "*rtpNote", 0,
+-                                   _winreg.REG_SZ, str(profile.publicId) )
+-                _winreg.CloseKey(k)
+-            except:
+-                self.log.exception("Error writing RTP defaults to registry")
+-        else:
+-            self.log.error("No support for platform: %s", sys.platform)
+-            
+-        
+-    def Start( self ):
+-        """Start service"""
+-        try:
+-
+-            # Set processor affinity (windows only)
+-            if IsWindows():
+-                try:
+-                    if self.processorUsage.value == 'All':
+-                        self.log.info('Setting processor affinity to all processors')
+-                        SystemConfig.instance().SetProcessorAffinity(self.allProcsMask)
+-                    else:
+-                        val = 2**(int(self.processorUsage.value)-1)
+-                        self.log.info('Ssetting processor affinity : use processor %s', self.processorUsage.value)
+-                        SystemConfig.instance().SetProcessorAffinity(int(self.processorUsage.value))
+-                except:
+-                    self.log.exception("Exception setting processor affinity")
+-
+-            # Enable firewall
+-            self.sysConf.AppFirewallConfig(self.executable, 1)
+-
+-            # Start the service; in this case, store command line args
+-            # in a list and let the superclass _Start the service
+-            options = []
+-            if self.streamDescription.name and \
+-                   len(self.streamDescription.name.strip()) > 0:
+-                options.append( "-C" )
+-                options.append( self.streamDescription.name )
+-            if self.streamDescription.encryptionFlag != 0:
+-                options.append( "-K" )
+-                options.append( self.streamDescription.encryptionKey )
+-            # Check whether the network location has a "type"
+-            # attribute Note: this condition is only to maintain
+-            # compatibility between older venue servers creating
+-            # network locations without this attribute and newer
+-            # services relying on the attribute; it should be removed
+-            # when the incompatibility is gone
+-            if self.streamDescription.location.__dict__.has_key("type"):
+-                if self.streamDescription.location.type == MulticastNetworkLocation.TYPE:
+-                    options.append( "-t" )
+-                    options.append( '%d' % ( self.streamDescription.location.ttl ) )
+-
+-            # Set name and email on command line, in case rtp defaults
+-            # haven't been written (to avoid vic prompting for
+-            # name/email)
+-            name=email="Participant"
+-            if self.profile:
+-                name = self.profile.name
+-                email = self.profile.email
+-            options.append('-XrtpName=%s' % (name,))
+-            options.append('-XrtpEmail=%s' % (email,))
+-
+-            # Set some tk resources to customize vic
+-            # - this is a consumer, so disable device selection in vic
+-            options.append('-XrecvOnly=1')
+-            # - set drop time to something reasonable
+-            options.append('-XsiteDropTime=5')
+-            # - set vic window geometry
+-            options.append('-Xgeometry=500x500')
+-            # - set number of columns of thumbnails to display
+-            options.append('-Xtile=%s' % self.tiles.value)
+-                    
+-            # Add address/port options (these must occur last; don't
+-            # add options beyond here)
+-            options.append( '%s/%d' % (self.streamDescription.location.host,
+-                                       self.streamDescription.location.port))
+-            self.log.info("Starting VideoConsumerServiceH264")
+-            self.log.info(" executable = %s" % self.executable)
+-            self.log.info(" options = %s" % options)
+-            self._Start( options )
+-        except:
+-            self.log.exception("Exception in VideoConsumerServiceH264.Start")
+-            raise Exception("Failed to start service")
+-
+-    def Stop( self ):
+-        """Stop the service"""
+-
+-        # vic doesn't die easily (on linux at least), so force it to stop
+-        AGService.ForceStop(self)
+-
+-        # Disable firewall
+-        self.sysConf.AppFirewallConfig(self.executable, 0)
+-
+-    def SetStream( self, streamDescription ):
+-        """Configure the Service according to the StreamDescription"""
+-
+-        ret = AGService.ConfigureStream( self, streamDescription )
+-        if ret and self.started:
+-            # service is already running with this config; ignore
+-            return
+-
+-        # if started, stop
+-        if self.started:
+-            self.Stop()
+-
+-        # if enabled, start
+-        if self.enabled:
+-            self.Start()
+-
+-    def SetIdentity(self, profile):
+-        """
+-        Set the identity of the user driving the node
+-        """
+-        self.log.info("SetIdentity: %s %s", profile.name, profile.email)
+-        self.profile = profile
+-        self.__SetRTPDefaults(profile)
+-
+-if __name__ == '__main__':
+-
+-    from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
+-    from AccessGrid.AGService import RunService
+-
+-    service = VideoConsumerServiceH264()
+-    serviceI = AGServiceI(service)
+-    RunService(service,serviceI)
++#-----------------------------------------------------------------------------
++# Name:        VideoConsumerServiceH264.py
++# Purpose:
++# Created:     2003/06/02
++# RCS-ID:      $Id$
++# Copyright:   (c) 2002
++# Licence:     See COPYING.TXT
++#-----------------------------------------------------------------------------
++import sys, os
++import wx
++try:    import _winreg
++except: pass
++
++import subprocess
++import xml.dom.minidom
++
++from AccessGrid import Toolkit
++import socket
++import select
++
++from AccessGrid.Descriptions import Capability
++from AccessGrid.AGService import AGService
++from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter
++from AccessGrid.Platform import IsWindows, IsLinux, IsFreeBSD, IsOSX
++from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
++from AccessGrid.NetworkLocation import MulticastNetworkLocation
++from AccessGrid.UIUtilities import GetScreenWidth
++
++class VideoConsumerServiceH264( AGService ):
++
++    tileOptions = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]
++
++    def __init__( self ):
++        AGService.__init__( self )
++
++        if IsWindows():
++            vic = "vic.exe"
++        else:
++            vic = "vic"
++
++        self.executable = os.path.join(os.getcwd(),vic)
++        if not os.path.isfile(self.executable):
++            self.executable = vic
++
++        proc = subprocess.Popen([self.executable, '-Q'],
++                                stdin=subprocess.PIPE,
++                                stdout=subprocess.PIPE,
++                                stderr=subprocess.PIPE)
++        deviceDOM = xml.dom.minidom.parse(proc.stdout)
++
++        self.capabilities = []
++        codecs = deviceDOM.getElementsByTagName("codec")
++        for codec in codecs:
++            if codec.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                if codec.childNodes[0].data in ['h263', 'h263+', 'raw', 'pvh']:
++                    continue
++                self.capabilities.append(Capability( Capability.CONSUMER,
++                                          Capability.VIDEO,
++                                          codec.childNodes[0].data.upper(),
++                                          90000, self.id))
++        deviceDOM.unlink()
++
++        self.sysConf = SystemConfig.instance()
++
++        self.profile = None
++        self.windowGeometry = None
++
++        self.startPriority = '7'
++        self.startPriorityOption.value = self.startPriority
++
++        # Set configuration parameters
++        self.tiles = OptionSetParameter( "Thumbnail Columns", "4", VideoConsumerServiceH264.tileOptions )
++        self.positionWindow = OptionSetParameter( 'Position Window', 'Justify Left', ['Off', 'Justify Left', 'Justify Right'])
++        
++        self.configuration.append( self.tiles )
++        self.configuration.append( self.positionWindow)
++
++        if IsWindows():
++            try:
++                import win32api
++
++                # get number of processors
++                systemInfo = win32api.GetSystemInfo()
++                numprocs = systemInfo[5]
++                self.allProcsMask = 2**numprocs-1
++
++                self.procOptions = ['All']
++                for i in range(numprocs):
++                    self.procOptions.append(str(i+1))
++
++                self.processorUsage = OptionSetParameter( "Processor usage", self.procOptions[0], self.procOptions )
++                self.configuration.append( self.processorUsage )
++            except:
++                self.log.exception('Error initializing processor usage options')
++
++
++    def __SetRTPDefaults(self, profile):
++        """
++        Set values used by rat for identification
++        """
++        if profile == None:
++            self.log.exception("Invalid profile (None)")
++            raise Exception, "Can't set RTP Defaults without a valid profile."
++
++        if IsLinux() or IsOSX() or IsFreeBSD():
++            try:
++                rtpDefaultsFile=os.path.join(os.environ["HOME"], ".RTPdefaults")
++                rtpDefaultsText="*rtpName: %s\n*rtpEmail: %s\n*rtpLoc: %s\n*rtpPhone: \
++                                 %s\n*rtpNote: %s\n"
++                rtpDefaultsFH=open( rtpDefaultsFile,"w")
++                rtpDefaultsFH.write( rtpDefaultsText % ( profile.name,
++                                       profile.email,
++                                       profile.location,
++                                       profile.phoneNumber,
++                                       profile.publicId ) )
++                rtpDefaultsFH.close()
++            except:
++                self.log.exception("Error writing RTP defaults file: %s", rtpDefaultsFile)
++
++        elif IsWindows():
++            try:
++                # Set RTP defaults according to the profile
++                k = _winreg.CreateKey(_winreg.HKEY_CURRENT_USER,
++                                    r"Software\Mbone Applications\common")
++
++                # Vic reads these values (with '*')
++                _winreg.SetValueEx(k, "*rtpName", 0,
++                                   _winreg.REG_SZ, profile.name)
++                _winreg.SetValueEx(k, "*rtpEmail", 0,
++                                   _winreg.REG_SZ, profile.email)
++                _winreg.SetValueEx(k, "*rtpPhone", 0,
++                                   _winreg.REG_SZ, profile.phoneNumber)
++                _winreg.SetValueEx(k, "*rtpLoc", 0,
++                                   _winreg.REG_SZ, profile.location)
++                _winreg.SetValueEx(k, "*rtpNote", 0,
++                                   _winreg.REG_SZ, str(profile.publicId) )
++                _winreg.CloseKey(k)
++            except:
++                self.log.exception("Error writing RTP defaults to registry")
++        else:
++            self.log.error("No support for platform: %s", sys.platform)
++            
++        
++    def Start( self ):
++        """Start service"""
++        try:
++
++            # Set processor affinity (windows only)
++            if IsWindows():
++                try:
++                    if self.processorUsage.value == 'All':
++                        self.log.info('Setting processor affinity to all processors')
++                        SystemConfig.instance().SetProcessorAffinity(self.allProcsMask)
++                    else:
++                        val = 2**(int(self.processorUsage.value)-1)
++                        self.log.info('Ssetting processor affinity : use processor %s', self.processorUsage.value)
++                        SystemConfig.instance().SetProcessorAffinity(int(self.processorUsage.value))
++                except:
++                    self.log.exception("Exception setting processor affinity")
++
++            # Enable firewall
++            self.sysConf.AppFirewallConfig(self.executable, 1)
++
++            # Start the service; in this case, store command line args
++            # in a list and let the superclass _Start the service
++            options = []
++            if self.streamDescription.name and \
++                   len(self.streamDescription.name.strip()) > 0:
++                options.append( "-C" )
++                options.append( self.streamDescription.name )
++            if self.streamDescription.encryptionFlag != 0:
++                options.append( "-K" )
++                options.append( self.streamDescription.encryptionKey )
++            # Check whether the network location has a "type"
++            # attribute Note: this condition is only to maintain
++            # compatibility between older venue servers creating
++            # network locations without this attribute and newer
++            # services relying on the attribute; it should be removed
++            # when the incompatibility is gone
++            if self.streamDescription.location.__dict__.has_key("type"):
++                if self.streamDescription.location.type == MulticastNetworkLocation.TYPE:
++                    options.append( "-t" )
++                    options.append( '%d' % ( self.streamDescription.location.ttl ) )
++
++            # Set name and email on command line, in case rtp defaults
++            # haven't been written (to avoid vic prompting for
++            # name/email)
++            name=email="Participant"
++            if self.profile:
++                name = self.profile.name
++                email = self.profile.email
++            options.append('-XrtpName=%s' % (name,))
++            options.append('-XrtpEmail=%s' % (email,))
++
++            # Set some tk resources to customize vic
++            # - this is a consumer, so disable device selection in vic
++            options.append('-XrecvOnly=1')
++            # - set drop time to something reasonable
++            options.append('-XsiteDropTime=5')
++
++            if not self.positionWindow.value == 'Off':
++                # - set vic window geometry
++                try:
++                    
++                    if not self.windowGeometry:
++                        h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
++                        w_sys = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
++                        try:
++                            w = GetScreenWidth(w_sys,h)
++                        except ValueError:
++                            self.log.debug('Error computing screen width; using system screen width %d', w_sys)
++                            w = w_sys
++                        window_width = w-300
++                        window_height = 300
++                        window_x = 300
++                        window_y = h-375
++                        border_w = wx.SystemSettings_GetMetric(wx.SYS_FRAMESIZE_X)
++                        if border_w > 0:
++                            window_width -= 4*border_w
++                            window_x += 2*border_w
++                        self.windowGeometry = (window_width,window_height,window_x,window_y)
++                    if self.positionWindow.value == 'Justify Left':
++                        options.append('-Xgeometry=%dx%d+%d+%d' % self.windowGeometry)
++                    else:
++                        options.append('-Xgeometry=%dx%d-%d+%d' % self.windowGeometry)
++                except:
++                    self.log.exception('Error calculating window placement')
++
++            # - set number of columns of thumbnails to display
++            options.append('-Xtile=%s' % self.tiles.value)
++                    
++            # Add address/port options (these must occur last; don't
++            # add options beyond here)
++            options.append( '%s/%d' % (self.streamDescription.location.host,
++                                       self.streamDescription.location.port))
++
++            # Create a socket, send some data out, and listen for incoming data
++            try:
++                host = self.streamDescription.location.host
++                port = self.streamDescription.location.port
++                timeout = 1
++                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
++                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
++                if IsOSX():
++                    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
++                s.bind(('', port))
++                s.sendto('qwe',(host,port))
++                fdList = []
++                while not fdList:
++                    fdList = select.select([s.fileno()],[],[],timeout)
++                s.close()
++                s = None
++            except:
++                self.log.warn("Failed attempt to open firewall by sending data out on video port; continuing anyway")
++                if s:
++                    s.close()
++                    s = None
++
++            self.log.info("Starting VideoConsumerServiceH264")
++            self.log.info(" executable = %s" % self.executable)
++            self.log.info(" options = %s" % options)
++            self._Start( options )
++        except:
++            self.log.exception("Exception in VideoConsumerServiceH264.Start")
++            raise Exception("Failed to start service")
++
++    def Stop( self ):
++        """Stop the service"""
++
++        # vic doesn't die easily (on linux at least), so force it to stop
++        AGService.ForceStop(self)
++
++        # Disable firewall
++        self.sysConf.AppFirewallConfig(self.executable, 0)
++
++    def SetStream( self, streamDescription ):
++        """Configure the Service according to the StreamDescription"""
++
++        ret = AGService.ConfigureStream( self, streamDescription )
++        if ret and self.started:
++            # service is already running with this config; ignore
++            return
++
++        # if started, stop
++        if self.started:
++            self.Stop()
++
++        # if enabled, start
++        if self.enabled:
++            self.Start()
++
++    def SetIdentity(self, profile):
++        """
++        Set the identity of the user driving the node
++        """
++        self.log.info("SetIdentity: %s %s", profile.name, profile.email)
++        self.profile = profile
++        self.__SetRTPDefaults(profile)
++
++if __name__ == '__main__':
++
++    from AccessGrid.interfaces.AGService_interface import AGService as AGServiceI
++    from AccessGrid.AGService import RunService
++
++    service = VideoConsumerServiceH264()
++    serviceI = AGServiceI(service)
++    RunService(service,serviceI)
+--- AccessGrid-3.2/AccessGrid/services/node/VideoConsumerServiceH264/VideoConsumerServiceH264.svc	2009-04-29 05:29:47.000000000 +1000
++++ AccessGrid-3.3/AccessGrid/services/node/VideoConsumerServiceH264/VideoConsumerServiceH264.svc	2010-10-05 15:41:58.016946863 +1000
+@@ -4,7 +4,7 @@
+ capabilities = Capability1
+ executable = VideoConsumerServiceH264.py
+ platform = neutral
+-version = 3.1
++version = 3.2
+ 
+ [Capability1]
+ role = consumer
+--- AccessGrid-3.2/AccessGrid/services/node/VideoProducerServiceH264/VideoProducerServiceH264.py	2009-04-29 05:29:47.000000000 +1000
++++ AccessGrid-3.3/AccessGrid/services/node/VideoProducerServiceH264/VideoProducerServiceH264.py	2011-04-28 13:32:02.107873910 +1000
+@@ -2,20 +2,24 @@
+ # Name:        VideoProducerServiceH264.py
+ # Purpose:
+ # Created:     2003/06/02
+-# RCS-ID:      $Id: VideoProducerServiceH264.py,v 1.26 2007/10/01 17:28:56 turam Exp $
++# RCS-ID:      $Id$
+ # Copyright:   (c) 2002
+ # Licence:     See COPYING.TXT
+ #-----------------------------------------------------------------------------
+ import re
+ import sys, os
+ 
+-try:   
++try:
+     import _winreg
+ except: pass
+ 
++import subprocess
++import xml.dom.minidom
++
+ from AccessGrid import Toolkit
+-from AccessGrid.GUID import GUID
++
+ from AccessGrid.Descriptions import Capability, ResourceDescription
++from AccessGrid.GUID import GUID
+ from AccessGrid.AGService import AGService
+ from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
+ from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
+@@ -24,7 +28,7 @@
+ 
+ vicstartup="""option add Vic.disable_autoplace true startupFile
+ option add Vic.muteNewSources true startupFile
+-option add Vic.maxbw 6000 startupFile
++option add Vic.maxbw 10240 startupFile
+ option add Vic.bandwidth %d startupFile
+ option add Vic.framerate %d startupFile
+ option add Vic.quality %d startupFile
+@@ -34,16 +38,21 @@
+ option add Vic.defaultTTL 127 startupFile
+ option add Vic.rtpName \"%s\" startupFile
+ option add Vic.rtpEmail \"%s\" startupFile
++option add Vic.useDeinterlacerComp %s startupFile
++option add Vic.largeSizeResolution \"%s\" startupFile
+ proc user_hook {} {
+-    global videoDevice inputPort transmitButton transmitButtonState sizeButtons inputSize
++    global videoDevice inputPort transmitButton transmitButtonState inputSize
+ 
+     update_note 0 \"%s\"
+ 
++    # minimize the vic window since we're just transmitting
++    catch { wm iconify [winfo toplevel .top]  }
++
+     after 200 {
+         if { ![winfo exists .menu] } {
+             build.menu
+         }
+- 
++
+         set inputPort \"%s\"
+         grabber port \"%s\"
+ 
+@@ -57,31 +66,20 @@
+ }
+ """
+ 
++def OnOff(onOffVal):
++    if onOffVal == "On":
++        return "true"
++    elif onOffVal == "Off":
++        return "false"
++    raise Exception,"OnOff value neither On nor Off: %s" % onOffVal
++
+ class VideoProducerServiceH264( AGService ):
+ 
+-    encodings = [ "mpeg4","h264","h261as" ]
+-    standards = [ "NTSC", "PAL" ]
+-    inputsizes = [ "Small", "Normal", "Large" ]
++    onOffOptions = [ "On", "Off" ]
+ 
+     def __init__( self ):
+         AGService.__init__( self )
+-        self.capabilities = [ Capability( Capability.PRODUCER,
+-                                          Capability.VIDEO,
+-                                          "MPEG4",
+-                                          90000,self.id),
+-                               Capability( Capability.PRODUCER,
+-                                          Capability.VIDEO,
+-                                          "H264",
+-                                          90000,self.id),
+-                               #Capability( Capability.PRODUCER,
+-                               #           Capability.VIDEO,
+-                               #           "H261",
+-                               #           90000,self.id),
+-                               Capability( Capability.PRODUCER,
+-                                          Capability.VIDEO,
+-                                          "H261AS",
+-                                          90000,self.id)                                          ]
+-        
++
+         if IsWindows():
+             vic = "vic.exe"
+         else:
+@@ -91,28 +89,45 @@
+         if not os.path.isfile(self.executable):
+             self.executable = vic
+ 
++        proc = subprocess.Popen([self.executable, '-Q'],
++                                stdin=subprocess.PIPE,
++                                stdout=subprocess.PIPE,
++                                stderr=subprocess.PIPE)
++        self.deviceDOM = xml.dom.minidom.parse(proc.stdout)
++
++        self.encodingOptions = []
++        self.capabilities = []
++        codecs = self.deviceDOM.getElementsByTagName("codec")
++        for codec in codecs:
++            if codec.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                if codec.childNodes[0].data in ['h263', 'h263+', 'raw', 'pvh']:
++                    continue
++                self.encodingOptions.append(codec.childNodes[0].data)
++                self.capabilities.append(Capability( Capability.PRODUCER,
++                                          Capability.VIDEO,
++                                          codec.childNodes[0].data.upper(),
++                                          90000, self.id))
++
+         self.sysConf = SystemConfig.instance()
+ 
+         self.startPriority = '5'
+         self.startPriorityOption.value = self.startPriority
+         self.id = str(GUID())
+ 
++        self.resolution = None
+ 
+         # Set configuration parameters
+ 
+-        # note: the datatype of the port parameter changes when a resource is set!
++        # note: the datatype of the port, standard and inputsize parameters change when a resource is set!
+         self.streamname = TextParameter( "Stream Name", "" )
+         self.port = TextParameter( "Port", "" )
+-        self.encoding = OptionSetParameter( "Encoding", "mpeg4", VideoProducerServiceH264.encodings )
+-        if IsWindows(): 
+-            standard = "PAL"
+-        else:
+-            standard = "NTSC"
+-        self.standard = OptionSetParameter( "Standard", standard, VideoProducerServiceH264.standards )
+-        self.bandwidth = RangeParameter( "Bandwidth", 2000, 0, 3072 )
++        self.encoding = OptionSetParameter( "Encoding", "mpeg4", self.encodingOptions )
++        self.standard = TextParameter( "standard", "" )
++        self.bandwidth = RangeParameter( "Bandwidth", 2500, 0, 10240 )
+         self.framerate = RangeParameter( "Frame Rate", 24, 1, 30 )
+         self.quality = RangeParameter( "Quality", 75, 1, 100 )
+-        self.inputsize = OptionSetParameter( "Capture Size", "Large", VideoProducerServiceH264.inputsizes  )
++        self.inputsize = TextParameter( "inputsize", "" )
++        self.encodingDeinterlacer = OptionSetParameter( "Encoding Deinterlacer", "Off", VideoProducerServiceH264.onOffOptions )
+         self.configuration.append( self.streamname )
+         self.configuration.append( self.port )
+         self.configuration.append( self.encoding )
+@@ -120,7 +135,8 @@
+         self.configuration.append( self.bandwidth )
+         self.configuration.append( self.framerate )
+         self.configuration.append (self.quality )
+-        self.configuration.append (self.inputsize )
++        self.configuration.append( self.inputsize )
++        self.configuration.append( self.encodingDeinterlacer )
+ 
+         if IsWindows():
+             try:
+@@ -142,8 +158,9 @@
+ 
+         self.profile = None
+         self.resource = ''
+-        
++
+         self.__GetResources()
++        self.deviceDOM.unlink()
+ 
+     def __SetRTPDefaults(self, profile):
+         """
+@@ -192,7 +209,7 @@
+                 self.log.exception("Error writing RTP defaults to registry")
+         else:
+             self.log.error("No support for platform: %s", sys.platform)
+-        
++
+     def MapWinDevice(self,deviceStr):
+         """
+         Abuse registry to get correct mapping from vfw names
+@@ -200,7 +217,7 @@
+         """
+         videowidth = 720
+         videoheight = 480
+-        
++
+         self.log.info("Mapping windows device: %s", deviceStr)
+         if deviceStr.find('Videum') >= 0:
+             self.log.info("- videum")
+@@ -228,7 +245,7 @@
+                 _winreg.SetValueEx(key,'Height',0,_winreg.REG_DWORD,int(videoheight))
+                 _winreg.SetValueEx(key,'Width',0,_winreg.REG_DWORD,int(videowidth))
+                 _winreg.CloseKey(key)
+-                
++
+ 
+     def Start( self ):
+         """Start service"""
+@@ -246,7 +263,7 @@
+                         SystemConfig.instance().SetProcessorAffinity(int(self.processorUsage.value))
+                 except:
+                     self.log.exception("Exception setting processor affinity")
+-            
++
+             # Enable firewall
+             self.sysConf.AppFirewallConfig(self.executable, 1)
+ 
+@@ -276,28 +293,33 @@
+                 portstr = "None"
+             else:
+                 portstr = self.port.value
+-            
++
++            if self.standard.value == '':
++                standardstr = "None"
++            else:
++                standardstr = self.standard.value
++
++            if self.inputsize.value == "Small":
++                inputsize = 4
++            elif self.inputsize.value == "Large" and self.encoding.value != "h261":
++                inputsize = 1
++            else:
++                inputsize = 2
++
++            if self.resolution != None:
++                resolution = self.resolution.value
++            else:
++                resolution = "none"
++
+             name=email="Participant"
+             if self.profile:
+                 name = self.profile.name
+                 email = self.profile.email
+             else:
+                 # Error case
+-                name = "User"
+-                email = "user@accessgrid.org"
++                name = email = Toolkit.GetDefaultSubject().GetCN()
+                 self.log.error("Starting service without profile set")
+ 
+-            if self.inputsize.value == "Small":
+-                inputsize = 4
+-            elif self.inputsize.value == "Normal":
+-                inputsize = 2
+-            elif self.inputsize.value == "Large":
+-                if self.encoding.value == "h261":
+-                    self.log.warn("Invalid capture size (large) specified for h261 encoding; defaulting to normal size")
+-                    inputsize = 2
+-                else:
+-                    inputsize = 1
+-                
+             f.write( vicstartup % (self.bandwidth.value,
+                                     self.framerate.value,
+                                     self.quality.value,
+@@ -306,12 +328,14 @@
+                                     vicDevice,
+                                     "%s(%s)" % (name,self.streamname.value),
+                                     email,
++                                    OnOff(self.encodingDeinterlacer.value),
++                                    resolution,
+                                     email,
+                                     portstr,
+                                     portstr,
+                                     inputsize) )
+             f.close()
+-            
++
+             # Open permissions on vic startupfile
+             os.chmod(startupfile,0777)
+ 
+@@ -319,7 +343,7 @@
+             #  forward slashes (vic will crash otherwise)
+             if IsWindows():
+                 startupfile = startupfile.replace("\\","/")
+-            
++
+             #
+             # Start the service; in this case, store command line args in a list and let
+             # the superclass _Start the service
+@@ -328,14 +352,20 @@
+             options.append( startupfile )
+             options.append( "-C" )
+             options.append( str(self.streamname.value) )
++            if IsOSX():
++                options.append( "-X")
++                options.append( "transmitOnStartup=1")
+             if self.streamDescription.encryptionFlag != 0:
+                 options.append( "-K" )
+                 options.append( self.streamDescription.encryptionKey )
+-                
++
+             if self.profile:
+                 options.append("-X")
+                 options.append("site=%s" % self.profile.publicId)
+-                
++
++            options.append('-X')
++            options.append('noMulticastBind=true')
++
+             # Check whether the network location has a "type" attribute
+             # Note: this condition is only to maintain compatibility between
+             # older venue servers creating network locations without this attribute
+@@ -356,7 +386,7 @@
+             #os.remove(startupfile)
+         except:
+             self.log.exception("Exception in VideoProducerServiceH264.Start")
+-            raise
++            raise Exception("Failed to start service")
+ 
+     def Stop( self ):
+         """Stop the service"""
+@@ -409,7 +439,7 @@
+         # Create the port parameter as an option set parameter, now
+         # that we have multiple possible values for "port"
+         # If self.port is valid, keep it instead of setting the default value.
+-        if (( isinstance(self.port, TextParameter) or isinstance(self.port, ValueParameter) ) 
++        if (( isinstance(self.port, TextParameter) or isinstance(self.port, ValueParameter) )
+               and self.port.value != "" and self.port.value in self.resource[1]):
+             self.port = OptionSetParameter( "Port", self.port.value,
+                                                          self.resource[1] )
+@@ -425,6 +455,95 @@
+         else:
+             self.configuration.append(self.port)
+ 
++        # Find the config element that refers to "standard"
++        try:
++            index = self.configuration.index(self.standard)
++            found = 1
++        except ValueError:
++            found = 0
++
++        # Create the standard parameter as an option set parameter, now
++        # that we have multiple possible values for "standard"
++        # If self.standard is valid, keep it instead of setting the default value.
++        if (( isinstance(self.standard, TextParameter) or isinstance(self.standard, ValueParameter) )
++              and self.standard.value != "" and self.standard.value in self.resource[2]):
++            self.standard = OptionSetParameter( "Standard", self.standard.value,
++                                                         self.resource[2] )
++        else:
++            if (IsWindows() and "PAL" in self.resource[2]):
++                self.standard = OptionSetParameter( "Standard", "PAL", self.resource[2] )
++            else :
++                self.standard = OptionSetParameter( "Standard", self.resource[2][0],
++                                                    self.resource[2] )
++
++        self.log.info('standard = %s', self.standard.value)
++
++        # Replace or append the "standard" element
++        if found:
++            self.configuration[index] = self.standard
++        else:
++            self.configuration.append(self.standard)
++
++
++        # Find the config element that refers to "inputsize"
++        try:
++            index = self.configuration.index(self.inputsize)
++            found = 1
++        except ValueError:
++            found = 0
++
++        # Create the inputsize parameter as an option set parameter, now
++        # that we have multiple possible values for "inputsize"
++        # If self.inputsize is valid, keep it instead of setting the default value.
++        if (( isinstance(self.inputsize, TextParameter) or isinstance(self.inputsize, ValueParameter) )
++              and self.inputsize.value != "" and self.inputsize.value in self.resource[3]):
++            self.inputsize = OptionSetParameter( "Capture Size", self.inputsize.value,
++                                                 self.resource[3] )
++        else:
++            if ("Medium" in self.resource[3]):
++                self.inputsize = OptionSetParameter( "Capture Size", "Medium",
++                                                     self.resource[3] )
++            else:
++                self.inputsize = OptionSetParameter( "Capture Size", self.resource[3][0],
++                                                     self.resource[3] )
++
++        self.log.info('inputsize = %s', self.inputsize.value)
++
++        # Replace or append the "inputsize" element
++        if found:
++            self.configuration[index] = self.inputsize
++        else:
++            self.configuration.append(self.inputsize)
++
++        if len(self.resource[4]) > 0:
++            # Find the config element that refers to "resolution"
++            try:
++                index = self.configuration.index(self.resolution)
++                found = 1
++            except ValueError:
++                found = 0
++            except AttributeError:
++                found = 0
++
++            # Create the resolution parameter as an option set parameter, now
++            # that we have multiple possible values for "resolution"
++            # If self.resolution is valid, keep it instead of setting the default value.
++            if (( isinstance(self.resolution, TextParameter) or isinstance(self.resolution, ValueParameter) )
++                and self.resolution.value != "" and self.resolution.value in self.resource[4]):
++                self.resolution = OptionSetParameter( "Large Size/Scaler Resolution", self.resolution.value,
++                                                  self.resource[4] )
++            else:
++                self.resolution = OptionSetParameter( "Large Size/Scaler Resolution", self.resource[4][0],
++                                                  self.resource[4] )
++
++            self.log.info('resolution = %s', self.resolution.value)
++
++            # Replace or append the "resolution" element
++            if found:
++                self.configuration[index] = self.resolution
++            else:
++                self.configuration.append(self.resolution)
++
+         # If the stream name has not been set, set it to the resource name
+         if not self.streamname.value:
+             self.streamname.value = resource.name
+@@ -436,18 +555,60 @@
+         self.log.info("SetIdentity: %s %s", profile.name, profile.email)
+         self.profile = profile
+         self.__SetRTPDefaults(profile)
+-        
++
+     def GetResources(self):
+         ret = map(lambda x: ResourceDescription(x[0]) , self.resources)
+         self.log.info('resources: %s', ret)
+         return ret
+ 
+     def __GetResources(self):
+-        self.resources = SystemConfig.instance().GetResources()
+-        return self.resources
+-        
+-
++        self.resources = list()
++        devices = self.deviceDOM.getElementsByTagName("device")
++        for device in devices:
++            nickname = device.getElementsByTagName("nickname")[0]
++            if nickname.childNodes[0].nodeType != xml.dom.minidom.Node.TEXT_NODE:
++                continue
++            deviceName = nickname.childNodes[0].data
++            if (deviceName.startswith("V4L2-")):
++                deviceName = "V4L2:/dev/video" + deviceName.split("/dev/video", 1)[1]
++            elif (deviceName.startswith("V4L-")):
++                deviceName = "V4L:/dev/video" + deviceName.split("/dev/video", 1)[1]
++            portList = [] # device's input ports
++            ports = device.getElementsByTagName("port")
++            for port in ports:
++                if port.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                    portList.append(port.childNodes[0].data)
++            if len(portList) == 0:
++                portList=[ deviceName ]
++            typeList = [] # video standards supported by device,  e.g. NTSC, PAL, 720p25, etc
++            types = device.getElementsByTagName("type")
++            for type in types:
++                if type.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                    if (type.childNodes[0].data in ['pal', 'ntsc', 'secam']):
++                        typeList.append(type.childNodes[0].data.upper())
++                    else :
++                        typeList.append(type.childNodes[0].data)
++            if len(typeList) == 0:
++                typeList=[ "NTSC", "PAL" ]
++            sizeList = [] # video capture sizes supported by device
++            sizes = device.getElementsByTagName("size")
++            for size in sizes:
++                if size.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                    if (size.childNodes[0].data in ['cif', 'normal']):
++                        sizeList.append("Medium")
++                    else:
++                        sizeList.append(size.childNodes[0].data.capitalize())
++            resolutionList = [] # large resolutions supported by device
++            resolutions = device.getElementsByTagName("large_size_resolution")
++            for res in resolutions:
++                if res.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                    resolutionList.append(res.childNodes[0].data)
++
++            typeList.sort()
++            sizeList.sort()
++            self.resources.append([deviceName, portList, typeList, sizeList, resolutionList])
+ 
++        return self.resources
+ 
+ if __name__ == '__main__':
+ 
+--- AccessGrid-3.2/AccessGrid/services/node/VideoProducerServiceH264/VideoProducerServiceH264.svc	2009-04-29 05:29:47.000000000 +1000
++++ AccessGrid-3.3/AccessGrid/services/node/VideoProducerServiceH264/VideoProducerServiceH264.svc	2011-04-28 13:32:02.114874659 +1000
+@@ -4,7 +4,7 @@
+ capabilities = Capability1
+ executable = VideoProducerServiceH264.py
+ platform = neutral
+-version = 3.2
++version = 3.4
+ inlineClass = VideoProducerServiceH264
+ resourceNeeded = 1
+ 
+--- AccessGrid-3.2/AccessGrid/services/node/VideoServiceH264/VideoServiceH264.py	2009-06-23 10:43:08.000000000 +1000
++++ AccessGrid-3.3/AccessGrid/services/node/VideoServiceH264/VideoServiceH264.py	2011-04-28 13:31:25.981505899 +1000
+@@ -2,31 +2,34 @@
+ # Name:        VideoServiceH264.py
+ # Purpose:
+ # Created:     2003/06/02
+-# RCS-ID:      $Id: VideoServiceH264.py,v 1.26 2007/10/01 17:28:56 turam Exp $
++# RCS-ID:      $Id$
+ # Copyright:   (c) 2002
+ # Licence:     See COPYING.TXT
+ #-----------------------------------------------------------------------------
+ import re
+ import sys, os
+ import wx
+-
+-try:   
++try:
++    import win32api
+     import _winreg
+ except: pass
+ 
+-from AccessGrid import Toolkit
+-from AccessGrid.GUID import GUID
++import subprocess
++import xml.dom.minidom
++
+ from AccessGrid.Descriptions import Capability, ResourceDescription
++from AccessGrid.GUID import GUID
+ from AccessGrid.AGService import AGService
+ from AccessGrid.AGParameter import ValueParameter, OptionSetParameter, RangeParameter, TextParameter
+ from AccessGrid.Platform import IsWindows, IsLinux, IsOSX, IsFreeBSD
+ from AccessGrid.Platform.Config import AGTkConfig, UserConfig, SystemConfig
+ from AccessGrid.NetworkLocation import MulticastNetworkLocation
++from AccessGrid import Toolkit
+ from AccessGrid.UIUtilities import GetScreenWidth
+ 
+ vicstartup="""option add Vic.disable_autoplace %s startupFile
+ option add Vic.muteNewSources %s startupFile
+-option add Vic.maxbw 6000 startupFile
++option add Vic.maxbw 10240 startupFile
+ option add Vic.bandwidth %d startupFile
+ option add Vic.framerate %d startupFile
+ option add Vic.quality %d startupFile
+@@ -36,8 +39,10 @@
+ option add Vic.defaultTTL 127 startupFile
+ option add Vic.rtpName \"%s\" startupFile
+ option add Vic.rtpEmail \"%s\" startupFile
++option add Vic.useDeinterlacerComp %s startupFile
++option add Vic.largeSizeResolution \"%s\" startupFile
+ proc user_hook {} {
+-    global videoDevice inputPort transmitButton transmitButtonState sizeButtons inputSize
++    global videoDevice inputPort transmitButton transmitButtonState inputSize
+ 
+     update_note 0 \"%s\"
+ 
+@@ -47,7 +52,7 @@
+         if { ![winfo exists .menu] } {
+             build.menu
+         }
+- 
++
+         set inputPort \"%s\"
+         grabber port \"%s\"
+ 
+@@ -63,6 +68,7 @@
+ }
+ """
+ 
++
+ def OnOff(onOffVal):
+     if onOffVal == "On":
+         return "true"
+@@ -72,39 +78,13 @@
+ 
+ class VideoServiceH264( AGService ):
+ 
+-    encodings = [ "mpeg4","h264","h261as" ]
+-    standards = [ "NTSC", "PAL", "auto" ]
+     onOffOptions = [ "On", "Off" ]
+     tileOptions = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '10' ]
+-    inputsizes = [ "Small", "Normal", "Large" ]
+ 
+     def __init__( self ):
+         AGService.__init__( self )
+-        self.capabilities = [ Capability( Capability.CONSUMER,
+-                                          Capability.VIDEO,
+-                                          "MPEG4",
+-                                          90000,self.id),
+-                               Capability( Capability.PRODUCER,
+-                                          Capability.VIDEO,
+-                                          "MPEG4",
+-                                          90000,self.id),
+-                               Capability( Capability.CONSUMER,
+-                                          Capability.VIDEO,
+-                                          "H264",
+-                                          90000,self.id),
+-                               Capability( Capability.PRODUCER,
+-                                          Capability.VIDEO,
+-                                          "H264",
+-                                          90000,self.id),
+-                               Capability( Capability.CONSUMER,
+-                                          Capability.VIDEO,
+-                                          "H261AS",
+-                                          90000,self.id),
+-                               Capability( Capability.PRODUCER,
+-                                          Capability.VIDEO,
+-                                          "H261AS",
+-                                          90000,self.id)                                          ]
+-        
++        self.thepath = os.getcwd()
++
+         if IsWindows():
+             vic = "vic.exe"
+         else:
+@@ -114,7 +94,32 @@
+         if not os.path.isfile(self.executable):
+             self.executable = vic
+ 
++        proc = subprocess.Popen([self.executable, '-Q'],
++                                stdin=subprocess.PIPE,
++                                stdout=subprocess.PIPE,
++                                stderr=subprocess.PIPE)
++        self.deviceDOM = xml.dom.minidom.parse(proc.stdout)
++
++        self.encodingOptions = []
++        self.capabilities = []
++        codecs = self.deviceDOM.getElementsByTagName("codec")
++        for codec in codecs:
++            if codec.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                if codec.childNodes[0].data in ['h263', 'h263+', 'raw', 'pvh']:
++                    continue
++                self.encodingOptions.append(codec.childNodes[0].data)
++                self.capabilities.append(Capability( Capability.CONSUMER,
++                                          Capability.VIDEO,
++                                          codec.childNodes[0].data.upper(),
++                                          90000, self.id))
++
++                self.capabilities.append(Capability( Capability.PRODUCER,
++                                          Capability.VIDEO,
++                                          codec.childNodes[0].data.upper(),
++                                          90000, self.id))
++
+         self.sysConf = SystemConfig.instance()
++
+         self.profile = None
+         self.windowGeometry = None
+ 
+@@ -122,26 +127,24 @@
+         self.startPriorityOption.value = self.startPriority
+         self.id = str(GUID())
+ 
++        self.resolution = None
+ 
+         # Set configuration parameters
+-
+-        # note: the datatype of the port parameter changes when a resource is set!
++        # note: the datatype of the port, standard and inputsize parameters change when a resource is set!
+         self.streamname = TextParameter( "Stream Name", "" )
+-        self.port = TextParameter( "Port", "" )
+-        self.encoding = OptionSetParameter( "Encoding", "mpeg4", VideoServiceH264.encodings )
+-        if IsWindows(): 
+-            standard = "PAL"
+-        else:
+-            standard = "auto"
+-        self.standard = OptionSetParameter( "Standard", standard, VideoServiceH264.standards )
++        self.port = TextParameter( "port", "" )
++        self.encoding = OptionSetParameter( "Encoding", "mpeg4", self.encodingOptions )
++        self.standard = TextParameter( "standard", "" )
+         self.tiles = OptionSetParameter( "Thumbnail Columns", "4", VideoServiceH264.tileOptions )
+-        self.bandwidth = RangeParameter( "Bandwidth", 3072, 0, 6000 )
++        self.bandwidth = RangeParameter( "Bandwidth", 2500, 0, 10240 )
+         self.framerate = RangeParameter( "Frame Rate", 24, 1, 30 )
+-        self.quality = RangeParameter( "Quality", 90, 1, 100 )
++        self.quality = RangeParameter( "Quality", 75, 1, 100 )
+         self.transmitOnStart = OptionSetParameter( "Transmit on Startup", "On", VideoServiceH264.onOffOptions )
+         self.muteSources = OptionSetParameter( "Mute Sources", "Off", VideoServiceH264.onOffOptions )
+-        self.inputsize = OptionSetParameter( "Capture Size", "Large", VideoServiceH264.inputsizes  )
++        self.inputsize = TextParameter( "inputsize", "" )
+         self.positionWindow = OptionSetParameter( 'Position Window', 'Justify Left', ['Off', 'Justify Left', 'Justify Right'])
++        self.encodingDeinterlacer = OptionSetParameter( "Encoding Deinterlacer", "Off", VideoServiceH264.onOffOptions )
++
+         self.configuration.append( self.streamname )
+         self.configuration.append( self.port )
+         self.configuration.append( self.encoding )
+@@ -149,12 +152,13 @@
+         self.configuration.append( self.tiles )
+         self.configuration.append( self.bandwidth )
+         self.configuration.append( self.framerate )
+-        self.configuration.append (self.quality )
+-        self.configuration.append (self.transmitOnStart )
+-        self.configuration.append (self.muteSources )
+-        self.configuration.append (self.inputsize )
+-        self.configuration.append (self.positionWindow )
++        self.configuration.append( self.quality )
++        self.configuration.append( self.transmitOnStart )
++        self.configuration.append( self.muteSources )
++        self.configuration.append( self.inputsize )
+ 
++        self.configuration.append( self.positionWindow )
++        self.configuration.append( self.encodingDeinterlacer )
+         if IsWindows():
+             try:
+                 import win32api
+@@ -173,9 +177,8 @@
+             except:
+                 self.log.exception('Error initializing processor usage options')
+ 
+-        self.resource = ''
+-        
+         self.__GetResources()
++        self.deviceDOM.unlink()
+ 
+     def __SetRTPDefaults(self, profile):
+         """
+@@ -212,7 +215,7 @@
+                 _winreg.SetValueEx(k, "*rtpName", 0,
+                                    _winreg.REG_SZ, profile.name)
+                 _winreg.SetValueEx(k, "*rtpEmail", 0,
+-                                   _winreg.REG_SZ, profileemail)
++                                   _winreg.REG_SZ, profile.email)
+                 _winreg.SetValueEx(k, "*rtpPhone", 0,
+                                    _winreg.REG_SZ, profile.phoneNumber)
+                 _winreg.SetValueEx(k, "*rtpLoc", 0,
+@@ -224,15 +227,17 @@
+                 self.log.exception("Error writing RTP defaults to registry")
+         else:
+             self.log.error("No support for platform: %s", sys.platform)
+-        
++
++
+     def MapWinDevice(self,deviceStr):
+         """
+         Abuse registry to get correct mapping from vfw names
+         to video sources
+         """
+-        videowidth = 720
+-        videoheight = 480
+-        
++
++        videowidth = 352
++        videoheight = 288
++
+         self.log.info("Mapping windows device: %s", deviceStr)
+         if deviceStr.find('Videum') >= 0:
+             self.log.info("- videum")
+@@ -260,12 +265,12 @@
+                 _winreg.SetValueEx(key,'Height',0,_winreg.REG_DWORD,int(videoheight))
+                 _winreg.SetValueEx(key,'Width',0,_winreg.REG_DWORD,int(videowidth))
+                 _winreg.CloseKey(key)
+-                
+ 
+     def Start( self ):
+-        """Start service"""
++        """
++        Start service
++        """
+         try:
+-
+             # Set processor affinity (windows only)
+             if IsWindows():
+                 try:
+@@ -278,7 +283,7 @@
+                         SystemConfig.instance().SetProcessorAffinity(int(self.processorUsage.value))
+                 except:
+                     self.log.exception("Exception setting processor affinity")
+-            
++
+             # Enable firewall
+             self.sysConf.AppFirewallConfig(self.executable, 1)
+ 
+@@ -296,7 +301,6 @@
+                 except:
+                     self.log.exception("Exception mapping device")
+ 
+-
+             #
+             # Write vic startup file
+             #
+@@ -309,6 +313,11 @@
+             else:
+                 portstr = self.port.value
+ 
++            if self.standard.value == '':
++                standardstr = "None"
++            else:
++                standardstr = self.standard.value
++
+             if self.muteSources.value == "On":
+                 # streams are muted, so disable autoplace
+                 disableAutoplace = "true"
+@@ -316,41 +325,47 @@
+                 # streams are not muted, so don't disable autoplace
+                 # (flags should not be negative!)
+                 disableAutoplace = "false"
+-            
++
++            if self.inputsize.value == "Small":
++                inputsize = 4
++            elif self.inputsize.value == "Large" and self.encoding.value != "h261":
++                inputsize = 1
++            else:
++                inputsize = 2
++
++            if self.resolution != None:
++                resolution = self.resolution.value
++            else:
++                resolution = "none"
++
+             name=email="Participant"
+             if self.profile:
+                 name = self.profile.name
+                 email = self.profile.email
+             else:
+                 # Error case
+-                name = "User"
+-                email = "user@accessgrid.org"
++                name = email = Toolkit.GetDefaultSubject().GetCN()
+                 self.log.error("Starting service without profile set")
+ 
+-            if self.inputsize.value == "Small":
+-                inputsize = 4
+-            elif self.inputsize.value == "Normal":
+-                inputsize = 2
+-            elif self.inputsize.value == "Large":
+-                inputsize = 1
+-                
+             f.write( vicstartup % ( disableAutoplace,
+                                     OnOff(self.muteSources.value),
+                                     self.bandwidth.value,
+                                     self.framerate.value,
+                                     self.quality.value,
+                                     self.encoding.value,
+-                                    self.standard.value,
++                                    standardstr,
+                                     vicDevice,
+                                     "%s(%s)" % (name,self.streamname.value),
+                                     email,
++                                    OnOff(self.encodingDeinterlacer.value),
++                                    resolution,
+                                     email,
+                                     OnOff(self.transmitOnStart.value),
+                                     portstr,
+                                     portstr,
+                                     inputsize) )
+             f.close()
+-            
++
+             # Open permissions on vic startupfile
+             os.chmod(startupfile,0777)
+ 
+@@ -358,7 +373,7 @@
+             #  forward slashes (vic will crash otherwise)
+             if IsWindows():
+                 startupfile = startupfile.replace("\\","/")
+-            
++
+             #
+             # Start the service; in this case, store command line args in a list and let
+             # the superclass _Start the service
+@@ -366,19 +381,22 @@
+             options.append( "-u" )
+             options.append( startupfile )
+             options.append( "-C" )
+-            options.append( str(self.streamname.value) )
++            options.append( str(self.streamDescription.name) )
++            if IsOSX():
++                if self.transmitOnStart.value:
++                    options.append( "-X")
++                    options.append( "transmitOnStartup=1")
+             if self.streamDescription.encryptionFlag != 0:
+                 options.append( "-K" )
+                 options.append( self.streamDescription.encryptionKey )
+-                
+-            if self.profile:
+-                options.append("-X")
+-                options.append("site=%s" % self.profile.publicId)
+-            
++
++            # Set drop time to something reasonable
++            options.append('-XsiteDropTime=5')
++
+             if not self.positionWindow.value == 'Off':
+                 # - set vic window geometry
+                 try:
+-                    
++
+                     if not self.windowGeometry:
+                         h = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
+                         w_sys = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
+@@ -403,13 +421,14 @@
+                 except:
+                     self.log.exception('Error calculating window placement')
+ 
++
+             if self.profile:
+                 options.append("-X")
+                 options.append("site=%s" % self.profile.publicId)
+ 
+             # Set number of columns to use for thumbnail display
+             options.append("-Xtile=%s" % self.tiles.value)
+-                
++
+             # Check whether the network location has a "type" attribute
+             # Note: this condition is only to maintain compatibility between
+             # older venue servers creating network locations without this attribute
+@@ -426,14 +445,17 @@
+             self.log.info("Starting VideoServiceH264")
+             self.log.info(" executable = %s" % self.executable)
+             self.log.info(" options = %s" % options)
++            os.chdir(self.thepath)
+             self._Start( options )
+             #os.remove(startupfile)
+         except:
+             self.log.exception("Exception in VideoServiceH264.Start")
+-            raise
++            raise Exception("Failed to start service")
+ 
+     def Stop( self ):
+-        """Stop the service"""
++        """
++        Stop the service
++        """
+ 
+         # vic doesn't die easily (on linux at least), so force it to stop
+         AGService.ForceStop(self)
+@@ -442,9 +464,10 @@
+         self.sysConf.AppFirewallConfig(self.executable, 0)
+ 
+     def SetStream( self, streamDescription ):
+-        """Configure the Service according to the StreamDescription"""
+-        self.log.info('SetStream: %s', streamDescription)
+-        self.log.info('  enabled: %d', self.enabled)
++        """
++        Configure the Service according to the StreamDescription
++        """
++        self.log.info("SetStream called")
+ 
+         ret = AGService.ConfigureStream( self, streamDescription )
+         if ret and self.started:
+@@ -459,16 +482,18 @@
+         if self.enabled:
+             self.Start()
+ 
+-    def GetResource( self ):
++    def GetResource(self):
+         if self.resource:
+             return ResourceDescription(self.resource[0])
+         else:
+             return ResourceDescription('')
+ 
+     def SetResource( self, resource ):
+-        """Set the resource used by this service"""
++        """
++        Set the resource used by this service
++        """
+ 
+-        self.log.info("VideoServiceH264.SetResource : %s" % resource.name)
++        self.log.info("VideoServiceH264.SetResource : %s" % resource.name )
+         for r in self.resources:
+             if r[0].strip() == resource.name:
+                 self.resource = r
+@@ -483,7 +508,7 @@
+         # Create the port parameter as an option set parameter, now
+         # that we have multiple possible values for "port"
+         # If self.port is valid, keep it instead of setting the default value.
+-        if (( isinstance(self.port, TextParameter) or isinstance(self.port, ValueParameter) ) 
++        if (( isinstance(self.port, TextParameter) or isinstance(self.port, ValueParameter) )
+               and self.port.value != "" and self.port.value in self.resource[1]):
+             self.port = OptionSetParameter( "Port", self.port.value,
+                                                          self.resource[1] )
+@@ -499,6 +524,96 @@
+         else:
+             self.configuration.append(self.port)
+ 
++
++        # Find the config element that refers to "standard"
++        try:
++            index = self.configuration.index(self.standard)
++            found = 1
++        except ValueError:
++            found = 0
++
++        # Create the standard parameter as an option set parameter, now
++        # that we have multiple possible values for "standard"
++        # If self.standard is valid, keep it instead of setting the default value.
++        if (( isinstance(self.standard, TextParameter) or isinstance(self.standard, ValueParameter) )
++              and self.standard.value != "" and self.standard.value in self.resource[2]):
++            self.standard = OptionSetParameter( "Standard", self.standard.value,
++                                                         self.resource[2] )
++        else:
++            if (IsWindows() and "PAL" in self.resource[2]):
++                self.standard = OptionSetParameter( "Standard", "PAL", self.resource[2] )
++            else :
++                self.standard = OptionSetParameter( "Standard", self.resource[2][0],
++                                                    self.resource[2] )
++
++        self.log.info('standard = %s', self.standard.value)
++
++        # Replace or append the "standard" element
++        if found:
++            self.configuration[index] = self.standard
++        else:
++            self.configuration.append(self.standard)
++
++
++        # Find the config element that refers to "inputsize"
++        try:
++            index = self.configuration.index(self.inputsize)
++            found = 1
++        except ValueError:
++            found = 0
++
++        # Create the inputsize parameter as an option set parameter, now
++        # that we have multiple possible values for "inputsize"
++        # If self.inputsize is valid, keep it instead of setting the default value.
++        if (( isinstance(self.inputsize, TextParameter) or isinstance(self.inputsize, ValueParameter) )
++              and self.inputsize.value != "" and self.inputsize.value in self.resource[3]):
++            self.inputsize = OptionSetParameter( "Capture Size", self.inputsize.value,
++                                                 self.resource[3] )
++        else:
++            if ("Medium" in self.resource[3]):
++                self.inputsize = OptionSetParameter( "Capture Size", "Medium",
++                                                     self.resource[3] )
++            else:
++                self.inputsize = OptionSetParameter( "Capture Size", self.resource[3][0],
++                                                     self.resource[3] )
++
++        self.log.info('inputsize = %s', self.inputsize.value)
++
++        # Replace or append the "inputsize" element
++        if found:
++            self.configuration[index] = self.inputsize
++        else:
++            self.configuration.append(self.inputsize)
++
++        if len(self.resource[4]) > 0:
++            # Find the config element that refers to "resolution"
++            try:
++                index = self.configuration.index(self.resolution)
++                found = 1
++            except ValueError:
++                found = 0
++            except AttributeError:
++                found = 0
++
++            # Create the resolution parameter as an option set parameter, now
++            # that we have multiple possible values for "resolution"
++            # If self.resolution is valid, keep it instead of setting the default value.
++            if (( isinstance(self.resolution, TextParameter) or isinstance(self.resolution, ValueParameter) )
++                and self.resolution.value != "" and self.resolution.value in self.resource[4]):
++                self.resolution = OptionSetParameter( "Large Size/Scaler Resolution", self.resolution.value,
++                                                  self.resource[4] )
++            else:
++                self.resolution = OptionSetParameter( "Large Size/Scaler Resolution", self.resource[4][0],
++                                                  self.resource[4] )
++
++            self.log.info('resolution = %s', self.resolution.value)
++
++            # Replace or append the "resolution" element
++            if found:
++                self.configuration[index] = self.resolution
++            else:
++                self.configuration.append(self.resolution)
++
+         # If the stream name has not been set, set it to the resource name
+         if not self.streamname.value:
+             self.streamname.value = resource.name
+@@ -507,21 +622,64 @@
+         """
+         Set the identity of the user driving the node
+         """
+-        self.log.info("SetIdentity: %s %s", profile.name, profile.email)
++        if profile:
++            self.log.info("SetIdentity: %s %s", profile.name, profile.email)
+         self.profile = profile
+         self.__SetRTPDefaults(profile)
+-        
++
+     def GetResources(self):
+         ret = map(lambda x: ResourceDescription(x[0]) , self.resources)
+         self.log.info('resources: %s', ret)
+         return ret
+ 
+     def __GetResources(self):
+-        self.resources = SystemConfig.instance().GetResources()
+-        return self.resources
+-        
+-
++        self.resources = list()
++        devices = self.deviceDOM.getElementsByTagName("device")
++        for device in devices:
++            nickname = device.getElementsByTagName("nickname")[0]
++            if nickname.childNodes[0].nodeType != xml.dom.minidom.Node.TEXT_NODE:
++                continue
++            deviceName = nickname.childNodes[0].data
++            if (deviceName.startswith("V4L2-")):
++                deviceName = "V4L2:/dev/video" + deviceName.split("/dev/video", 1)[1]
++            elif (deviceName.startswith("V4L-")):
++                deviceName = "V4L:/dev/video" + deviceName.split("/dev/video", 1)[1]
++            portList = [] # device's input ports
++            ports = device.getElementsByTagName("port")
++            for port in ports:
++                if port.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                    portList.append(port.childNodes[0].data)
++            if len(portList) == 0:
++                portList=[ deviceName ]
++            typeList = [] # video standards supported by device,  e.g. NTSC, PAL, 720p25, etc
++            types = device.getElementsByTagName("type")
++            for type in types:
++                if type.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                    if (type.childNodes[0].data in ['pal', 'ntsc', 'secam']):
++                        typeList.append(type.childNodes[0].data.upper())
++                    else :
++                        typeList.append(type.childNodes[0].data)
++            if len(typeList) == 0:
++                typeList=[ "NTSC", "PAL" ]
++            sizeList = [] # video capture sizes supported by device
++            sizes = device.getElementsByTagName("size")
++            for size in sizes:
++                if size.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                    if (size.childNodes[0].data in ['cif', 'normal']):
++                        sizeList.append("Medium")
++                    else:
++                        sizeList.append(size.childNodes[0].data.capitalize())
++            resolutionList = [] # resolutions supported by device
++            resolutions = device.getElementsByTagName("large_size_resolution")
++            for res in resolutions:
++                if res.childNodes[0].nodeType == xml.dom.minidom.Node.TEXT_NODE:
++                    resolutionList.append(res.childNodes[0].data.capitalize())
++
++            typeList.sort()
++            sizeList.sort()
++            self.resources.append([deviceName, portList, typeList, sizeList, resolutionList])
+ 
++        return self.resources
+ 
+ if __name__ == '__main__':
+ 
+--- AccessGrid-3.2/AccessGrid/services/node/VideoServiceH264/VideoServiceH264.svc	2009-06-23 10:44:00.000000000 +1000
++++ AccessGrid-3.3/AccessGrid/services/node/VideoServiceH264/VideoServiceH264.svc	2011-04-28 13:31:26.015513499 +1000
+@@ -4,7 +4,7 @@
+ capabilities = Capability1 Capability2
+ executable = VideoServiceH264.py
+ platform = neutral
+-version = 3.3
++version = 3.5
+ inlineClass = VideoServiceH264
+ resourceNeeded = 1
+ 

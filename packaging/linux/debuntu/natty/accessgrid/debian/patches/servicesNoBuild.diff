@@ -1,0 +1,44 @@
+diff -urNad accessgrid3.1-3.1~/AccessGrid/services/node/AudioService/AudioService.build.py accessgrid3.1-3.1/AccessGrid/services/node/AudioService/AudioService.build.py
+--- accessgrid3.1-3.1~/AccessGrid/services/node/AudioService/AudioService.build.py	2007-06-13 07:43:14.000000000 +1000
++++ accessgrid3.1-3.1/AccessGrid/services/node/AudioService/AudioService.build.py	2008-03-23 21:48:30.234201972 +1000
+@@ -43,6 +43,7 @@
+         needBuild = 1
+         break
+ 
++needBuild = 0
+ # Build rat if necessary
+ if needBuild:
+     print "source dist = ", SOURCE, DEST
+diff -urNad accessgrid3.1-3.1~/AccessGrid/services/node/VideoConsumerService/VideoConsumerService.build.py accessgrid3.1-3.1/AccessGrid/services/node/VideoConsumerService/VideoConsumerService.build.py
+--- accessgrid3.1-3.1~/AccessGrid/services/node/VideoConsumerService/VideoConsumerService.build.py	2006-05-10 11:35:39.000000000 +1000
++++ accessgrid3.1-3.1/AccessGrid/services/node/VideoConsumerService/VideoConsumerService.build.py	2008-03-23 21:49:53.878968614 +1000
+@@ -44,6 +44,7 @@
+         needBuild = 1
+         break
+ 
++needBuild = 0
+ if needBuild:
+     # Build vic
+     if executableToBuild == "openmash":
+diff -urNad accessgrid3.1-3.1~/AccessGrid/services/node/VideoProducerService/VideoProducerService.build.py accessgrid3.1-3.1/AccessGrid/services/node/VideoProducerService/VideoProducerService.build.py
+--- accessgrid3.1-3.1~/AccessGrid/services/node/VideoProducerService/VideoProducerService.build.py	2006-05-12 10:49:05.000000000 +1000
++++ accessgrid3.1-3.1/AccessGrid/services/node/VideoProducerService/VideoProducerService.build.py	2008-03-23 21:49:27.273452453 +1000
+@@ -45,6 +45,7 @@
+         needBuild = 1
+         break
+ 
++needBuild = 0
+ if needBuild:
+     # Build vic
+     if executableToBuild == "openmash":
+diff -urNad accessgrid3.1-3.1~/AccessGrid/services/node/VideoService/VideoService.build.py accessgrid3.1-3.1/AccessGrid/services/node/VideoService/VideoService.build.py
+--- accessgrid3.1-3.1~/AccessGrid/services/node/VideoService/VideoService.build.py	2006-05-10 11:35:40.000000000 +1000
++++ accessgrid3.1-3.1/AccessGrid/services/node/VideoService/VideoService.build.py	2008-03-23 21:49:03.996125954 +1000
+@@ -45,6 +45,7 @@
+         needBuild = 1
+         break
+ 
++needBuild = 0
+ if needBuild:
+     # Build vic
+     if executableToBuild == "openmash":

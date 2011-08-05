@@ -1,8 +1,8 @@
-ag-vic2.8ucl (1.4-0ubuntu7) karmic; urgency=low
+ag-vic2.8ucl (1.4-0ubuntu8) karmic; urgency=low
 
-  * New upstream code (svn r4694)
+  * New upstream code (svn r4883) includes decklink support
 
- -- Chris Willing <c.willing@uq.edu.au>  Sun, 14 Mar 2010 13:56:58 +1000
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 07 Sep 2010 15:22:04 +1000
 
 ag-vic2.8ucl (1.4-0ubuntu6) karmic; urgency=low
 

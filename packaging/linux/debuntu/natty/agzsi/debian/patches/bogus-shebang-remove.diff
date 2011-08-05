@@ -1,0 +1,152 @@
+diff -urNad zsi~/ZSI/ServiceContainer.py zsi/ZSI/ServiceContainer.py
+--- zsi~/ZSI/ServiceContainer.py	2007-01-27 02:03:50.000000000 +0100
++++ zsi/ZSI/ServiceContainer.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ '''Simple Service Container
+    -- use with wsdl2py generated modules.
+ '''
+diff -urNad zsi~/ZSI/TC.py zsi/ZSI/TC.py
+--- zsi~/ZSI/TC.py	2007-01-30 20:04:09.000000000 +0100
++++ zsi/ZSI/TC.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''General typecodes.
+ '''
+diff -urNad zsi~/ZSI/TCapache.py zsi/ZSI/TCapache.py
+--- zsi~/ZSI/TCapache.py	2006-01-23 22:36:32.000000000 +0100
++++ zsi/ZSI/TCapache.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''Apache typecodes.
+ '''
+diff -urNad zsi~/ZSI/TCcompound.py zsi/ZSI/TCcompound.py
+--- zsi~/ZSI/TCcompound.py	2007-01-25 02:36:57.000000000 +0100
++++ zsi/ZSI/TCcompound.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''Compound typecodes.
+ '''
+diff -urNad zsi~/ZSI/TCnumbers.py zsi/ZSI/TCnumbers.py
+--- zsi~/ZSI/TCnumbers.py	2006-10-14 01:35:29.000000000 +0200
++++ zsi/ZSI/TCnumbers.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''Typecodes for numbers.
+ '''
+diff -urNad zsi~/ZSI/TCtimes.py zsi/ZSI/TCtimes.py
+--- zsi~/ZSI/TCtimes.py	2007-01-26 19:40:46.000000000 +0100
++++ zsi/ZSI/TCtimes.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''Typecodes for dates and times.
+ '''
+diff -urNad zsi~/ZSI/__init__.py zsi/ZSI/__init__.py
+--- zsi~/ZSI/__init__.py	2006-10-20 00:31:07.000000000 +0200
++++ zsi/ZSI/__init__.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''ZSI:  Zolera Soap Infrastructure.
+ 
+diff -urNad zsi~/ZSI/auth.py zsi/ZSI/auth.py
+--- zsi~/ZSI/auth.py	2005-09-21 07:31:09.000000000 +0200
++++ zsi/ZSI/auth.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''Simple CGI dispatching.
+ '''
+diff -urNad zsi~/ZSI/client.py zsi/ZSI/client.py
+--- zsi~/ZSI/client.py	2007-01-26 00:14:13.000000000 +0100
++++ zsi/ZSI/client.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ #
+ # Copyright (c) 2001 Zolera Systems.  All rights reserved.
+diff -urNad zsi~/ZSI/digest_auth.py zsi/ZSI/digest_auth.py
+--- zsi~/ZSI/digest_auth.py	2007-01-25 23:39:50.000000000 +0100
++++ zsi/ZSI/digest_auth.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''Utilities for HTTP Digest Authentication
+ '''
+diff -urNad zsi~/ZSI/dispatch.py zsi/ZSI/dispatch.py
+--- zsi~/ZSI/dispatch.py	2007-01-26 19:01:11.000000000 +0100
++++ zsi/ZSI/dispatch.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''Simple CGI dispatching.
+ '''
+diff -urNad zsi~/ZSI/fault.py zsi/ZSI/fault.py
+--- zsi~/ZSI/fault.py	2007-02-01 20:59:14.000000000 +0100
++++ zsi/ZSI/fault.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''Faults.
+ '''
+diff -urNad zsi~/ZSI/generate/wsdl2dispatch.py zsi/ZSI/generate/wsdl2dispatch.py
+--- zsi~/ZSI/generate/wsdl2dispatch.py	2007-01-27 02:03:50.000000000 +0100
++++ zsi/ZSI/generate/wsdl2dispatch.py	2007-05-01 23:38:15.000000000 +0200
+@@ -1,4 +1,3 @@
+-#!/usr/bin/env python
+ from cStringIO import StringIO
+ import ZSI, string, sys, getopt, urlparse, types, warnings
+ from ZSI.wstools import WSDLTools
+diff -urNad zsi~/ZSI/parse.py zsi/ZSI/parse.py
+--- zsi~/ZSI/parse.py	2006-10-13 02:12:32.000000000 +0200
++++ zsi/ZSI/parse.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''SOAP messaging parsing.
+ '''
+diff -urNad zsi~/ZSI/resolvers.py zsi/ZSI/resolvers.py
+--- zsi~/ZSI/resolvers.py	2002-05-09 18:21:54.000000000 +0200
++++ zsi/ZSI/resolvers.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''SOAP messaging parsing.
+ '''
+diff -urNad zsi~/ZSI/schema.py zsi/ZSI/schema.py
+--- zsi~/ZSI/schema.py	2006-10-20 00:31:07.000000000 +0200
++++ zsi/ZSI/schema.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Header$
+ '''XML Schema support
+ '''
+diff -urNad zsi~/ZSI/writer.py zsi/ZSI/writer.py
+--- zsi~/ZSI/writer.py	2006-10-20 00:31:07.000000000 +0200
++++ zsi/ZSI/writer.py	2007-05-01 23:37:56.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ # $Id: writer.py 1270 2006-10-19 22:31:07Z boverhof $
+ '''SOAP message serialization.
+ '''
+diff -urNad zsi~/ZSI/wstools/__init__.py zsi/ZSI/wstools/__init__.py
+--- zsi~/ZSI/wstools/__init__.py	2004-12-07 16:54:53.000000000 +0100
++++ zsi/ZSI/wstools/__init__.py	2007-05-01 23:38:21.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ """WSDL parsing services package for Web Services for Python."""
+ 
+ ident = "$Id: __init__.py 840 2004-12-07 15:54:53Z blunck2 $"
+diff -urNad zsi~/ZSI/wstools/c14n.py zsi/ZSI/wstools/c14n.py
+--- zsi~/ZSI/wstools/c14n.py	2006-03-31 01:47:16.000000000 +0200
++++ zsi/ZSI/wstools/c14n.py	2007-05-01 23:38:17.000000000 +0200
+@@ -1,4 +1,3 @@
+-#! /usr/bin/env python
+ '''XML Canonicalization
+ 
+ Patches Applied to xml.dom.ext.c14n:

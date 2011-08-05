@@ -12,7 +12,9 @@ PKGNAME=ag-vic2.8ucl
 #PKGVERSION=1.4.0r4651
 #PKGVERSION=1.4.0r4694
 #PKGVERSION=1.4.0r4773
-PKGVERSION=1.4.0r4876
+#PKGVERSION=1.4.0r4876
+#PKGVERSION=1.4.0r4883
+PKGVERSION=1.4.0r4891
 
 arch=${ARCH:-`uname -m`}
 if [ ! "$arch" = "x86_64" ]; then
@@ -36,8 +38,9 @@ fi
 # Set as many of these as are needed
 #
 site0=http://www.vislab.uq.edu.au/ag3/distfiles
+#site0=willing@remote.itee.uq.edu.au:vislab/ag3/distfiles
 #
-svn_revision=r4876
+svn_revision=r4891
 ffmegversion=r20462
 libswscaleversion=r29824
 x264version=snapshot-20090708-2245
@@ -48,7 +51,7 @@ x264version=snapshot-20090708-2245
 #srcpkg2=libswscale-r27137.tar.gz
 #srcpkg3=ffmpeg-r13987.tar.gz
 workdir=mmedia-${svn_revision}
-srcpkg0=x264-${x264version=snapshot-20090708-2245}.tar.bz2
+srcpkg0=x264-${x264version}.tar.bz2
 srcpkg1=${workdir}.tar.bz2
 srcpkg2=libswscale-${libswscaleversion}.tar.bz2
 srcpkg3=ffmpeg-${ffmegversion}.tar.bz2
@@ -94,12 +97,23 @@ cleanup () {
 #
 generate() {
   # Obtain source tarballs
-  wget ${site0}/${srcpkg0}
-  wget ${site0}/${srcpkg1}
-  wget ${site0}/${srcpkg2}
-  wget ${site0}/${srcpkg3}
-  wget ${site0}/${srcpkg4}
-  
+  wget --limit-rate=915k ${site0}/${srcpkg0}
+  wget --limit-rate=915k ${site0}/${srcpkg1}
+  wget --limit-rate=915k ${site0}/${srcpkg2}
+  wget --limit-rate=915k ${site0}/${srcpkg3}
+  wget --limit-rate=915k ${site0}/${srcpkg4}
+#  # --limit-rate units are bytes i.e. 20k = 20kB/s
+#  wget --limit-rate=915k ${site0}/${srcpkg0}
+#  wget --limit-rate=915k ${site0}/${srcpkg1}
+#  wget --limit-rate=915k ${site0}/${srcpkg2}
+#  wget --limit-rate=915k ${site0}/${srcpkg3}
+#  wget --limit-rate=915k ${site0}/${srcpkg4}
+#sleep 1
+#rsync -avz --bwlimit=100 ${site0}/${srcpkg0} .
+#rsync -avz --bwlimit=100 ${site0}/${srcpkg1} .
+#rsync -avz --bwlimit=100 ${site0}/${srcpkg2} .
+#rsync -avz --bwlimit=100 ${site0}/${srcpkg3} .
+#rsync -avz --bwlimit=100 ${site0}/${srcpkg4} .
   
   # Generate the source environment
   tar xvf ${srcpkg1}

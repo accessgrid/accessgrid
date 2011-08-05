@@ -1,0 +1,22 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## vic-video-grabber-video4linux.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad mmedia-r4126~/vic/video/grabber-video4linux.cpp mmedia-r4126/vic/video/grabber-video4linux.cpp
+--- mmedia-r4126~/vic/video/grabber-video4linux.cpp	2008-03-15 13:00:49.000000000 +1000
++++ mmedia-r4126/vic/video/grabber-video4linux.cpp	2008-03-22 16:07:10.299461602 +1000
+@@ -39,10 +39,9 @@
+ extern "C"
+ {
+ #include <asm/types.h>
+-//#include <linux/videodev.h>
++#include <linux/videodev.h>
+ }
+ 
+-#include "videodev.h"
+ #include "grabber.h"
+ #include "vic_tcl.h"
+ #include "device-input.h"

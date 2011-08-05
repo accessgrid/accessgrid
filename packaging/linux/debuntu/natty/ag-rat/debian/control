@@ -1,0 +1,18 @@
+Source: ag-rat
+Section: AccessGrid
+Priority: optional
+Maintainer: Chris Willing <c.willing@uq.edu.au>
+Build-Depends: python (>= 2.4), tk-dev,
+ libx11-dev, libxt-dev, libssl-dev, libxext-dev,
+ libasound2-dev, libalsaplayer-dev
+Standards-Version: 3.7.2
+
+Package: ag-rat
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends},
+ alsa-oss, alsa-tools
+Provides: rat, ag-rat
+Description: UCL version of rat
+ This is the UCL version of rat for AccessGrid.
+ .
+ SVN revision 4891

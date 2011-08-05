@@ -12,5 +12,5 @@ Architecture: any
 Depends: ${shlibs:Depends}, tk
 Conflicts: ag-vic, ag-hdvic, vic
 Description: AccessGrid version of vic video tool.
- This is the UCL version of vic, svn version 4345
- (20090113)
+ This is the UCL version of vic, svn version 4891
+ (20101007)

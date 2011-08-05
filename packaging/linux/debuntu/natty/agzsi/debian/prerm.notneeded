@@ -1,0 +1,4 @@
+#!/bin/sh
+
+echo "Performing pre-removal tasks"
+( cd /usr/bin/ && rm -f wsdl2dispatch.py && rm -f wsdl2py.py )

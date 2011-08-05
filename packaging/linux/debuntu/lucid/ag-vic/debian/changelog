@@ -1,3 +1,9 @@
+ag-vic2.8ucl (1.4-0ubuntuag91) lucid; urgency=low
+
+  * New upstream code (svn r4883) includes decklink support
+
+ -- Chris Willing <c.willing@uq.edu.au>  Tue, 07 Sep 2010 15:27:04 +1000
+
 ag-vic2.8ucl (1.4-0ubuntuag9) lucid; urgency=low
 
   * New upstream code (svn r4876)

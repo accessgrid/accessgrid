@@ -1,0 +1,17 @@
+Source: ag-vic2.8ucl
+Section: AccessGrid
+Priority: optional
+Maintainer: Chris Willing <c.willing@uq.edu.au>
+Build-Depends: automake, quilt, libx11-dev, libxt-dev, libxext-dev,
+ libssl-dev, tk8.5-dev, libdv4-dev, libv4l-dev, yasm,
+ subversion, curl
+Standards-Version: 3.7.2
+
+Package: ag-vic2.8ucl
+Architecture: any
+Depends: ${shlibs:Depends}, tk8.5
+Conflicts: ag-vic, ag-hdvic, vic
+Description: AccessGrid version of vic video tool.
+ This is the UCL version of vic, svn version 4901
+ and includes decklink driver support
+ (for Blackmagic-Design HD capture cards)
