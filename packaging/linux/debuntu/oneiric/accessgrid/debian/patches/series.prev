@@ -1,0 +1,13 @@
+packaging-BuildSnapshot.py.diff
+packaging-agversion.py.diff
+servicesNoBuild.diff
+ZSI-Server.py.diff
+Platform-unix-Config.py.diff
+datapath-Configs.diff
+v32servicesH264.diff
+WebkitBrowser.diff
+align_splash_text.diff
+pretend_still_3.2.dpatch
+AGXMLRPCServer.diff
+H264services-r6829.diff
+UrllibTransport-py2_7.diff

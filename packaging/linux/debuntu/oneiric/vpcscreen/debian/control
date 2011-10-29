@@ -1,0 +1,19 @@
+Source: vpcscreen
+Section: AccessGrid
+Priority: optional
+Maintainer: Chris Willing <c.willing@uq.edu.au> 
+Build-Depends: debhelper (>= 5), quilt, scons,
+ libwxgtk2.8-dev, zip, libglew1.5-dev,
+ libxft-dev, libxmu-dev, libx11-dev, libv4l-dev,
+ libuclmmbase1-dev,
+ libswscale-dev, libavcodec-dev, libavformat-dev,
+ libdv-dev, libiec61883-dev, libraw1394-dev,
+ libvpmedia-dev (>= 0.1-0r993-1), libvpc-dev
+Standards-Version: 3.9.1
+
+Package: vpcscreen
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: VPCScreen from the ANU Internet Futures team
+ Encode arbitrary sections of display screen as H.261as video stream. An
+ Access Grid (AG3) service package is included.

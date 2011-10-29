@@ -1,0 +1,31 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## examples-_common-setuporig.py.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad common-20070615cvs~/examples/_common/setuporig.py common-20070615cvs/examples/_common/setuporig.py
+--- common-20070615cvs~/examples/_common/setuporig.py	2007-06-15 16:01:38.000000000 +1000
++++ common-20070615cvs/examples/_common/setuporig.py	2008-03-22 13:20:15.384744144 +1000
+@@ -20,7 +20,7 @@
+ RUN_EPYDOC    = 0
+ RUN_EPYDOCIFY = 1
+ SWIG_ARGS = [ "-python", "-outdir", "common", "-c++", "-new_repr", 
+-              "-cpperraswarn",
++              "-cpperraswarn", "-DWORDS_SMALLENDIAN",
+               "-I%s" % get_python_inc(plat_specific=1),
+               "-I%s" % os.path.join("..", "..", "src")]
+ SRC = os.path.join('..','..')
+@@ -128,10 +128,7 @@
+                              extra_link_args=ldFlagsList,
+                              libraries=libList)],
+       package_dir = { "common" : "common" }, packages = ["common"],
+-      ext_package = "common", scripts=["rtpbeacon.py",
+-                                       "Win32BeaconService.py",
+-                                       "beacon-install.py",
+-                                       "beacon.ini"])
++      ext_package = "common", scripts=["rtpbeacon.py"])
+     
+ print 'Build finished at: ', strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
+ print 'Completed in', time() - begin_time, 'seconds'

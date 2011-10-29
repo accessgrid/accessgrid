@@ -1,0 +1,9 @@
+--- VPMedia/include/VPMedia/VPMedia.h.orig	2008-09-16 22:09:28.000000000 +1000
++++ VPMedia/include/VPMedia/VPMedia.h	2008-09-17 08:54:35.870718000 +1000
+@@ -44,4 +44,6 @@
+ 
+ #include <VPMedia/VPMTypes.h>
+ 
++#include <string.h>
++
+ #endif // VPMEDIA_H

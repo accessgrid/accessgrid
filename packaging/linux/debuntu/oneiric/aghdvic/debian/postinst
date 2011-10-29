@@ -1,0 +1,5 @@
+#!/bin/sh
+
+echo " POSTINST: Resetting network buffers with sysctl"
+invoke-rc.d procps start
+

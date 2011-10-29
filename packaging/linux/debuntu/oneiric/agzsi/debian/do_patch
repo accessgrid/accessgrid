@@ -1,0 +1,11 @@
+#!/bin/sh
+
+cat ${1} |patch -p0 -sN --dry-run
+if [ $? -ne 0 ]; then
+  return
+fi
+cat ${1} |patch -p0 -sN
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+

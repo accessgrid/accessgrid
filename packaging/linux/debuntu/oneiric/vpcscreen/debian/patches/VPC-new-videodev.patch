@@ -1,0 +1,22 @@
+--- VPC/include/VPC/Producer/VPCV4LProducer.h.orig	2008-09-16 22:09:28.000000000 +1000
++++ VPC/include/VPC/Producer/VPCV4LProducer.h	2011-04-28 12:42:08.628485132 +1000
+@@ -5,7 +5,7 @@
+ #include <string>
+ 
+ #include <VPC/VPCVideoProducer.h>
+-#include <linux/videodev.h>
++#include <libv4l1-videodev.h>
+ 
+ class VPCV4LProducer : public VPCVideoProducer {
+ public:
+--- VPC/src/Producer/VPCV4LProducer.cpp.orig	2008-09-16 22:09:28.000000000 +1000
++++ VPC/src/Producer/VPCV4LProducer.cpp	2011-04-28 13:21:47.473688110 +1000
+@@ -8,7 +8,7 @@
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ 
+-#include <linux/videodev.h>
++#include <libv4l1-videodev.h>
+ #include <sys/mman.h>
+ 
+ VPCV4LProducer::VPCV4LProducer() :

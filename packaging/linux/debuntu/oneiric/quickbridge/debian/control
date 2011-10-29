@@ -1,0 +1,12 @@
+Source: quickbridge
+Section: AccessGrid
+Priority: optional
+Maintainer: Chris Willing <c.willing@uq.edu.au>
+Build-Depends: debhelper (>= 5.0.37.1), gcc
+Standards-Version: 3.7.2
+
+Package: quickbridge
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Quickbridge, from the AG Toolkit
+ Quickbridge, a multicast-unicast bridge, from the AG Toolkit

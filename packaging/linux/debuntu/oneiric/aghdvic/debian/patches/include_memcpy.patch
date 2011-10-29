@@ -1,0 +1,10 @@
+--- vic/BlockCopier.h.orig	2008-04-10 15:40:02.000000000 +1000
++++ vic/BlockCopier.h	2008-09-19 14:19:59.523137000 +1000
+@@ -57,6 +57,7 @@
+ #define BlockCopier_
+ 
+ #include <stddef.h>
++#include <string.h>
+ 
+ namespace VISLAB_at_UQ
+ {

@@ -1,0 +1,18 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## gov-lbl-dsd-bajjer-stream.dpatch by  <chris@v1.vislab.uq.edu.au>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad bajjer-0.2.5~/gov/lbl/dsd/bajjer/stream.py bajjer-0.2.5/gov/lbl/dsd/bajjer/stream.py
+--- bajjer-0.2.5~/gov/lbl/dsd/bajjer/stream.py	2007-01-18 07:23:13.000000000 +1000
++++ bajjer-0.2.5/gov/lbl/dsd/bajjer/stream.py	2008-03-19 22:14:46.546049335 +1000
+@@ -120,6 +120,7 @@
+         self._conn.close()
+         self._open = False
+         self._cbthread.unRegister(self._conn) 
++        self._conn = None
+     
+     def setHandler(self, callback_func, expected, args_list=None):
+         """
