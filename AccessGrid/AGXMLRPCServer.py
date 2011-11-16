@@ -4,12 +4,13 @@
 # Purpose:     Basic python xmlrpc server with minor modifications.  Also
 #                includes an async xmlrpc server.
 # Created:     2005/12/16
-# RCS-ID:      $Id: AGXMLRPCServer.py,v 1.4 2007-01-11 23:54:52 turam Exp $
+# RCS-ID:      $Id: AGXMLRPCServer.py,v 1.1 2011/11/16 05:08:03 chris Exp $
 # Copyright:   (c) 2005,2006
 # Licence:     See COPYING.TXT
 #-----------------------------------------------------------------------------
-__revision__ = "$Id: AGXMLRPCServer.py,v 1.4 2007-01-11 23:54:52 turam Exp $"
+__revision__ = "$Id: AGXMLRPCServer.py,v 1.1 2011/11/16 05:08:03 chris Exp $"
 
+import sys
 from DocXMLRPCServer import DocXMLRPCServer 
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler, SimpleXMLRPCDispatcher
 import BaseHTTPServer
@@ -47,7 +48,7 @@ class AsyncAGXMLRPCServer(AGXMLRPCServer):
 
             # handle_timeout was introduced in python 2.6
             # in earlier python versions, call handle_timeout here to react to the timeout exception above
-            if sys.version < (2,6):
+            if sys.version_info < (2,6):
                 self.handle_timeout()
 
     def handle_timeout(self):
