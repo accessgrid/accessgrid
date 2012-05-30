@@ -1,0 +1,50 @@
+#!/usr/bin/make -f
+
+package = agvcr
+pkgdir = debian/tmp
+docdir = ${pkgdir}/usr/share/doc/$(package)
+
+
+build:
+	$(checkdir)
+	./configure --prefix=/usr
+	make
+	touch build
+
+clean:
+	$(checkdir)
+	if test -f Makefile ; then make clean; fi
+	@rm -f build
+
+binary-indep:	checkroot build $(checkdir) 
+
+binary-arch:	checkroot build
+	$(checkdir)
+	rm -rf ${pkgdir}
+	install -d ${pkgdir}/DEBIAN $(docdir)
+	install -d ${pkgdir}/usr/bin
+	install -d ${pkgdir}/usr/share/applications
+	install -d ${pkgdir}/usr/share/pixmaps
+	install -m 0755 src/agvcr ${pkgdir}/usr/bin/
+	install -m 0644 debian/patches/agvcr.desktop ${pkgdir}/usr/share/applications/
+	install -m 0644 debian/patches/AGVCR_Reel.png ${pkgdir}/usr/share/pixmaps/
+	cp -a AUTHORS COPYING INSTALL NEWS README debian/copyright $(docdir)/
+	cp -a debian/patches/ChangeLog $(docdir)/
+	cp -a debian/changelog $(docdir)/changelog.Debian
+	dpkg-gencontrol -isp
+	chown -R root:root ${pkgdir}
+	chmod -R u+w,go=rX ${pkgdir}
+	dpkg --build ${pkgdir} ..
+
+
+define checkdir
+	test -f src/agvcr.h -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

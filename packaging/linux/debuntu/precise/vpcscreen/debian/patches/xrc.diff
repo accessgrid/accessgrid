@@ -1,0 +1,333 @@
+--- x/VPCScreenCapture.h	2011-04-27 19:56:58.000000000 +1000
++++ y/VPCScreenCapture.h	2011-05-05 16:06:54.924608159 +1000
+@@ -13,9 +13,9 @@
+ 
+ 
+ 
+-#define VPCABOUTFILE "vpc-about.html"
+-#define VPCHELPFILE  "vpc-help.html"
+-#define VPCXRCFILE   "VPCScreenCapture.xrc"
++#define VPCABOUTFILE "/usr/share/VPCScreen/vpc-about.html"
++#define VPCHELPFILE  "/usr/share/VPCScreen/vpc-help.html"
++#define VPCXRCFILE   "/usr/share/VPCScreen/VPCScreenCapture.xrc"
+ 
+ 
+ class VPCScreenCapture : public wxApp
+--- x/VPCScreenCapture.xrc	2011-04-27 19:56:58.000000000 +1000
++++ y/VPCScreenCapture.xrc	2011-01-12 13:14:58.000000000 +1000
+@@ -1,158 +1,156 @@
+-<?xml version="1.0" ?>
+-<resource version="2.3.0.1">
+-  <object class="wxMenuBar" name="VPCScreenCaptureMenuBar">
+-    <object class="wxMenu" name="menu_file">
+-      <label>_File</label>
+-      <object class="wxMenuItem" name="menu_file_start">
+-        <label>_Start</label>
+-      </object>
+-      <object class="wxMenuItem" name="menu_file_stop">
+-        <label>S_top</label>
+-      </object>
+-      <object class="separator"/>
+-      <object class="wxMenuItem" name="menu_file_exit">
+-        <label>E_xit</label>
+-      </object>
+-    </object>
+-    <object class="wxMenu">
+-      <label>_Help</label>
+-      <object class="wxMenuItem" name="menu_help_contents">
+-        <label>_Contents</label>
+-        <help>F1</help>
+-      </object>
+-      <object class="separator"/>
+-      <object class="wxMenuItem" name="menu_help_about">
+-        <label>_About</label>
+-      </object>
+-    </object>
+-  </object>
+-  <object class="wxFrame" name="VPCScreenCaptureFrame">
+-    <size>800,600</size>
+-    <style>wxDEFAULT_FRAME_STYLE</style>
+-    <title>VPCScreenCapture</title>
+-    <object class="wxPanel">
+-      <object class="wxBoxSizer">
+-        <orient>wxVERTICAL</orient>
+-        <object class="sizeritem">
+-          <object class="wxPanel">
+-            <object class="wxBoxSizer">
+-              <orient>wxVERTICAL</orient>
+-              <object class="sizeritem">
+-                <object class="wxPanel">
+-                  <object class="wxBoxSizer">
+-                    <orient>wxVERTICAL</orient>
+-                    <object class="sizeritem">
+-                      <object class="wxRadioBox" name="VPCScreenCaptureMode">
+-                        <label>What to send:</label>
+-                        <content>
+-                          <item>Whole screen</item>
+-                          <item>Screen region</item>
+-                          <item>Single Window</item>
+-                        </content>
+-                        <selection>2</selection>
+-                        <dimension>0</dimension>
+-                        <style>wxRA_SPECIFY_ROWS</style>
+-                      </object>
+-                      <flag>wxALL|wxEXPAND|wxGROW</flag>
+-                    </object>
+-                  </object>
+-                </object>
+-                <option>2</option>
+-                <flag>wxALL|wxEXPAND|wxGROW</flag>
+-              </object>
+-              <object class="sizeritem">
+-                <object class="wxPanel">
+-                  <object class="wxStaticBoxSizer">
+-                    <label>Delay</label>
+-                    <orient>wxHORIZONTAL</orient>
+-                    <object class="sizeritem">
+-                      <object class="wxSlider" name="VPCScreenCaptureDelay">
+-                        <value>0</value>
+-                        <min>0</min>
+-                        <max>10</max>
+-                        <style>wxSL_HORIZONTAL|wxSL_LABELS</style>
+-                      </object>
+-                      <option>1</option>
+-                      <flag>wxALL|wxEXPAND</flag>
+-                    </object>
+-                    <object class="sizeritem">
+-                      <object class="wxStaticText" name="label_2">
+-                        <label>seconds</label>
+-                      </object>
+-                    </object>
+-                  </object>
+-                </object>
+-                <option>1</option>
+-                <flag>wxALL|wxEXPAND</flag>
+-              </object>
+-              <object class="sizeritem">
+-                <object class="wxPanel">
+-                  <object class="wxBoxSizer">
+-                    <orient>wxHORIZONTAL</orient>
+-                    <object class="sizeritem">
+-                      <object class="wxButton" name="start_button">
+-                        <label>Start</label>
+-                      </object>
+-                      <flag>wxALL</flag>
+-                      <border>3</border>
+-                    </object>
+-                    <object class="sizeritem">
+-                      <object class="wxButton" name="stop_button">
+-                        <label>Stop</label>
+-                      </object>
+-                      <flag>wxALL</flag>
+-                      <border>3</border>
+-                    </object>
+-                  </object>
+-                </object>
+-                <option>1</option>
+-                <flag>wxALL|wxALIGN_CENTRE</flag>
+-              </object>
+-            </object>
+-          </object>
+-          <flag>wxALL|wxEXPAND</flag>
+-        </object>
+-      </object>
+-    </object>
+-  </object>
+-  <object class="wxDialog" name="VPCAbout">
+-    <title>About</title>
+-    <object class="wxBoxSizer">
+-      <orient>wxVERTICAL</orient>
+-      <object class="sizeritem">
+-        <object class="wxHtmlWindow" name="about_label">
+-          <size>400,300</size>
+-        </object>
+-        <option>0</option>
+-        <flag>wxALL</flag>
+-        <border>10</border>
+-      </object>
+-      <object class="sizeritem">
+-        <object class="wxButton" name="wxID_OK">
+-          <label>Close</label>
+-        </object>
+-        <option>0</option>
+-        <flag>wxALL|wxALIGN_CENTRE_HORIZONTAL</flag>
+-        <border>3</border>
+-      </object>
+-    </object>
+-  </object>
+-  <object class="wxDialog" name="VPCHelp">
+-    <title>Help</title>
+-    <object class="wxBoxSizer">
+-      <orient>wxVERTICAL</orient>
+-      <object class="sizeritem">
+-        <object class="wxHtmlWindow" name="help_text">
+-          <size>600,400</size>
+-        </object>
+-      </object>
+-      <object class="sizeritem">
+-        <object class="wxButton" name="wxID_OK">
+-          <label>Close</label>
+-        </object>
+-        <flag>wxALL|wxALIGN_CENTRE_HORIZONTAL</flag>
+-        <border>3</border>
+-      </object>
+-    </object>
+-  </object>
+-</resource>
+\ No newline at end of file
++<?xml version="1.0" ?>
++<resource version="2.3.0.1">
++  <object class="wxMenuBar" name="VPCScreenCaptureMenuBar">
++    <object class="wxMenu" name="menu_file">
++      <label>_File</label>
++      <object class="wxMenuItem" name="menu_file_start">
++        <label>_Start</label>
++      </object>
++      <object class="wxMenuItem" name="menu_file_stop">
++        <label>S_top</label>
++      </object>
++      <object class="separator"/>
++      <object class="wxMenuItem" name="menu_file_exit">
++        <label>E_xit</label>
++      </object>
++    </object>
++    <object class="wxMenu">
++      <label>_Help</label>
++      <object class="wxMenuItem" name="menu_help_contents">
++        <label>_Contents</label>
++        <help>F1</help>
++      </object>
++      <object class="separator"/>
++      <object class="wxMenuItem" name="menu_help_about">
++        <label>_About</label>
++      </object>
++    </object>
++  </object>
++  <object class="wxFrame" name="VPCScreenCaptureFrame">
++    <size>800,600</size>
++    <style>wxDEFAULT_FRAME_STYLE</style>
++    <title>VPCScreenCapture</title>
++      <object class="wxBoxSizer">
++        <orient>wxVERTICAL</orient>
++        <object class="sizeritem">
++          <object class="wxPanel">
++            <object class="wxBoxSizer">
++              <orient>wxVERTICAL</orient>
++              <object class="sizeritem">
++                <object class="wxPanel">
++                  <object class="wxBoxSizer">
++                    <orient>wxVERTICAL</orient>
++                    <object class="sizeritem">
++                      <object class="wxRadioBox" name="VPCScreenCaptureMode">
++                        <label>What to send:</label>
++                        <content>
++                          <item>Whole screen</item>
++                          <item>Screen region</item>
++                          <item>Single Window</item>
++                        </content>
++                        <selection>2</selection>
++                        <dimension>0</dimension>
++                        <style>wxRA_SPECIFY_ROWS</style>
++                      </object>
++                      <flag>wxALL|wxEXPAND|wxGROW</flag>
++                    </object>
++                  </object>
++                </object>
++                <option>2</option>
++                <flag>wxALL|wxEXPAND|wxGROW</flag>
++              </object>
++              <object class="sizeritem">
++                <object class="wxPanel">
++                  <object class="wxStaticBoxSizer">
++                    <label>Delay</label>
++                    <orient>wxHORIZONTAL</orient>
++                    <object class="sizeritem">
++                      <object class="wxSlider" name="VPCScreenCaptureDelay">
++                        <value>0</value>
++                        <min>0</min>
++                        <max>10</max>
++                        <style>wxSL_HORIZONTAL|wxSL_LABELS</style>
++                      </object>
++                      <option>1</option>
++                      <flag>wxALL|wxEXPAND</flag>
++                    </object>
++                    <object class="sizeritem">
++                      <object class="wxStaticText" name="label_2">
++                        <label>seconds</label>
++                      </object>
++                    </object>
++                  </object>
++                </object>
++                <option>1</option>
++                <flag>wxALL|wxEXPAND</flag>
++              </object>
++              <object class="sizeritem">
++                <object class="wxPanel">
++                  <object class="wxBoxSizer">
++                    <orient>wxHORIZONTAL</orient>
++                    <object class="sizeritem">
++                      <object class="wxButton" name="start_button">
++                        <label>Start</label>
++                      </object>
++                      <flag>wxALL</flag>
++                      <border>3</border>
++                    </object>
++                    <object class="sizeritem">
++                      <object class="wxButton" name="stop_button">
++                        <label>Stop</label>
++                      </object>
++                      <flag>wxALL</flag>
++                      <border>3</border>
++                    </object>
++                  </object>
++                </object>
++                <option>1</option>
++                <flag>wxALL|wxALIGN_CENTRE</flag>
++              </object>
++            </object>
++          </object>
++          <flag>wxALL|wxEXPAND</flag>
++        </object>
++      </object>
++  </object>
++  <object class="wxDialog" name="VPCAbout">
++    <title>About</title>
++    <object class="wxBoxSizer">
++      <orient>wxVERTICAL</orient>
++      <object class="sizeritem">
++        <object class="wxHtmlWindow" name="about_label">
++          <size>400,300</size>
++        </object>
++        <option>0</option>
++        <flag>wxALL</flag>
++        <border>10</border>
++      </object>
++      <object class="sizeritem">
++        <object class="wxButton" name="wxID_OK">
++          <label>Close</label>
++        </object>
++        <option>0</option>
++        <flag>wxALL|wxALIGN_CENTRE_HORIZONTAL</flag>
++        <border>3</border>
++      </object>
++    </object>
++  </object>
++  <object class="wxDialog" name="VPCHelp">
++    <title>Help</title>
++    <object class="wxBoxSizer">
++      <orient>wxVERTICAL</orient>
++      <object class="sizeritem">
++        <object class="wxHtmlWindow" name="help_text">
++          <size>600,400</size>
++        </object>
++      </object>
++      <object class="sizeritem">
++        <object class="wxButton" name="wxID_OK">
++          <label>Close</label>
++        </object>
++        <flag>wxALL|wxALIGN_CENTRE_HORIZONTAL</flag>
++        <border>3</border>
++      </object>
++    </object>
++  </object>
++</resource>

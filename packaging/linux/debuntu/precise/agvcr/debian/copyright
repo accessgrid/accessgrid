@@ -1,0 +1,19 @@
+This package was debianized by Chris Willing <c.willing@uq.edu.au> on
+Wed, 25 Jul 2007 14:54:48 +1000
+
+It was downloaded from http://iri.informatics.indiana.edu/~dcpiper/agvcr/agvcr-2.2.1.tar.gz
+
+Upstream Author: Derek Piper 2004 - 2007 (dcpiper _at_ indiana.edu)
+
+Copyright: AGVCR - © Derek Piper 2004 - 2007 (dcpiper _at_ indiana.edu) and The Trustees of Indiana University 
+
+License: GNU General Public License (GPL)
+
+
+The Debian packaging is (C) 2007, Chris Willing <c.willing@uq.edu.au> and
+is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
+
+
+# Please also look if there are files or directories which have a
+# different copyright/license attached and list them here.
+

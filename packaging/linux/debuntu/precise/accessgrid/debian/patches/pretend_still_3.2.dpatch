@@ -1,0 +1,15 @@
+diff -urNad accessgrid3.2-3.3~/AccessGrid/AccessGrid/Version.py accessgrid3.2-3.3/AccessGrid/AccessGrid/Version.py
+--- accessgrid3.2-3.3~/AccessGrid/AccessGrid/Version.py	2010-12-10 15:50:10.000000000 +1000
++++ accessgrid3.2-3.3/AccessGrid/AccessGrid/Version.py	2011-08-16 08:59:49.516436598 +1000
+@@ -15,9 +15,9 @@
+ 
+ # Call GetVersion() to get AGTK version information.
+ MAJOR_VERSION = 3 
+-MINOR_VERSION = 3
++MINOR_VERSION = 2
+ POINT_VERSION = 0
+-STATUS = "dev"
++STATUS = "+"
+ 
+ BUILD_NUMBER = 1
+ 

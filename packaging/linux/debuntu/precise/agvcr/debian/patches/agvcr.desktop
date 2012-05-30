@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=AGVCR
+Comment=Access Grid Video Recorder
+TryExec=agvcr
+Exec=agvcr
+Icon=/usr/share/pixmaps/AGVCR_Reel.png
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=X-Access-Grid3-Base;

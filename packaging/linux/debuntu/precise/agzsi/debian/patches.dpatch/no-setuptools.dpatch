@@ -1,0 +1,26 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## no-setuptools.dpatch by Bernd Zeimetz <bernd@bzed.de>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: No description.
+
+@DPATCH@
+diff -urNad zsi~/setup.py zsi/setup.py
+--- zsi~/setup.py	2006-09-28 00:55:49.000000000 +0200
++++ zsi/setup.py	2007-05-02 00:04:01.000000000 +0200
+@@ -1,12 +1,9 @@
+ #! /usr/bin/env python
+ # $Header$
+ import sys
+-try:
+-    from setuptools import setup
+-    hasSetuptools = True
+-except ImportError:
+-    from distutils.core import setup
+-    hasSetuptools = False
++
++from distutils.core import setup
++hasSetuptools = False
+ 
+ _url = "http://pywebsvcs.sf.net/"
+ 

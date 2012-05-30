@@ -1,0 +1,88 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+#include /usr/share/dpatch/dpatch.make
+include /usr/share/quilt/quilt.make
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+#versions :=  $(shell pyversions -vs)
+versions :=  $(shell pyversions -vr)
+
+CFLAGS = -Wall -g
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
+	INSTALL_PROGRAM += -s
+endif
+
+
+configure: configure-stamp
+configure-stamp: $(QUILT_STAMPFN)
+	dh_testdir
+	# Add here commands to configure the package.
+	autoconf -f || true
+	./configure
+
+	touch configure-stamp
+
+
+build: build-stamp
+
+build-stamp: configure-stamp
+	dh_testdir
+	for version in $(versions); \
+                do echo "Doing build for python$$version"; \
+	        #do python$$version setup.py build; \
+		make ; \
+		( cd examples/_common && python$$version setup.py build ); \
+	done
+
+	touch build-stamp
+
+clean:	unpatch
+	dh_testdir
+	for version in $(versions); \
+                do echo "Doing clean for python$$version"; \
+		#do python$$version setup.py clean -a; \
+	done
+	rm -f build-stamp configure-stamp
+	dh_clean 
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+	for version in $(versions); \
+		do ( cd examples/_common && python$$version setup.py install --root=../../debian/agcommon --no-compile --prefix=/usr --install-lib=/usr/share/python-support/agcommon ); \
+	done
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installdocs doc/[A-HK-Za-z]*   # Everything but INSTALL.html
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_pysupport
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure

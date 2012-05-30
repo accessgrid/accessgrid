@@ -1,0 +1,19 @@
+--- VPMedia/src/VPMSession_net.cpp.orig	2008-09-16 22:09:32.000000000 +1000
++++ VPMedia/src/VPMSession_net.cpp	2010-04-02 01:04:51.718584080 +1000
+@@ -8,14 +8,14 @@
+ 
+ bool VPMSession_net::initialised_global = false;
+ 
+-static const uint16_t DEFAULT_TTL = 16;
++static const uint16_t DEFAULT_TTL = 127;
+ 
+ VPMSession_net::VPMSession_net( const char *_address,
+ 				VPMSessionListener &listener ) :
+   VPMSession( listener ),
+   address( _address ),
+   session( 0 ),
+-  ttl( 16 ),
++  ttl( DEFAULT_TTL ),
+   bandwidth( 64000 ),
+   first_packet_time(0),
+   total_bytes_sent(0),

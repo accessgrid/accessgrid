@@ -1,0 +1,20 @@
+Source: bajjer
+Section: AccessGrid
+Priority: optional
+Maintainer: Christoph Willing <c.willing@uq.edu.au>
+Build-Depends: cdbs (>= 0.4.41), debhelper (>= 5.0.38), python (>= 2.3.5-7), python-support (>= 0.4), quilt
+Standards-Version: 7.0
+
+Package: python-bajjer
+Architecture: all
+Depends: ${python:Depends}
+Conflicts: bajjer
+Replaces: bajjer
+Description: A jabber library for Python
+ The Bajjer library provides an API for dealing with
+ XML streams. It provides SSL support using Python's
+ socket.ssl or PyOpenSSL, and it provides the ability
+ to set handlers, which call a callback function when
+ a certain type of jabber packet is received.
+ From:
+      http://dsd.lbl.gov/Collaboratories/bajjer/download.html

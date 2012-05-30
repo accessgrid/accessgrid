@@ -1,0 +1,16 @@
+#!/bin/sh
+
+
+here=`pwd`
+
+# Set any particular variable needed
+#
+#workdir=agvcr-2.2.1
+#site0=http://www.vislab.uq.edu.au/ag3/distfiles
+srcpkg0=agvcr-2.2.1.tar.gz
+
+
+# Load up the default build script
+. ../../agvcr.build
+
+

@@ -1,0 +1,78 @@
+--- common/src/inet_ntop.c.64bit	2005-11-17 02:13:10 +1000
++++ common/src/inet_ntop.c	2007-07-27 09:06:37 +1000
+@@ -16,7 +16,7 @@
+  * SOFTWARE.
+  */
+ 
+-#ifndef HAVE_INET_NTOP
++#ifdef NEED_INET_NTOP
+ #include "config_unix.h"
+ #include "config_win32.h"
+ #include "inet_ntop.h"
+--- common/src/inet_ntop.h.64bit	2005-11-17 02:13:10 +1000
++++ common/src/inet_ntop.h	2007-07-27 09:06:37 +1000
+@@ -1,4 +1,4 @@
+-#ifndef HAVE_INET_NTOP
++#ifdef NEED_INET_NTOP
+ #if defined(__cplusplus)
+ extern "C" {
+ #endif
+@@ -8,4 +8,4 @@ const char *inet_ntop(int af, const void
+ #if defined(__cplusplus)
+ }
+ #endif
+-#endif /* HAVE_INET_NTOP */
++#endif /* NEED_INET_NTOP */
+--- common/src/inet_pton.h.64bit	2005-11-17 02:13:10 +1000
++++ common/src/inet_pton.h	2007-07-27 09:06:37 +1000
+@@ -1,4 +1,4 @@
+-#ifndef HAVE_INET_PTON
++#ifdef NEED_INET_PTON
+ #if defined(__cplusplus)
+ extern "C" {
+ #endif
+@@ -8,5 +8,5 @@ int inet_pton(int af, const char *src, v
+ #if defined(__cplusplus)
+ }
+ #endif
+-#endif /* HAVE_INET_PTON */
++#endif /* NEED_INET_PTON */
+ 
+--- common/src/qfDES.c.64bit	2005-11-17 02:13:10 +1000
++++ common/src/qfDES.c	2007-07-27 09:06:37 +1000
+@@ -12,7 +12,7 @@ Added 2 August 1996, Saleem
+ #include "qfDES.h"
+ #include "crypt_random.h"
+ 
+-typedef unsigned long Word;
++typedef uint32_t Word;
+ 
+ #define B00 0x80000000
+ #define B01 0x40000000
+--- common/src/inet_pton.c.64bit	2005-11-17 02:13:10 +1000
++++ common/src/inet_pton.c	2007-07-27 09:06:37 +1000
+@@ -16,7 +16,7 @@
+  * SOFTWARE.
+  */
+ 
+-#ifndef HAVE_INET_PTON
++#ifdef NEED_INET_PTON
+ #include "config_unix.h"
+ #include "config_win32.h"
+ #include "inet_pton.h"
+--- common/src/mbus_parser.c.64bit	2005-11-17 02:13:10 +1000
++++ common/src/mbus_parser.c	2007-07-27 09:06:37 +1000
+@@ -166,8 +166,12 @@ int mbus_parse_int(struct mbus_parser *m
+ 		CHECK_OVERRUN;
+         }
+ 
++	/* Have to set errno to zero before checking for it as strtol/etc
++	doesn't change it if it is already set */
++	errno = 0;
++
+ 	*i = strtol(m->buffer, &p, 10);
+-	if (((*i == LONG_MAX) || (*i == LONG_MIN)) && (errno == ERANGE)) {
++        if (((*i == INT_MAX) || (*i == INT_MIN)) && (errno == ERANGE)) {
+ 		debug_msg("integer out of range\n");
+ 		return FALSE;
+ 	}

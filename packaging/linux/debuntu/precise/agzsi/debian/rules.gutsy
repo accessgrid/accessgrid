@@ -1,0 +1,63 @@
+#!/usr/bin/make -f
+
+SHELL = /bin/bash
+
+# all versions
+PYVERS  := 2.4
+
+package = agzsi
+docdir = debian/tmp/usr/share/doc/$(package)
+
+
+patched:	patched-stamp
+patched-stamp:
+	debian/do_patch debian/patches/patch-ZSI-client.py
+	touch $@
+	
+build:	patched-stamp build-stamp
+build-stamp:
+	$(checkdir)
+	python${PYVERS} setup.py build
+	touch build
+
+clean:
+	$(checkdir)
+	python${PYVERS} setup.py clean
+
+
+install: build-stamp install-python${PYVERS}
+
+install-python${PYVERS}:
+	$(checkdir)
+	install -d debian/tmp/DEBIAN $(docdir)
+	install -m 755 debian/postinst debian/prerm debian/tmp/DEBIAN
+	python${PYVERS} setup.py install --root=debian/tmp
+
+binary-indep:	checkroot build
+	$(checkdir)
+
+
+binary-arch:	checkroot build install
+	$(checkdir)
+	debian/install.sh
+	cp -p debian/tmp/usr/bin/wsdl2dispatch debian/tmp/usr/bin/wsdl2dispatch.py
+	cp -p debian/tmp/usr/bin/wsdl2py debian/tmp/usr/bin/wsdl2py.py
+	cp -a CHANGES Copyright README RELEASE debian/copyright $(docdir)
+	cp -a debian/changelog $(docdir)/changelog.Debian
+	dpkg-gencontrol -isp
+	chown -R root:root debian/tmp
+	chmod -R u+w,go=rX debian/tmp
+	dpkg --build debian/tmp ..
+
+
+define checkdir
+	test ZSI/wstools/XMLname.py -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot

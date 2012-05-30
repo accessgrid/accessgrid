@@ -1,0 +1,251 @@
+05/24/2007 - AGVCR 2.2.1 released
+
+AGVCR mini-mode reports recording time remaining, if applicable. 'Add 30 minutes' and 'Record Indefinitely' are available from the remote control interface now. Self-Timer report shows the duration of the timer explicitly now. When stream applications are launched, changing the filename or file key does not cause them to re-launch. Timers should no longer be disabled by use of AGVCR (e.g. play, stop, play) before timer is due to start.
+
+01/04/2007 - AGVCR 2.2.0
+
+AGVCR has a 'mini-mode' that can be switched to/from at any time. Pause now continues to send RTCP in order to sustain the still image within VIC indefinitely. Added buttons to copy Start/End Mark time to the Jump-To-Time control. All timers are enabled on startup (fixed bug where first timer was disabled). Bug fixed for record-pause giving errors of bad packet data.
+
+12/14/2006 - AGVCR 2.1.4
+
+Time-seek now works under Windows regardless of file length/time. Save config can now save filename and network information separately. Launched stream app behavior is now correct; if manually closed off they do not reopen on a config change. The 'Restart stream apps on config change' option is now observed correctly. Debug log information that contains large numerical values is correct under Windows now.
+
+12/05/2006 - AGVCR 2.1.3
+
+JPEG playback now works correctly. Relative percentage skip buttons (+/- 0.5%). More modes available in time-seeks (+/- 5 seconds and +/- 15 minutes). Interface changes to reduce the amount of room the main window takes up.
+
+11/08/2006 - AGVCR 2.1.2
+
+Important bugfixes for Seek-to-Time - Files edited with 2.1.1 will probably not be correct for start and end time. Editor 'Set' button to provide positive feedback of changes to start and end times (happens automatically still on Play Loop or Edit). Minor interface changes.
+
+11/07/2006 - AGVCR 2.1.1
+
+Improvements on Seek-to-Time, it is now much faster to move through large files.
+
+11/06/2006 - AGVCR 2.1.0
+
+AGVCR has a new VCR-button interface. Playback can now loop between the start and end marks to test an edit before processing a file. 30 seconds and 5 minutes plus/minus skip buttons added to easily jump through a certain amount of time in the file. Bugfix for 2.0.13 filename display crash bug under Windows. Bugfixes for some gtk errors if a file was specified in the config file.
+
+10/27/2006 - AGVCR 2.0.13
+
+Minor interface changes. File and directory are split on the dialog so they can be highlighted and copied more easily.
+
+10/27/2006 - AGVCR Launcher 1.2 released
+
+AGVCR_Launcher reports errors in a message dialog and gives useful feedback when no media streams are specified in the venue instead of just failing silently. AGVCR is now included on the Mac OS X disk image. You still need to install it manually on that platform though.
+
+10/20/2006 - AGVCR 2.0.12
+
+Bugfix for editing video streams. Due to a bug in the editor, it was possible to get a file that would not play in AGVCR if not all sources were selected to remain in the file.
+
+10/10/2006 - AGVCR 2.0.11
+
+Packet logging options added to debugging options dialog, as well as the ability to change the main log file either from command line or from the GUI.
+
+10/06/2006 - AGVCR 2.0.10
+
+AGVCR now has a debugging options dialog to allow activation of debug options at runtime of them needing to be set at compile time (and therefore unavailable for users of binary packages). Now, when reporting problems it is recommended to enable debugging of the appropriate area (file, network, RTP parsing etc.) and then submit the log file. Please see the documentation on bug reporting for more information.
+
+10/02/2006 - AGVCR 2.0.9
+
+Minor UI changes. Mac version is now an .app bundle so it does not require any further installation in order to run. AGVCR_Launcher will still need to be installed separately to integrate it with the AG Venue Client.
+
+10/02/2006 - AGVCR Launcher 1.1
+
+AGVCR_Launcher has an extra configuration entry for Mac OS X to select the .app bundle in order to launch it from within the AG Venue Client.
+
+09/22/2006 - AGVCR 2.0.8
+
+AGVCR now has a dialog for editing what applications are assigned to which streams. AGVCR Windows installer will now not remove AGVCR Launcher when it uninstalls itself for upgrade. Note though that when you upgrade an installation of AGVCR, the PREVIOUS installer will run to uninstall itself, so there will be an uninstall/reinstall it this time, but subsequent upgrades will keep the AGVCR Launcher directories intact, so config files for AGVCR Launcher (for default location of saved files) will be kept between upgrades using the installer.
+
+09/20/2006 - AGVCR 2.0.7
+
+AGVCR now closes launched apps in a more correct way under Windows and keeps a track of launched applications so they don't get left lying around. Prompt on launch if streams are present if we want to reset for local playback, this makes local reviewing easier right after recording. Localhost defaults now correspond to the streams used in the filename given, if any. If no file then the default AG Video and AG Audio streams are chosen. Option added to restart stream applications when the config changes. DVTS streams now record and play back correctly (having finally gotten around to testing that aspect!).
+
+09/14/2006 - AGVCR Launcher 1.01
+
+Start script for Linux and Mac OS X will now add local AccessGrid services to path to pick up VIC and RAT. So, if you have GTK installed (most Linux distros do) you do not need the runtime to launch the stream applications or modify your PATH yourself.
+
+09/12/2006 - AGVCR 2.0.6
+
+AGVCR now has a toolbar and can launch the applications to receive data streams from within the GUI without needing to be started with that switch from the command line. In re-writing the stream application launching, a crash bug under Mac OS X has been removed. Confirmation dialog on 'Quit' or window close. Windows Installer now makes links for (re)registering AGVCR_Launcher with the current user.
+
+09/12/2006 - AGVCR Launcher 1.0
+
+AGVCR Launcher now has a 'browse for directory' button in place of the text entry for the default recording directory. Please note that the text entry is now for display and is non-editable. This changes will remove keying errors and help ensure correct paths are sent to AGVCR and not misinterpreted as local to AGVCR's directory, for example. Command arguments with spaces in them (e.g. filename) are now passed correctly now too.
+
+08/28/2006 - AGVCR 2.0.5 Windows Installer
+
+A Windows installer is now available for AGVCR. This installer contains the AGVCR executable, AGVCR_Launcher, the VIC and RAT binaries and the GTK runtime. The runtime components are installed by default but can be optionally ignored. The installer will automatically set up AGVCR Launcher for both 2.x and 3.x VenueClients. Installing a working AGVCR on Windows is now as simple as downloading and running this installer. That's all you have to do. Releases of the installer will be kept current with the latest releases of AGVCR.
+
+08/16/2006 - AGVCR 2.0.5
+
+Bugfixes for playback of files with many sources and/or packets within a certain time period.
+
+08/04/2006 - AGVCR Launcher 0.7
+
+Support for AccessGrid 3 is working now. This version works in both AG 2.3/2.4 and AG 3.01+. AGVCR_Launcher now checks a variable 'AGVCR_PATH' to an installed copy of AGVCR. This way you do not have to have more than one installation of AGVCR in order for it to be launched from either VenueClient.
+
+08/03/2006 - AGVCR 2.0.4
+
+Bugfixes for fast-forward and rewind. The buffering system did not take account of them and overflowed itself, causing playback to abort. Slow-mo corrected also. 64bit data-type compatibility added (thanks Rhys). AGVCR reportedly works on 64-bit Opteron. Windows AGVCR will now make 'Mbone Applications' registry entries so that fork playback on a non AG-installed machine will not have VIC dialogs that refuse to save their information.
+
+07/20/2006 - AGVCR 2.0.3
+
+Recording from bridged venues works again now. It was broken by the changes to 2.0.0 and got forgotten about before vacation :).
+
+06/27/2006 - AGVCR 2.0.2
+
+Improvements in performance (lower CPU usage) from studying code in a profiler and removing some unnecessary code. Bugfixes for playing back and editing files when not all streams in a file have data.
+
+06/26/2006 - AGVCR 2.0.1
+
+Minor bugfix for record-pause.
+
+06/21/2006 - AGVCR 2.0.0 - The AGVCR file format changed with this release
+
+AGVCR generates RTP and RTCP upon playback instead of using the RTP and RTCP headers stored in the file, bringing it in line with RFC 3550. This has meant great improvements in filtering, editing and encryption. In doing this a new file format has been developed from the old one. The new AGVCR and file format will work much better in 'bursty' conditions. This version of AGVCR maintains read compatibility with older files but writes in the new format, which is incompatible with older 1.x.x versions. Only 2.x.x (and later) will be able to read files created by this or later versions of AGVCR. The editor can be used to convert a file in its entirety by loading it up (checking the output filename) and clicking 'Process Edit'. The new format saves approximately 1% to 3% less space than the previous format when converting old files and 4% to 5% less space on new recordings (depending on number of participants). While converting of large and/or important files is encouraged so that they stay up to date with the latest file format, work will be continuing on optimizing conversion of previous version files.
+
+05/04/2006 - AGVCR 1.5.11
+
+Minor maintenance release.
+
+05/04/2006 - AGVCR Launcher 0.5
+
+Minor bugfixes. Adding support for AccessGrid 3.0 - will not currently work due to a bug in AG3.0 (that's being worked on). Fixes in the agvcr.bat file when running under Windows.
+
+05/02/2006 - AGVCR 1.5.10
+
+Windows 'hang' bug fixed, and timestamps under Windows are correct now too. Both bugs were related. AGVCR may move to a threaded model but is not completely ready to do so yet. All distributed binaries are nonthreaded (as before).
+
+04/27/2006 - AGVCR Launcher 0.4
+
+Added support for enabling telnet/remote mode from the launcher, 'hide output' option and cleaned up the code somewhat. A progress dialog also added to give feedback while initializing.
+
+04/13/2006 - AGVCR Launcher 0.3
+
+AGVCR Launcher is an AccessGrid Shared Application to start AGVCR directly from a Virtual Venue. Please see the documentation for more information.
+
+04/13/2006 - AGVCR 1.5.9
+
+Minor user interface tweaks, wording in dialogs.
+
+04/03/2006 - AGVCR 1.5.8
+
+Generate random keyphrase added to config dialog. LBL random number generator altered to use /dev/urandom if available but fall back to correct operation if it's not available.
+
+03/22/2006 - AGVCR 1.5.7
+
+Quick-change file selector button added to main interface. Config dialog changes, including being able to add new lines while editing. Recorder network timeout added, to automatically shut off recording after a certain number of seconds from no network activity (i.e. everyone left), also available in timers. Timers now shut off properly. Disk space indication, evaluation of data rate and estimated remaining time to record.
+
+03/03/2006 - AGVCR 1.5.6
+
+A --no-gui option added that will disable the GTK interface and automatically enable the TCP control port. Control port automatically enabled in the event the interface could not be initialized (i.e. no X display). TCP control mode now accepts 'help' as a command on its own to, well, give you help on how to use it as well as command feedback and expanded status information. Mac precompiled binary is available, please see the Mac OS X installation documentation about how to go about a binary or a source install.
+
+02/21/2006 - AGVCR 1.5.5
+
+Participant filtering can be enabled in the options for recording to ignore any source not presenting any SDES NAME data to be categorized, or to opt to have sources parsed but only manually enabled. The default behavior (to automatically enable all sources upon first packet received) is unchanged though, see the documentation for more information. Enable/Toggle/Disable all participants via participant list buttons. Source compiles cleanly on Mac OS X, providing you have GTK2 installed.
+
+02/16/2006 - AGVCR 1.5.4
+
+Saving a config file now creates the path entered if it didn't exist. Useful for making the default AGVCR directory under the Windows Documents and Settings directory. Participant list now correctly sets newly categorized sources enabled/disabled based on main participant's state. 'Save Config' always saves as the default file name, use 'Save Config As ...' to save it as something else.
+
+02/07/2006 - AGVCR 1.5.3
+
+Bugfixes for the filtering code overzealously filtering out RTCP from a source that you wanted to keep, thus disabling its sound in RAT. Interface updates for Editing, now gives feedback instead of looking like it has locked up.
+
+02/07/2006 - AGVCR 1.5.2
+
+Miscellaneous small bugfixes, mainly relating to timers under Windows (time wasn't displayed when editing) and being able to cancel a running timer.
+
+02/06/2006 - AGVCR 1.5.1
+
+Configuration file Load/Save As added.
+
+02/01/2006 - AGVCR 1.5.0
+
+AGVCR supports timer recording, in the spirit of it's 'VCR' name. Timers can also be for playback. A text-based configuration file has been added, enabling default options for AGVCR as well as the storing player calibration data and timers (only saved when 'Save Config' is selected). Some bugfixes made for when the maximum number of sources is reached. This number is set very high but for some reason this happens with certain nodes/participants and has been added to the 'known issues'.
+
+01/24/2006 - AGVCR 1.4.1
+
+Bugfixes for participant list. After file has finished playing manipulating the list after recording/playback had finished caused a crash. 'Enable All' button added. The editor copies the current settings of the participant list when it starts.
+
+01/20/2006 - AGVCR 1.4.0
+
+AGVCR now supports participant filtering. Sources can now be filtered in all modes - Recording, Playback and Editing. See the documentation on filtering for more information.
+
+01/13/2006 - AGVCR 1.3.2
+
+Fix for crash-bug if active streams/file/network connections didn't match up. Session streams now dictate what connections are used.
+
+01/12/2006 - AGVCR 1.3.1
+
+AGVCR is now able to record from and play back to bridged venues using the toolkit standard 'QuickBridge'.
+
+01/11/2006 - AGVCR 1.3.0
+
+AGVCR now supports DES and Rijndael encryption for AG audio and video streams, compatible with RAT and VIC respectively. Encryption is supported for recording, playback and editing. Previously recorded files can be played back without problems to secure venues. See the documentation on encryption for more information.
+
+01/04/2006 - AGVCR 1.2.7
+
+Some configuration related bugfixes. Data structure and code reorganizations.
+
+12/20/2005 - AGVCR 1.2.6
+
+Bugfix for possible hang of application under Windows, apparently from GTK 'not getting enough attention'. Add 'source' command line option, for adding different sources such as MLB, ScreenStreamer etc. Memory leaks found and fixed (were mainly in the editor) (i.e. valgrind is happy again :>).
+
+12/19/2005 - AGVCR 1.2.5
+
+Bugfix for potential failure if bad data is received from a participant. Interface code tidied up. Some minor interface changes, like being able to select a percentage through the file or type in a time, click the relevant 'Go' button and have it start playing from that point. Bugfix for possibly busy-waiting under Windows when we don't have any sockets.
+
+12/16/2005 - AGVCR 1.2.4
+
+Timing alterations made including changing Windows specifics to use the multimedia timers, thereby greatly improving the accuracy of recordings made under Windows. Files recorded before this version will only be as good as before, but will not improve since the initial timestamps were only as good as the default resolution of the Windows timer, ie. 10 to 15 milliseconds. Windows timing for both recording and playback is now good to 1 millisecond accuracy. Timing under Linux is still to the microsecond.
+
+12/16/2005 - AGVCR 1.2.3
+
+Record - Paused mode now works correctly and does not create a file until data starts being recorded. A 'Real Time:' field added to the interface, to better show when a particular event occured. File info window no longer blocks.
+
+12/13/2005 - AGVCR 1.2.2
+
+Bugfixes for playback with specific number of loops, forward/reverse modes and pause. Editing marks/offsets set during playback are now correctly kept after the file is stopped.
+
+12/12/2005 - AGVCR 1.2.1
+
+Code cleanups and reorganizations. Progress-meter dialogs.
+
+12/09/2005 - AGVCR 1.2.0
+
+AGVCR now includes editing functionality. With files recorded by versions prior to this, some unused bytes of data in the participant save header were not zeroed prior to saving. There are no compatibility issues with these files, but 1.1.x files can be 'cleaned up' by running them through the editor and not setting any start and end times. Potential future use of these bytes in the file layout may cause problems if files are not 'clean'.
+
+11/28/2005 - AGVCR 1.1.7
+
+No longer automatically listens on TCP control port - something it's done since it was a command-line only program, it is optional now. Now finds VIC and RAT in the path under Windows. Option handling tidied up.
+
+11/21/2005 - AGVCR 1.1.6
+
+Small interface changes, smarter file information, ask on overwrite. Source code clean-ups. Added DVTS stream type.
+
+11/18/2005 - AGVCR 1.1.5
+
+Big-endian to little-endian file format conversion functions are in. Source files changed to hopefully be more friendly for Mac OS X build. Small participant list display bug fixed.
+
+11/17/2005 - AGVCR 1.1.4
+
+This release changes some user interface aspects and adds a file information dialog. Also, an occasional crash bug related to loading of the participant list has been fixed.
+
+11/16/2005 - AGVCR 1.1.3
+
+This release resolves some bugs with the timestamps and RTP payload information.
+
+11/16/2005 - AGVCR 1.1.2 - The AGVCR file format changed with this release
+
+This release resolves a number of issues with program operation and stability. This file format revision has been improved with space to add features at a later date while remaining compatible. Unless something major happens, this file format is the last revision for a while.
+
+11/15/2005 - AGVCR 1.1.0
+
+This release adds the ability to record any number of RTP/RTCP streams per recording.
+
+11/09/2005 - AGVCR 1.0.0
+
+Initial release.

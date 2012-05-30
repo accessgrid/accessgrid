@@ -1,0 +1,6 @@
+#!/bin/sh
+
+echo -n "Performing post removal tasks ...."
+/usr/sbin/update-python-modules -f
+echo "Done post removal tasks"
+

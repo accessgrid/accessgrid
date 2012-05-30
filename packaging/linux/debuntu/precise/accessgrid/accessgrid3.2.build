@@ -1,0 +1,17 @@
+#!/bin/sh
+
+
+here=`pwd`
+
+# Set any particular variable needed
+#
+#workdir=accessgrid3.2-3.2
+#site0=http://www.vislab.uq.edu.au/ag3/distfiles
+#srcpkg0=AccessGrid-3.2-1.tar.gz
+srcpkg0=AccessGrid-3.3-0r6833.tar.gz
+
+
+# Load up the default build script
+. ../../accessgrid3.2.build
+
+

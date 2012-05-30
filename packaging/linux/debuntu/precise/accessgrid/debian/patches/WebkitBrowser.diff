@@ -1,0 +1,857 @@
+diff -urNad accessgrid3.2-3.2~/AccessGrid/sharedapps/SharedBrowser/SharedBrowser.py accessgrid3.2-3.2/AccessGrid/sharedapps/SharedBrowser/SharedBrowser.py
+--- accessgrid3.2-3.2~/AccessGrid/sharedapps/SharedBrowser/SharedBrowser.py	2008-03-14 16:19:33.000000000 +1000
++++ accessgrid3.2-3.2/AccessGrid/sharedapps/SharedBrowser/SharedBrowser.py	2009-03-16 09:59:08.045576000 +1000
+@@ -1,348 +1,392 @@
+-#! /usr/bin/python
++#!/usr/bin/python
++#
++# SharedBrowser.py 0.9
++# A Webkit based shared web browser for the Access Grid Toolkit.
++# Copyright (C) 2009 Christoph Willing <c.willing _a_t_ uq.edu.au>.
++# See LICENSE.txt for details.
+ 
+ import os
+ import sys
+-import logging
+-import sys
+ import getopt
++import time
++from gettext import gettext as _
+ 
+-from AccessGrid import Platform
++import agversion
++agversion.select(3)
+ 
+ try:
+-    from twisted.internet import _threadedselect as threadedselectreactor
+-except:
+-    from twisted.internet import threadedselectreactor
++    from twisted.internet import gtk2reactor
++    try:
++        gtk2reactor.install()
++    except Exception, e:
++        print "[*] ERROR: Could not initiate GTK modules: %s" % (e)
++        sys.exit(1)
++    from twisted.internet import reactor
++except ImportError:
++    print "[*] ERROR: Could not import Twisted Network Framework"
++    sys.exit(1)
+ 
+-threadedselectreactor.install()
++import gtk
++import webkit
+ 
+-from twisted.internet import reactor
++from AccessGrid.ClientProfile import ClientProfile
++from AccessGrid.GroupMsgDefines import NotConnectedException
++from AccessGrid.Platform.Config import UserConfig
++from AccessGrid.SharedAppClient import SharedAppClient
++from AccessGrid.Toolkit import CmdlineApplication
+ 
+-import wx
+-if sys.platform == Platform.WIN:
+-    import wx.lib.iewin as iewin
+-else:
+-    from wxPython.mozilla import *
+ 
++class WebToolbar(gtk.Toolbar):
+ 
+-from AccessGrid.SharedAppClient import SharedAppClient
+-from AccessGrid.Platform.Config import UserConfig
+-from AccessGrid.ClientProfile import ClientProfile
+-from AccessGrid import icons
+-from AccessGrid.Toolkit import WXGUIApplication
++    def __init__(self, browser):
++        gtk.Toolbar.__init__(self)
+ 
++        self._browser = browser
+ 
+-class WebBrowser(wx.Panel):
+-    """
+-    WebBrowser is a basic web browser class
+-    """
+-    def __init__(self, parent, id, log, frame = None):
+-        wx.Panel.__init__(self, parent, id)
++        # navigational buttons
++        self._back = gtk.ToolButton(gtk.STOCK_GO_BACK)
++        self._back.set_tooltip(gtk.Tooltips(), _('Back'))
++        self._back.props.sensitive = False
++        self._back.connect('clicked', self._go_back_cb)
++        self.insert(self._back, -1)
+ 
+-        self.log = log
+-        self.current = None
+-        self.populate()
++        self._forward = gtk.ToolButton(gtk.STOCK_GO_FORWARD)
++        self._forward.set_tooltip(gtk.Tooltips(), _('Forward'))
++        self._forward.props.sensitive = False
++        self._forward.connect('clicked', self._go_forward_cb)
++        self.insert(self._forward, -1)
++        self._forward.show()
+ 
+-        self.navigation_callbacks = []
++        self._stop_and_reload = gtk.ToolButton(gtk.STOCK_REFRESH)
++        self._stop_and_reload.set_tooltip(gtk.Tooltips(),
++                                          _('Stop and reload current page'))
++        self._stop_and_reload.connect('clicked', self._stop_and_reload_cb)
++        self.insert(self._stop_and_reload, -1)
++        self._stop_and_reload.show()
++        self._loading = False
+ 
+-        self.frame = frame
+-        if frame is not None:
+-            self.title_base = frame.GetTitle()
++        self.insert(gtk.SeparatorToolItem(), -1)
+ 
+-        self.just_received_navigate = 0
+-        # The document url currently being loaded.
+-        self.docLoading = ""
+-        # Pages whose completion we need to ignore.  This is because
+-        #  the events don't tell us which events are for the main page.
+-        self.ignoreComplete = []
++        # zoom buttons
++        self._zoom_in = gtk.ToolButton(gtk.STOCK_ZOOM_IN)
++        self._zoom_in.set_tooltip(gtk.Tooltips(), _('Zoom in'))
++        self._zoom_in.connect('clicked', self._zoom_in_cb)
++        self.insert(self._zoom_in, -1)
++        self._zoom_in.show()
+ 
++        self._zoom_out = gtk.ToolButton(gtk.STOCK_ZOOM_OUT)
++        self._zoom_out.set_tooltip(gtk.Tooltips(), _('Zoom out'))
++        self._zoom_out.connect('clicked', self._zoom_out_cb)
++        self.insert(self._zoom_out, -1)
++        self._zoom_out.show()
+ 
+-    def add_navigation_callback(self, listener):
+-        self.log.debug("add_navigation_callback")
+-        self.navigation_callbacks.append(listener)
++        self._zoom_hundred = gtk.ToolButton(gtk.STOCK_ZOOM_100)
++        self._zoom_hundred.set_tooltip(gtk.Tooltips(), _('100% zoom'))
++        self._zoom_hundred.connect('clicked', self._zoom_hundred_cb)
++        self.insert(self._zoom_hundred, -1)
++        self._zoom_hundred.show()
+ 
+-    def remove_navigation_callback(self, listener):
+-        self.log.debug("remove_navigation_callback")
+-        self.navigation_callbacks.remove(listener)
++        self.insert(gtk.SeparatorToolItem(), -1)
+ 
+-    def add_button(self, name, func, sizer):
+-        b = wx.Button(self, -1, name)
+-        wx.EVT_BUTTON(self, b.GetId(), func)
+-        sizer.Add(b, 0, wx.EXPAND)
+-        return b
++        # location entry
++        self._entry = gtk.Entry()
++        self._entry.connect('activate', self._entry_activate_cb)
++        self._current_uri = None
+ 
+-    def populate(self):
++        entry_item = gtk.ToolItem()
++        entry_item.set_expand(True)
++        entry_item.add(self._entry)
++        self._entry.show()
+ 
+-        sizer = wx.BoxSizer(wx.VERTICAL)
++        self.insert(entry_item, -1)
++        entry_item.show()
+ 
+-        #
+-        # Create the button bar
+-        #
++        # scale other content besides from text as well
++        self._browser.set_full_content_zoom(True)
+ 
+-        bsizer = wx.BoxSizer(wx.HORIZONTAL)
++        self._browser.connect("title-changed", self._title_changed_cb)
+ 
+-        self.back_button = self.add_button("Back", self.OnBack, bsizer)
+-        self.forward_button = self.add_button("Forward", self.OnForward,
+-                                              bsizer)
+-        if sys.platform == Platform.WIN:
+-            self.home_button = self.add_button("Home", self.OnHome, bsizer)
+-        self.stop_button = self.add_button("Stop", self.OnStop, bsizer)
+-        self.refresh_button = self.add_button("Refresh", self.OnRefresh,
+-                                              bsizer)
++    def set_loading(self, loading):
++        self._loading = loading
+ 
+-        t = wx.StaticText(self, -1, "Location: ")
+-        bsizer.Add(t, 0, wx.EXPAND)
++        if self._loading:
++            self._show_stop_icon()
++            self._stop_and_reload.set_tooltip(gtk.Tooltips(), _('Stop'))
++        else:
++            self._show_reload_icon()
++            self._stop_and_reload.set_tooltip(gtk.Tooltips(), _('Reload'))
++        self._update_navigation_buttons()
+ 
+-        self.location = wx.ComboBox(self, wx.NewId(), "",
+-                                   style=wx.CB_DROPDOWN|wx.PROCESS_ENTER)
+-        wx.EVT_COMBOBOX(self, self.location.GetId(), self.OnLocationSelect)
+-        wx.EVT_KEY_UP(self.location, self.OnLocationKey)
+-        wx.EVT_CHAR(self.location, self.IgnoreReturn)
+-        bsizer.Add(self.location, 1, wx.EXPAND)
++    def massageText(self, text):
++        if text.startswith("http://"):
++            return text
++        return "http://" + text
++    
++    def _set_address(self, address):
++        self._entry.props.text = address
++        self._current_uri = address
+ 
+-        sizer.Add(bsizer, 0, wx.EXPAND)
++    def _update_navigation_buttons(self):
++        can_go_back = self._browser.can_go_back()
++        self._back.props.sensitive = can_go_back
+ 
+-        #
+-        # Now we can set up the browser widget
+-        #
++        can_go_forward = self._browser.can_go_forward()
++        self._forward.props.sensitive = can_go_forward
+ 
+-        if sys.platform == Platform.WIN:
+-            self.wxbrowser = iewin.IEHtmlWindow(self, -1, style = wx.NO_FULL_REPAINT_ON_RESIZE)
+-            sizer.Add(self.wxbrowser, 1, wx.EXPAND)
++    def _entry_activate_cb(self, entry):
++        self._browser.open(self.massageText(entry.props.text))
+ 
+-            # Hook up the event handlers for the IE window
+-            iewin.EVT_BeforeNavigate2(self, -1, self.OnBeforeNavigate2)
+-            iewin.EVT_NewWindow2(self, -1, self.OnNewWindow2)
+-            iewin.EVT_DocumentComplete(self, -1, self.OnDocumentComplete)
+-            # wx.EVT_MSHTML_STATUSTEXTCHANGE(self, -1, self.OnStatusTextChange)
+-            iewin.EVT_TitleChange(self, -1, self.OnTitleChange)
++    def _go_back_cb(self, button):
++        self._browser.go_back()
++
++    def _go_forward_cb(self, button):
++        self._browser.go_forward()
++
++    def _title_changed_cb(self, widget, frame, title):
++        self._set_address(frame.get_uri())
++
++    def _stop_and_reload_cb(self, button):
++        if self._loading:
++            self._browser.stop_loading()
+         else:
+-            self.wxbrowser = wxMozillaBrowser(self, -1, style = wx.NO_FULL_REPAINT_ON_RESIZE)
+-            sizer.Add(self.wxbrowser, 1, wx.EXPAND)
++            self._browser.reload()
+ 
+-            # Hook up the event handlers for the Mozilla window
+-            wx.EVT_MOZILLA_BEFORE_LOAD(self, -1, self.OnBeforeLoad)
+-            wx.EVT_MOZILLA_URL_CHANGED(self, -1, self.UpdateURL)
+-            wx.EVT_MOZILLA_LOAD_COMPLETE(self, -1, self.OnLoadComplete)
+-            wx.EVT_MOZILLA_STATUS_CHANGED(self, -1, self.UpdateStatus)
+-            wx.EVT_MOZILLA_STATE_CHANGED(self, -1, self.UpdateState)
++    def _show_stop_icon(self):
++        self._stop_and_reload.set_stock_id(gtk.STOCK_CANCEL)
+ 
+-        self.SetSizer(sizer)
+-        self.SetAutoLayout(1)
+-        self.Layout()
++    def _show_reload_icon(self):
++        self._stop_and_reload.set_stock_id(gtk.STOCK_REFRESH)
+ 
+-    def OnBeforeNavigate2(self, event):
+-        url = event.URL
++    def _zoom_in_cb(self, widget):
++        """Zoom into the page"""
++        self._browser.zoom_in()
+ 
+-        if self.just_received_navigate:
+-            if url != self.docLoading:
+-                message = "OnBeforeNav Skipping "+url+"already loading"+self.docLoading
+-                self.log.debug(message)
+-                # If we get a navigation event while loading, we will ignore
+-                #   the completion since it is from a popup or sub-page.
+-                self.ignoreComplete.append(url)
+-                # Because of popups and lack of complete information from
+-                #   events, we won't reset this (and let the user
+-                #   navigate) until the document is finished loading.
+-                # self.just_received_navigate = 0
+-            else:
+-                pass # Do nothing since we are already loading this url.
+-        else:
+-            # Go to a new url and also send it to the other Shared
+-            #   Browser clients.  The Send is done in IBrowsedCallback.
+-            message = "Before navigate "+url
+-            self.log.debug(message)
+-            self.just_received_navigate = 1
+-            self.docLoading = url
+-            map(lambda a: a(url), self.navigation_callbacks)
++    def _zoom_out_cb(self, widget):
++        """Zoom out of the page"""
++        self._browser.zoom_out()
+ 
+-    # Mozilla event handler
+-    def OnBeforeLoad(self, event):
+-        if not self.just_received_navigate:
+-            # Go to a new url and also send it to the other Shared
+-            #   Browser clients.  The Send is done in IBrowsedCallback.
+-            url = event.GetURL()
+-            message = "Before load "+url
+-            self.log.debug(message)
+-            self.just_received_navigate = 1
+-            self.docLoading = url
+-            map(lambda a: a(url), self.navigation_callbacks)
++    def _zoom_hundred_cb(self, widget):
++        """Zoom 100%"""
++        if not (self._browser.get_zoom_level() == 1.0):
++            self._browser.set_zoom_level(1.0)
+ 
+-    # Mozilla event handler
+-    def UpdateURL(self, event):
+-        url = event.GetNewURL()
+-        self.log.debug("UpdateURL url=" + url)
+-        self.back_button.Enable(event.CanGoBack())
+-        self.forward_button.Enable(event.CanGoForward())
+ 
+-    def OnNewWindow2(self, event):
+-        message = "On new window: " +event.URL
+-        self.log.debug(message)
+-        event.Veto() # don't allow it
++class BrowserPage(webkit.WebView):
+ 
+-    def OnDocumentComplete(self, event):
+-        message = "OnDocumentComplete: " + event.URL
+-        self.log.debug(message)
+-        self.current = event.URL
++    def __init__(self):
++        webkit.WebView.__init__(self)
+ 
+-        # Check if we are finishing the main document or not.
+-        if event.URL not in self.ignoreComplete:
+ 
+-            if event.URL == "about:blank" and self.docLoading != "about:blank":
+-                # This case happens at startup.
+-                self.log.debug("Ignoring DocComplete for first about:blank")
+-            else:
+-                # Finished loading, allow user to click links again now.
+-                #  Needed since there is not enough information in the
+-                #   events to tell if they refer to a popup (and other sub-
+-                #   pages) or a user clicking on a url.
+-                self.log.debug("Finished loading.")
+-                if self.location.FindString(self.current) == wx.NOT_FOUND:
+-                    self.location.Append(self.current)
+-                self.just_received_navigate = 0
+-                self.current = event.URL
+-                self.location.SetValue(self.current)
+-                while len(self.ignoreComplete) > 0:
+-                    self.ignoreComplete.pop()
+-        else:
+-            message = "Ignoring DocComplete for ", event.URL
+-            self.just_received_navigate = 0
+-            self.log.debug(message)
++class WebStatusBar(gtk.Statusbar):
+ 
+-    # Mozilla callback
+-    def OnLoadComplete(self, event):
+-        message = "OnLoadComplete: " + self.wxbrowser.GetURL()
+-        self.log.debug(message)
+-        self.current = self.wxbrowser.GetURL()
++    def __init__(self):
++        gtk.Statusbar.__init__(self)
++        self.iconbox = gtk.EventBox()
++        self.iconbox.add(gtk.image_new_from_stock(gtk.STOCK_INFO,
++                                                  gtk.ICON_SIZE_BUTTON))
++        self.pack_start(self.iconbox, False, False, 6)
++        self.iconbox.hide_all()
+ 
+-        if self.frame:
+-            self.frame.SetStatusText("")
++    def display(self, text, context=None):
++        cid = self.get_context_id("pywebkitgtk")
++        self.push(cid, str(text))
+ 
+-        if self.wxbrowser.GetURL() == "about:blank" and self.docLoading != "about:blank":
+-            # This case happens at startup.
+-            self.log.debug("Ignoring DocComplete for first about:blank")
+-        else:
+-            # Finished loading, allow user to click links again now.
+-            #  Needed since there is not enough information in the
+-            #   events to tell if they refer to a popup (and other sub-
+-            #   pages) or a user clicking on a url.
+-            self.log.debug("Finished loading.")
+-            if self.location.FindString(self.current) == wx.NOT_FOUND:
+-                self.location.Append(self.current)
+-            self.just_received_navigate = 0
+-            self.location.SetValue(self.current)
+-            if self.frame:
+-                self.frame.SetTitle(self.title_base + ' -- ' + self.wxbrowser.GetTitle())
++    def show_javascript_info(self):
++        self.iconbox.show()
+ 
+-    def LocalEvent(self):
+-        # Reset just_received_navigate flag when url is triggered by combobox or buttons.
+-        # Else, the browser may not be able to receive incoming remote events
+-        # from other clients.
+-        self.just_received_navigate = 0
++    def hide_javascript_info(self):
++        self.iconbox.hide()
+ 
+-    def OnTitleChange(self, event):
+-        self.log.debug("titlechange: " + event.GetString())
+-        if self.frame:
+-            self.frame.SetTitle(self.title_base + ' -- ' + event.GetString())
+ 
+-    def OnStatusTextChange(self, event):
+-        if self.frame:
+-            self.frame.SetStatusText(event.URL)
++class WebBrowser(gtk.Window):
+ 
+-    def UpdateStatus(self, event):
+-        if self.frame:
+-            self.frame.SetStatusText(event.GetStatusText())
++    def __init__(self, owner, size=(830,976)):
++        gtk.Window.__init__(self)
+ 
+-    def UpdateState(self, event):
+-        if self.frame:
+-            if (event.GetState() & wxMOZILLA_STATE_START) or (event.GetState() & wxMOZILLA_STATE_TRANSFERRING):
+-                self.frame.SetStatusText("Loading " + event.GetURL() + "...")
+-            elif event.GetState() & wxMOZILLA_STATE_NEGOTIATING:
+-                self.frame.SetStatusText("Contacting server...")
+-            elif event.GetState() & wxMOZILLA_STATE_REDIRECTING:
+-                self.frame.SetStatusText("Redirecting from " + event.GetURL())
++        self.owner = owner
++        self.log = owner.log
++        self.width,self.height = size
++        self.navigation_callbacks = []
++        self.shutdown_callbacks = []
++        self.potential_target_uri = None
+ 
++        self._loading = False
++        self._browser= BrowserPage()
++        self._browser.connect('load-started', self._loading_start_cb)
++        self._browser.connect('navigation-requested',
++                                self._navigation_requested_cb)
++        self._browser.connect('load-progress-changed',
++                              self._loading_progress_cb)
++        self._browser.connect('load-finished', self._loading_stop_cb)
++        self._browser.connect("title-changed", self._title_changed_cb)
++        self._browser.connect("hovering-over-link", self._hover_link_cb)
++        self._browser.connect("status-bar-text-changed",
++                              self._statusbar_text_changed_cb)
++        self._browser.connect("icon-loaded", self._icon_loaded_cb)
++        self._browser.connect("selection-changed", self._selection_changed_cb)
++#        self._browser.connect("set-scroll-adjustments", self._set_scroll_adjustments_cb)
++        self._browser.connect("populate-popup", self._populate_popup)
+ 
+-    def OnBack(self, event):
+-        self.wxbrowser.GoBack()
++        self._browser.connect("console-message",
++                              self._javascript_console_message_cb)
++        self._browser.connect("script-alert",
++                              self._javascript_script_alert_cb)
++        self._browser.connect("script-confirm",
++                              self._javascript_script_confirm_cb)
++        self._browser.connect("script-prompt",
++				self._javascript_script_prompt_cb)
+ 
+-    def OnForward(self, event):
+-        self.wxbrowser.GoForward()
++        self._scrolled_window = gtk.ScrolledWindow()
++        self._scrolled_window.props.hscrollbar_policy = gtk.POLICY_AUTOMATIC
++        self._scrolled_window.props.vscrollbar_policy = gtk.POLICY_AUTOMATIC
++        self._scrolled_window.add(self._browser)
++        self._scrolled_window.show_all()
+ 
+-    def OnStop(self, event):
+-        self.wxbrowser.Stop()
++        self._toolbar = WebToolbar(self._browser)
+ 
+-    def OnHome(self, event):
+-        self.wxbrowser.GoHome()
++        self._statusbar = WebStatusBar()
+ 
+-    def OnRefresh(self, event):
+-        self.LocalEvent()
+-        if sys.platform == Platform.WIN:
+-            self.wxbrowser.RefreshPage(iewin.REFRESH_COMPLETELY)
+-        else:
+-            self.wxbrowser.Reload()
++        vbox = gtk.VBox(spacing=4)
++        vbox.pack_start(self._toolbar, expand=False, fill=False)
++        vbox.pack_start(self._scrolled_window)
++        vbox.pack_end(self._statusbar, expand=False, fill=False)
+ 
+-    def navigate(self, url):
+-        if self.just_received_navigate:
+-            self.log.debug("___cancelled NAVIGATE to "+url)
+-        else:
+-            self.log.debug("NAVIGATE to "+url)
+-            self.just_received_navigate = 1
+-            self.docLoading = url
+-            if sys.platform == Platform.WIN:
+-                self.wxbrowser.Navigate(url)
+-            else:
+-                wx.CallAfter(self.wxbrowser.LoadUrl, url)
++        self.add(vbox)
++        self.set_default_size(self.width, self.height)
+ 
+-    def OnLocationSelect(self, event):
+-        self.LocalEvent()
+-        url = self.location.GetStringSelection()
+-        if sys.platform == Platform.WIN:
+-            self.wxbrowser.Navigate(url)
+-        else:
+-            self.wxbrowser.LoadUrl(url)
++        self.connect('destroy', self._cleanup)
+ 
+-    def OnLocationKey(self, event):
+-        if event.GetKeyCode() == wx.WXK_RETURN:
+-            self.LocalEvent()
+-            URL = self.location.GetValue()
+-            if self.current and self.location.FindString(self.current) == wx.NOT_FOUND:
+-                self.location.Append(self.current)
+-            self.wxbrowser.LoadUrl(URL)
++        startpage = """
++<html><head><title>About SharedBrowser</title></head><body>
++<h1>Welcome to the <code>Access Grid Shared Browser</code></h1>
++<p><a href="http://www.accessgrid.org">Access Grid Homepage</a></p>
++<p><a href="http://www.vislab.uq.edu.au">UQVislab Homepage</a> (where this Shared Browser Application was developed)</p>
++<p>
++<p><a href="http://live.gnome.org/PyWebKitGtk">PyWebKitGtk Homepage</a> (the technology on which this Shared Browser Application is based)</p>
++"""
++
++        self._browser.load_string(startpage, "text/html", "iso-8859-15", "shared browser:")
++
++        self.show_all()
++
++    def _cleanup(self, signal):
++        self.log.info("Cleaning up for SharedBrowser exit")
++        # Should use a shutdown callback but its not working so use this self.owner kludge instead
++        self.owner.LeaveSharedApplication()
++        gtk.main_quit()
++        sys.exit(0)
++
++    def _set_title(self, title):
++        self.props.title = title
++
++    def _loading_start_cb(self, view, frame):
++        main_frame = self._browser.get_main_frame()
++        if frame is main_frame:
++            self._set_title(_("Loading %s - %s") % (frame.get_title(),
++                                                        frame.get_uri()))
++        self._toolbar.set_loading(True)
++
++    def _loading_stop_cb(self, view, frame):
++        # FIXME: another frame may still be loading?
++        self._toolbar.set_loading(False)
++
++    def _loading_progress_cb(self, view, progress):
++        self._set_progress(_("%s%s loaded") % (progress, '%'))
++
++    def _set_progress(self, progress):
++        self._statusbar.display(progress)
++
++    def _title_changed_cb(self, widget, frame, title):
++        self._set_title(_("%s") % title)
++
++    def _hover_link_cb(self, view, title, url):
++        if view and url:
++            self._statusbar.display(url)
+         else:
+-            event.Skip()
++            self._statusbar.display('')
+ 
+-    def IgnoreReturn(self, event):
+-        if event.GetKeyCode() != wx.WXK_RETURN:
+-            event.Skip()
++    def _statusbar_text_changed_cb(self, view, text):
++        #if text:
++        self._statusbar.display(text)
+ 
++    def _icon_loaded_cb(self):
++        self.log.debug("icon loaded")
+ 
+-class SharedBrowser( wx.App ):
++    def _selection_changed_cb(self):
++        self.log.debug("selection changed")
++
++    def _set_scroll_adjustments_cb(self, view, hadjustment, vadjustment):
++        self._scrolled_window.props.hadjustment = hadjustment
++        self._scrolled_window.props.vadjustment = vadjustment
++
++    def _navigation_requested_cb(self, view, frame, networkRequest):
++        new_uri = None
++        new_uri = networkRequest.get_uri()
++        if new_uri:
++            map(lambda a: a(new_uri), self.navigation_callbacks)
++        return 0
++
++    def _javascript_console_message_cb(self, view, message, line, sourceid):
++        self._statusbar.show_javascript_info()
++
++    def _javascript_script_alert_cb(self, view, frame, message):
++        pass
++
++    def _javascript_script_confirm_cb(self, view, frame, message, isConfirmed):
++        pass
++
++    def _javascript_script_prompt_cb(self, view, frame,
++                                     message, default, text):
++        pass
++
++    def _populate_popup(self, view, menu):
++        aboutitem = gtk.MenuItem(label="About PyWebKit")
++        menu.append(aboutitem)
++        aboutitem.connect('activate', self._about_pywebkitgtk_cb)
++        separator = gtk.MenuItem()
++        menu.append(separator)
++        exititem = gtk.MenuItem(label="Exit Browser")
++        menu.append(exititem)
++        exititem.connect('activate', self._cleanup)
++        menu.show_all()
++
++    def _about_pywebkitgtk_cb(self, widget):
++        self._browser.open("http://live.gnome.org/PyWebKitGtk")
++
++    def add_shutdown_callback(self, listener):
++        self.log.debug("add_shutdown_callback")
++        self.shutdown_callbacks.append(listener)
++
++    def add_navigation_callback(self, listener):
++        self.log.debug("add_navigation_callback")
++        self.navigation_callbacks.append(listener)
++
++    def remove_navigation_callback(self, listener):
++        self.log.debug("remove_navigation_callback")
++        self.navigation_callbacks.remove(listener)
++
++    def navigate(self, uri):
++        self._browser.open(uri)
++
++
++
++class SharedBrowser():
+     """
+     SharedBrowser combines a SharedApplication and a WebBrowser
+     to provide shared web browsing to venue users
+     """
+-    def OnInit(self):
+-        return 1
+ 
+-    def OnExit(self):
+-        '''
+-        Shut down shared browser.
+-        '''
+-        self.sharedAppClient.Shutdown()
+-        os._exit(1)
+-
+-    def __init__( self, appUrl, name,size=None):
++    def __init__(self, appUrl, name, size=None):
+         '''
+         Creates the shared application client, used for
+         application service interaction, and opens a web browser
+         for UI display.
+         '''
+-        wx.App.__init__(self, False)
+ 
+-        reactor.interleave(wx.CallAfter)
+         # Create shared application client
+         self.sharedAppClient = SharedAppClient(name)
+         self.log = self.sharedAppClient.InitLogging()
++        self.log.info("Starting up SharedBrowser app")
+ 
+         # Get client profile
+         try:
+@@ -353,23 +397,23 @@
+             clientProfile = None
+ 
+         # Join the application session.
+-        self.sharedAppClient.Join(appUrl, clientProfile)
++        self.appUrl = appUrl
++        self.clientProfile = clientProfile
++        self.JoinSharedApplication()
+ 
+         # Register browse event callback
+         self.sharedAppClient.RegisterEventCallback("browse", self.BrowseCallback )
+ 
+-        # Create Browser Window
+-        self.frame = wx.Frame(None, -1, "SharedBrowser", size=size)
+-        if sys.platform != Platform.WIN:
+-            self.frame.CreateStatusBar()
+-        self.browser = WebBrowser(self.frame, -1, self.log, self.frame)
++        self.browser = WebBrowser(self)
+ 
+         # Add callback for local browsing
+         self.browser.add_navigation_callback( self.IBrowsedCallback )
+ 
++        # Add callback for clean shutdown
++        self.browser.add_shutdown_callback( self.LeaveSharedApplication )
++
+         # Browse to the current url, if exists
+         currentUrl = self.sharedAppClient.GetData("url")
+-
+         if currentUrl and len(currentUrl) > 0:
+             self.browser.navigate(currentUrl)
+             try:
+@@ -377,21 +421,35 @@
+             except:
+                 self.log.exception("SharedBrowser:__init__: Failed to set participant status")
+ 
+-        self.frame.SetIcon(icons.getAGIconIcon())
+-        self.frame.Show(1)
+-        self.SetTopWindow(self.frame)
++        self.sbreactor = reactor.run()
+ 
+ 
+-    def IBrowsedCallback(self,data):
++    def LeaveSharedApplication(self):
++        self.sharedAppClient.Shutdown()
++
++    def JoinSharedApplication(self):
++        try:
++            self.sharedAppClient.Join(self.appUrl, self.clientProfile)
++        except:
++            self.log.exception("SharedBrowser:JoinSharedApplication: Failed to set join shared application")
++
++    def IBrowsedCallback(self, data):
+         '''
+         Callback invoked when local browse events occur.
+         '''
+-        # Send out the event, including our public ID in the message.
+-        publicId = self.sharedAppClient.GetPublicId()
+-        self.sharedAppClient.SendEvent("browse", data)
+         # Store the URL in the application service in the venue
+         self.sharedAppClient.SetData("url", data)
+ 
++        # Send out the event, including our public ID in the message.
++        publicId = self.sharedAppClient.GetPublicId()
++        try:
++            self.sharedAppClient.SendEvent("browse", data)
++        except NotConnectedException:
++            pass
++            # We sometimes see this but joining (again) results in 2 memberships
++            # since the earlier attempt actually suceeded i.e. try doing nothing
++            #self.JoinSharedApplication()
++
+     def BrowseCallback(self, event):
+         """
+         Callback invoked when incoming browse events arrive.  Events
+@@ -402,11 +460,14 @@
+         # Determine if the sender of the event is this component or not.
+         url = event.data
+         senderId = event.GetSenderId()
+-        if senderId == self.sharedAppClient.GetPublicId():
++        myId = self.sharedAppClient.GetPublicId()
++        if senderId == myId:
+             self.log.debug("Ignoring "+ url +" from myself ")
+         else:
+             self.log.debug("Browse to "+ url)
++            self.browser.remove_navigation_callback(self.IBrowsedCallback)
+             self.browser.navigate(url)
++            self.browser.add_navigation_callback( self.IBrowsedCallback )
+ 
+         try:
+             self.sharedAppClient.SetParticipantStatus(url)
+@@ -414,6 +475,7 @@
+             self.log.exception("SharedBrowser:__init__: Failed to set participant status")
+ 
+ 
++
+ class ArgumentManager:
+     def __init__(self):
+         self.arguments = {}
+@@ -437,25 +499,26 @@
+         Handle any arguments we're interested in.
+         """
+         try:
+-            opts, args = getopt.getopt(sys.argv[1:], "a:d:h",
++            opts, args = getopt.getopt(sys.argv[1:], "a:dh",
+                                        ["applicationURL=", "debug", "help"])
+         except getopt.GetoptError:
+             self.Usage()
+             sys.exit(2)
+ 
+         for o, a in opts:
+-            if o in ("-a", "--applicationURL"):
+-                self.arguments["applicationUrl"] = a
+-            elif o in ("-d", "--debug"):
+-                self.arguments["debug"] = 1
+-            elif o in ("-h", "--help"):
+-                self.Usage()
+-                sys.exit(0)
++           if o in ("-a", "--applicationURL"):
++               self.arguments["applicationUrl"] = a
++           elif o in ("-d", "--debug"):
++               self.arguments["debug"] = True
++           elif o in ("-h", "--help"):
++               self.Usage()
++               sys.exit(0)
+ 
+ 
+ if __name__ == "__main__":
+-    app = WXGUIApplication()
++    app = CmdlineApplication()
+     name = "SharedBrowser"
++    init_args = []
+ 
+     # Parse command line options
+     am = ArgumentManager()
+@@ -463,58 +526,13 @@
+     aDict = am.GetArguments()
+ 
+     appUrl = aDict['applicationUrl']
+-    debugMode = aDict['debug']
+ 
+-    init_args = []
+-
+-    if "--debug" in sys.argv or "-d" in sys.argv:
++    if aDict['debug']:
+         init_args.append("--debug")
+-
+     app.Initialize(name, args=init_args)
+ 
+     if not appUrl:
+         am.Usage()
+     else:
+-        wx.InitAllImageHandlers()
+-        sb = SharedBrowser( appUrl, name, size=(800,1024))
+-
+-        sb.MainLoop()
+-
+-    #
+-    # Stress test. Start a client and send events.
+-    #
+-    #import threading
+-    #import time
+-
+-    #browsers = []
+-    #threadList = []
+-    #urls = ["www.oea.se","www.aftonbladet.se", "www.passagen.se"]
+-
+-    #def StartBrowser():
+-    #    sb = SharedBrowser(appUrl, debugMode, logging)
+-    #    browsers.append(sb)
+-    #    sb.MainLoop()
+-
+-    #def SendEvents(sharedAppClient):
+-    #    time.sleep(3)
+-    #    while 1:
+-    #        for url in urls:
+-    #            publicId = sharedAppClient.GetPublicId()
+-    #            sharedAppClient.SendEvent("browse", (publicId, url))
+-    #            sharedAppClient.SetParticipantStatus(url)
+-    #            # Store the URL in the application service in the venue
+-    #            sharedAppClient.SetData("url", url)
+-    #            time.sleep(0.07)
+-
+-    #s = SharedAppClient("SharedAppClientTest")
+-    #s.InitLogging()
+-    #clientProfileFile = os.path.join(GetUserConfigDir(), "profile")
+-    #clientProfile = ClientProfile(clientProfileFile)
+-    #s.Join(appUrl, clientProfile)
+-
+-    #thread = threading.Thread(target = SendEvents, args = [s])
+-    #thread.start()
+-
+-    #StartBrowser()
+-
++        sb = SharedBrowser(appUrl, name, size=(820,980))
+ 

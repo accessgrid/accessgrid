@@ -1,0 +1,20 @@
+Source: agvcr
+Maintainer: Christoph Willing <c.willing@uq.edu.au>
+Section: AccessGrid
+Priority: optional
+Build-Depends: build-essential, libgtk2.0-dev
+Standards-Version: 3.0.1
+
+Package: agvcr
+Version: 2.2.1
+Architecture: i386 amd64
+Depends: libatk1.0-0 (>= 1.0.1), libc6 (>= 2.2.4-4), libglib2.0-0 (>= 2.0.1), libgtk2.0-0 (>= 2.0.2), libpango1.0-0 (>= 1.0.1)
+Description: AGVCR - Record and play back multiple RTP/RTCP streams
+ AGVCR (AccessGrid Video "Cassette" Recorder) records and plays back multiple
+ RTP/RTCP streams using a simple, easy-to-use GTK interface.
+ .
+ Please see the project homepage:
+ http://iri.informatics.indiana.edu/~dcpiper/agvcr/
+ .
+ Versions for Windows and Mac OSX exist, and the files created are compatible
+ between all architectures.

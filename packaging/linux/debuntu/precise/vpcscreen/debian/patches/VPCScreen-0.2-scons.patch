@@ -1,0 +1,122 @@
+--- VPC/SConstruct.scons	2006-08-25 16:23:15 +1000
++++ VPC/SConstruct	2007-07-27 09:06:37 +1000
+@@ -9,6 +9,10 @@ else:
+ opts = Options()
+ opts.Add( PathOption( 'install_prefix', 'Where to install VPMedia files', default_install_prefix ) )
+ 
++opts.Add( 'TOP_DIR',
++	  'For use by RPM only: location of %{_builddir}/%{buildsubdir} during rpmbuild',
++	  "" )
++
+ env = Environment(options = opts)
+ 
+ conf = Configure(env)
+@@ -41,7 +45,17 @@ if sys.platform == 'win32':
+     env['LIBPATH'].append('c:\\lib')
+ 
+ else:
+-    header = 'common/uclconf.h'
++    header = 'common/src/uclconf.h'
++    if not env.has_key('CPPPATH'):
++        env['CPPPATH'] = []
++    if not env.has_key('LIBPATH'):
++        env['LIBPATH'] = []
++
++    env['CPPPATH'].append( env['TOP_DIR'] )
++    env['CPPPATH'].append( env['TOP_DIR'] + '/VPMedia/include' )
++    env['LIBPATH'].append( env['TOP_DIR'] + '/common/src' )
++    env['LIBPATH'].append( env['TOP_DIR'] + '/VPMedia/src' )
++
+ t = conf.CheckLibWithHeader( 'uclmmbase', header, 'C' )
+ if not t:
+ 	print "Failed to link with uclmmbase library, please install libcommon"
+--- VPMedia/include/VPMedia/libcommon.h.scons	2006-06-07 14:35:03 +1000
++++ VPMedia/include/VPMedia/libcommon.h	2007-07-27 09:06:37 +1000
+@@ -7,13 +7,13 @@
+ #endif 
+ 
+ extern "C" {
+-#include <common/config_unix.h>
+-#include <common/config_win32.h>
+-#include <common/debug.h>
+-#include <common/memory.h>
+-#include <common/net_udp.h>
+-#include <common/rtp.h>
+-#include <common/md5.h>
++#include <common/src/config_unix.h>
++#include <common/src/config_win32.h>
++#include <common/src/debug.h>
++#include <common/src/memory.h>
++#include <common/src/net_udp.h>
++#include <common/src/rtp.h>
++#include <common/src/md5.h>
+ };
+ 
+ #endif // LIBCOMMON_H
+--- VPMedia/SConstruct.scons	2006-06-07 14:35:07 +1000
++++ VPMedia/SConstruct	2007-07-27 09:06:37 +1000
+@@ -19,6 +19,10 @@ opts.Add( 'strict',
+           'Set to 1 to enable -Werror command line argument',
+           0 )
+ 
++opts.Add( 'TOP_DIR',
++	  'For use by RPM only: location of %{_builddir}/%{buildsubdir} during rpmbuild',
++	  "" )
++
+ env = Environment( options = opts )
+ 
+ env_lists = [ 'CPPPATH', 'LIBS', 'LIBPATH', 'CFLAGS' ]
+@@ -30,6 +34,9 @@ if sys.platform == 'win32':
+ 	env['CPPPATH'].append( 'c:\\include' )
+ 	env['LIBPATH'].append( 'c:\\lib' )
+ 
++env['CPPPATH'].append( env['TOP_DIR'] )
++env['LIBPATH'].append( env['TOP_DIR'] + '/common/src' )
++
+ env_dicts = [ 'CPPDEFINES' ]
+ for e in env_dicts:
+ 	if not env.has_key(e):
+@@ -77,7 +84,7 @@ if 'configure' in COMMAND_LINE_TARGETS:
+ 	if sys.platform == 'win32':
+ 	    header = 'common/config_win32.h'
+         else:
+-            header = 'common/uclconf.h'
++            header = 'common/src/uclconf.h'
+ 	t = conf.CheckLibWithHeader( 'uclmmbase', header, 'C' )
+ 	if not t:
+ 		print "Failed to link with uclmmbase library, please install libcommon"
+--- VPCScreen-0.2/SConstruct.orig	2006-10-10 10:06:03.000000000 +1000
++++ VPCScreen-0.2/SConstruct	2007-08-09 15:22:19.830914214 +1000
+@@ -14,8 +14,12 @@
+         print "Warning: unknown platform %s, building as linux!" % sys.platform
+         platform = "linux"
+ 
++opts = Options()
++opts.Add( 'TOP_DIR',
++	'For use by RPM only: location of ${builddir} during build',
++	"")
+ 
+-env = Environment()
++env = Environment(options = opts)
+ 
+ for key in [ 'CPPPATH', 'LIBS', 'LIBPATH', 'CXXFLAGS','LINKFLAGS']:
+ 	if not env.has_key(key):	
+@@ -48,11 +52,15 @@
+ 	
+ elif platform=='linux':
+ 	env.ParseConfig('wx-config --cppflags --libs')
+-	env['LIBS'].extend(['X11','Xmu','VPC', 'VPMedia','dv','uclmmbase'])
++	env['LIBS'].extend(['X11','Xmu','VPC', 'VPMedia','uclmmbase'])
+ 	env['LIBPATH'].append('/usr/X11R6/lib')
+ 	env['CXXFLAGS'].extend(['-c', '-g', '-Wall'])
+-
+-
++	env['CPPPATH'].append( env['TOP_DIR'] )
++	env['CPPPATH'].append( env['TOP_DIR'] + '/VPMedia/include' )
++	env['CPPPATH'].append( env['TOP_DIR'] + '/VPC/include' )
++	env['LIBPATH'].append( env['TOP_DIR'] + '/common/src' )
++	env['LIBPATH'].append( env['TOP_DIR'] + '/VPMedia/src' )
++	env['LIBPATH'].append( env['TOP_DIR'] + '/VPC/src' )
+ 
+ 
+ sc = env.Program( 'VPCScreenCapture', source =source_files)

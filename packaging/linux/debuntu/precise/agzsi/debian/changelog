@@ -1,0 +1,55 @@
+agzsi (2.0.r1385-4) precise; urgency=low
+
+  * Rebuilt for Precise Pangolin
+
+ -- Chris Willing <c.willing@uq.edu.au>  Mon, 30 Apr 2012 13:28:09 +1000
+
+agzsi (2.0.r1385-4) oneiric; urgency=low
+
+  * Rebuilt for Oneiric Ocelot
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 19 Oct 2011 23:16:48 +1000
+
+agzsi (2.0.r1385-4) natty; urgency=low
+
+  * Rebuilt for Natty Narwhal
+  * Use quilt instead of dpatch
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 27 Apr 2011 12:29:52 +1000
+
+agzsi (2.0.r1385-4) maverick; urgency=low
+
+  * Rebuilt for Maverick Meerkat
+
+ -- Chris Willing <c.willing@uq.edu.au>  Thu, 07 Oct 2010 11:41:56 +1000
+
+agzsi (2.0.r1385-3) lucid; urgency=low
+
+  * Rebuilt for lucid
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 02 Apr 2010 23:05:46 +1000
+
+agzsi (2.0.r1385-2) karmic; urgency=low
+
+  * Rebuilt for lenny using cdbs
+
+ -- Chris Willing <c.willing@uq.edu.au>  Fri, 19 Mar 2010 13:36:59 +1000
+
+agzsi (2.0.r1385-2) lenny; urgency=low
+
+  * Rebuilt for lenny using cdbs
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 19 Mar 2008 21:16:45 +1000
+
+agzsi (2.0.r1385-1) etch; urgency=low
+
+  * Rebuilt without multiple python version support - now 2.4 only
+
+ -- Chris Willing <c.willing@uq.edu.au>  Wed, 28 Nov 2007 16:42:24 +1000
+
+agzsi (2.0.r1385) etch; urgency=low
+
+  * First release (including Tom's 'self.h = None' line to existing client patch)
+
+ -- Chris Willing <c.willing@uq.edu.au>  Sun, 01 Jul 2007 11:56:23 +1000
+

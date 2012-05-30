@@ -1,0 +1,12 @@
+diff -urNad mmedia-r4876~/vic/Makefile.in mmedia-r4876/vic/Makefile.in
+--- mmedia-r4876~/vic/Makefile.in	2010-08-11 05:36:24.000000000 +1000
++++ mmedia-r4876/vic/Makefile.in	2010-08-11 10:07:38.843368629 +1000
+@@ -82,7 +82,7 @@
+ CODEC_LIB = @V_CODEC_LIB@ codec/tmndec/libh263.a codec/tmn-x/libh263coder.a
+ 
+ LIB = $(LIB_GRABBER) @V_LIB_TK@ @V_LIB_TCL@ @V_LIB_X11@ @V_LIB@ $(CODEC_LIB) $(VIDEO_LIB) \
+-	-luclmmbase -lm -lz @V_LIB_FFMPEG@ @V_LIB_X264@ @LIBS@
++	-L../common/src -luclmmbase -lm -lz -lpthread @V_LIB_FFMPEG@ @V_LIB_X264@ @LIBS@
+ 
+ 
+ INCLUDE = $(INCLUDE_MISC) $(INCLUDE_GRABBER) $(INCLUDE_TK) $(INCLUDE_TCL) \

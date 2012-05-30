@@ -1,0 +1,45 @@
+#!/usr/bin/make -f
+
+package = quickbridge
+pkgpath = debian/tmp
+docdir = debian/tmp/usr/share/doc/$(package)
+here=`pwd`
+pkgdir = ${here}/$(pkgpath)
+
+
+build:
+	$(checkdir)
+	cd services/network/QuickBridge; gcc -O -o QuickBridge QuickBridge.c
+	touch build
+
+clean:
+	$(checkdir)
+	rm -f build
+
+
+binary-arch:	checkroot build
+	$(checkdir)
+	rm -rf $(pkgpath)
+	install -d $(pkgpath)/DEBIAN $(docdir)
+	install -d $(pkgpath)/usr/bin
+	install -m 755 services/network/QuickBridge/QuickBridge ${pkgdir}/usr/bin/
+	dpkg-gencontrol -isp
+	chown -R root:root $(pkgpath)
+	chmod -R u+w,go=rX $(pkgpath)
+	dpkg --build $(pkgpath) ..
+
+
+binary-indep:	checkroot build
+
+
+define checkdir
+	test -f services/network/QuickBridge/QuickBridge.c -a -f debian/rules
+endef
+
+binary:	binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test $$(id -u) = 0
+
+.PHONY: binary binary-arch binary-indep clean checkroot
